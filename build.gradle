@@ -1,0 +1,136 @@
+plugins {
+  id "java"
+  id "checkstyle"
+  id "maven-publish"
+  id "signing"
+  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+}
+
+group "io.github.shiruka"
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_16
+  targetCompatibility = JavaVersion.VERSION_16
+}
+
+tasks.withType(JavaCompiler) {
+  options.encoding = "UTF-8"
+  options.compilerArgs += ["-Duser.language=en", "-Duser.country=US"]
+}
+
+javadoc {
+  exclude "io/github/shiruka/api/base/Colors.java"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier "sources"
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  javadoc.options.tags = ["todo"]
+  javadoc.options.addBooleanOption("html5", true)
+  classifier "javadoc"
+  from javadoc.destinationDir
+}
+
+checkstyle {
+  configFile = file("checkstyle.xml")
+  checkstyleTest.enabled = false
+}
+
+checkstyleMain
+  .exclude("io/github/shiruka/api/base/Colors.java")
+
+test {
+  useJUnitPlatform()
+}
+
+repositories {
+  mavenCentral()
+  maven {
+    url "https://jitpack.io"
+  }
+  mavenLocal()
+}
+
+dependencies {
+  // Implementation
+  compileOnly "com.lmax:disruptor:3.4.4"
+  compileOnly "it.unimi.dsi:fastutil:8.5.5"
+  compileOnly "com.google.inject:guice:5.0.1"
+  compileOnly "it.unimi.dsi:fastutil-core:8.5.5"
+  compileOnly "org.jetbrains:annotations:22.0.0"
+  compileOnly "org.projectlombok:lombok:1.18.20"
+  compileOnly "com.google.guava:guava:30.1.1-jre"
+  compileOnly "org.apache.logging.log4j:log4j-core:2.14.1"
+  compileOnly "com.github.Infumia.InfumiaLib:InfumiaCommon:2.4.4"
+  compileOnly "com.fasterxml.jackson.core:jackson-databind:2.12.5"
+  compileOnly "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.5"
+
+  // Processor
+  annotationProcessor "org.jetbrains:annotations:22.0.0"
+  annotationProcessor "org.projectlombok:lombok:1.18.20"
+
+  // Test
+  testImplementation "org.hamcrest:hamcrest-library:2.2"
+  testImplementation "org.llorllale:cactoos-matchers:0.25"
+  testImplementation "org.junit.jupiter:junit-jupiter:5.7.2"
+
+  // Test implementation
+  testImplementation "org.cactoos:cactoos:0.50"
+  testImplementation "org.jetbrains:annotations:22.0.0"
+  testImplementation "org.projectlombok:lombok:1.18.20"
+  testImplementation "com.google.guava:guava:30.1.1-jre"
+  testImplementation "org.apache.logging.log4j:log4j-core:2.14.1"
+  testImplementation "org.projectlombok:lombok:1.18.20"
+  testImplementation "org.mockito:mockito-core:3.12.4"
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      groupId project.group
+      artifactId project.name
+      version project.version
+
+      from components.java
+      artifact tasks.sourcesJar
+      artifact tasks.javadocJar
+      pom {
+        name = "Shiru ka Api"
+        description = "An Api project that helps developers to create unique plugins for Shiru ka."
+        url = "https://shiruka.github.io/"
+        licenses {
+          license {
+            name = "MIT License"
+            url = "https://mit-license.org/license.txt"
+          }
+        }
+        developers {
+          developer {
+            id = "portlek"
+            name = "Hasan Demirtaş"
+            email = "utsukushihito@outlook.com"
+          }
+        }
+        scm {
+          connection = "scm:git:git://github.com/shiruka/api.git"
+          developerConnection = "scm:git:ssh://github.com/shiruka/api.git"
+          url = "https://github.com/shiruka/api"
+        }
+      }
+    }
+  }
+}
+
+signing {
+  useGpgCmd()
+  sign publishing.publications.mavenJava
+}
+
+nexusPublishing {
+  repositories {
+    sonatype()
+  }
+}
