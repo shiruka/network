@@ -546,7 +546,7 @@ public abstract class Packet {
    * @return the packet.
    */
   @NotNull
-  public final Packet write(final byte @NotNull ... data) {
+  public final Packet write(final byte... data) {
     for (final var datum : data) {
       this.writeByte(datum);
     }
@@ -564,7 +564,7 @@ public abstract class Packet {
    * @return the packet.
    */
   @NotNull
-  public final Packet write(final int @NotNull ... data) {
+  public final Packet write(final int... data) {
     final var bytes = new byte[data.length];
     for (var index = 0; index < data.length; index++) {
       bytes[index] = (byte) data[index];
@@ -698,6 +698,8 @@ public abstract class Packet {
    * writes bytes.
    *
    * @param data the data to write.
+   *
+   * @return the packet.
    */
   @NotNull
   public final Packet writeBytes(final byte[] data) {
@@ -852,6 +854,8 @@ public abstract class Packet {
    * writes a string.
    *
    * @param data the data to write.
+   *
+   * @return the packet.
    */
   @NotNull
   public final Packet writeString(@NotNull final String data) {
@@ -1144,6 +1148,8 @@ public abstract class Packet {
    * writes a var int.
    *
    * @param data the data to write.
+   *
+   * @return the packet.
    */
   @NotNull
   private Packet writeVarInt(final int data) {
