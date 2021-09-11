@@ -8,7 +8,7 @@ public final class Constants {
   /**
    * the Inet 6 address family.
    */
-  public static final int AF_INET6 = 10;
+  public static final int AF_INET6 = 23;
 
   /**
    * the IPv4 version.

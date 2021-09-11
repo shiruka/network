@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.socket.DatagramPacket;
+import io.netty.util.AsciiString;
 import java.math.BigInteger;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -303,6 +304,18 @@ public abstract class Packet {
   }
 
   /**
+   * reads ascii string.
+   *
+   * @return ascii string.
+   */
+  @NotNull
+  public final AsciiString readLEAsciiString() {
+    final var length = this.readIntLE();
+    final var bytes = this.readBytes(length);
+    return new AsciiString(bytes);
+  }
+
+  /**
    * reads a long.
    *
    * @return a long.
@@ -336,6 +349,16 @@ public abstract class Packet {
    */
   public final short readShortLE() {
     return this.buffer.readShortLE();
+  }
+
+  /**
+   * reads slice.
+   *
+   * @return slice.
+   */
+  @NotNull
+  public final ByteBuf readSlice() {
+    return this.buffer.readSlice(this.readUnsignedVarInt());
   }
 
   /**
@@ -619,12 +642,10 @@ public abstract class Packet {
   @NotNull
   public final Packet writeAddressIPV4(@NotNull final InetSocketAddress address) {
     final var ipAddress = address.getAddress().getAddress();
-    final var port = address.getPort();
-    this.writeUnsignedByte(Constants.IPV4);
-    for (final var data : ipAddress) {
-      this.writeByte(~data & 0xFF);
-    }
-    this.writeUnsignedShort(port);
+    this.writeByte(Constants.IPV4);
+    Packet.flip(ipAddress);
+    this.writeBytes(ipAddress);
+    this.writeShort(address.getPort());
     return this;
   }
 
@@ -637,14 +658,13 @@ public abstract class Packet {
    */
   @NotNull
   public final Packet writeAddressIPV6(@NotNull final InetSocketAddress address) {
-    final var ipAddress = address.getAddress().getAddress();
-    final var port = address.getPort();
-    this.writeUnsignedByte(Constants.IPV6);
+    final var ipv6Address = (Inet6Address) address.getAddress();
+    this.writeByte(Constants.IPV6);
     this.writeShortLE(Constants.AF_INET6);
-    this.writeShort(port);
-    this.writeInt(0x00);
-    this.write(ipAddress);
-    this.writeInt(0x00);
+    this.writeShort(address.getPort());
+    this.writeInt(0);
+    this.write(ipv6Address.getAddress());
+    this.writeInt(ipv6Address.getScopeId());
     return this;
   }
 
@@ -740,39 +760,52 @@ public abstract class Packet {
   /**
    * writes an int to the packet.
    *
-   * @param i the data to write.
+   * @param data the data to write.
    *
    * @return the packet.
    */
   @NotNull
-  public final Packet writeInt(final int i) {
-    this.buffer.writeInt(i);
+  public final Packet writeInt(final int data) {
+    this.buffer.writeInt(data);
     return this;
   }
 
   /**
    * writes a little-endian int to the packet.
    *
-   * @param i the data to write.
+   * @param data the data to write.
    *
    * @return the packet.
    */
   @NotNull
-  public final Packet writeIntLE(final int i) {
-    this.buffer.writeIntLE(i);
+  public final Packet writeIntLE(final int data) {
+    this.buffer.writeIntLE(data);
     return this;
+  }
+
+  /**
+   * writes ascii string.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeLEAsciiString(@NotNull final AsciiString data) {
+    return this.writeIntLE(data.length())
+      .writeBytes(data.array());
   }
 
   /**
    * writes a long to the packet.
    *
-   * @param l the data to write.
+   * @param data the data to write.
    *
    * @return the packet.
    */
   @NotNull
-  public final Packet writeLong(final long l) {
-    this.buffer.writeLong(l);
+  public final Packet writeLong(final long data) {
+    this.buffer.writeLong(data);
     return this;
   }
 
@@ -792,26 +825,26 @@ public abstract class Packet {
   /**
    * writes a short to the packet.
    *
-   * @param s the data to write.
+   * @param data the data to write.
    *
    * @return the packet.
    */
   @NotNull
-  public final Packet writeShort(final int s) {
-    this.buffer.writeShort(s);
+  public final Packet writeShort(final int data) {
+    this.buffer.writeShort(data);
     return this;
   }
 
   /**
    * writes a little-endian short to the packet.
    *
-   * @param s the data to write.
+   * @param data the data to write.
    *
    * @return the packet.
    */
   @NotNull
-  public final Packet writeShortLE(final int s) {
-    this.buffer.writeShortLE(s);
+  public final Packet writeShortLE(final int data) {
+    this.buffer.writeShortLE(data);
     return this;
   }
 
@@ -829,26 +862,26 @@ public abstract class Packet {
   /**
    * writes a triad to the packet.
    *
-   * @param t the data to write.
+   * @param data the data to write.
    *
    * @return the packet.
    */
   @NotNull
-  public final Packet writeTriad(final int t) {
-    this.buffer.writeMedium(t);
+  public final Packet writeTriad(final int data) {
+    this.buffer.writeMedium(data);
     return this;
   }
 
   /**
    * writes a little-endian triad to the packet.
    *
-   * @param t the data to write.
+   * @param data the data to write.
    *
    * @return the packet.
    */
   @NotNull
-  public final Packet writeTriadLE(final int t) {
-    this.buffer.writeMediumLE(t);
+  public final Packet writeTriadLE(final int data) {
+    this.buffer.writeMediumLE(data);
     return this;
   }
 
@@ -1073,6 +1106,23 @@ public abstract class Packet {
   }
 
   /**
+   * reads a unsigned var int.
+   *
+   * @return a unsigned var int.
+   */
+  private int readUnsignedVarInt() {
+    var value = 0;
+    var i = 0;
+    int data;
+    while (((data = this.readByte()) & 0x80) != 0) {
+      value |= (data & 0x7F) << i;
+      i += 7;
+      Preconditions.checkArgument(i <= 35, "VarInt too big!");
+    }
+    return value | data << i;
+  }
+
+  /**
    * reads a var int.
    *
    * @return a var int.
@@ -1080,16 +1130,13 @@ public abstract class Packet {
   private int readVarInt() {
     var result = 0;
     var indent = 0;
-    var b = this.readByte();
-    while ((b & 0x80) == 0x80) {
-      if (indent >= 21) {
-        throw new IllegalArgumentException("Too many bytes for a VarInt32.");
-      }
-      result += (b & 0x7f) << indent;
+    int data;
+    while (((data = this.readByte()) & 0x80) == 0x80) {
+      Preconditions.checkArgument(indent < 21, "Too many bytes for a VarInt32.");
+      result += (data & 0x7f) << indent;
       indent += 7;
-      b = this.readByte();
     }
-    result += (b & 0x7f) << indent;
+    result += (data & 0x7f) << indent;
     return result;
   }
 
