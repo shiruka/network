@@ -211,7 +211,7 @@ public abstract class Packet {
    * @return an IPv4/IPv6 address.
    *
    * @throws UnknownHostException if no IP address for the host could be found, the family for an IPv6 address was not
-   *   {@value Constants#AF_INET6}, a scope_id was specified for a global IPv6 address, or the address version is an
+   *   {@value #AF_INET6}, a scope_id was specified for a global IPv6 address, or the address version is an
    *   unknown version.
    */
   @NotNull
@@ -617,8 +617,8 @@ public abstract class Packet {
    * @return the packet.
    *
    * @throws UnknownHostException if no IP address for the host could be found, if a scope_id was specified for a
-   *   global IPv6 address, or the length of the address is not either {@value Constants#IPV4_ADDRESS_LENGTH} or {@value
-   *   Constants#IPV6_ADDRESS_LENGTH} bytes.
+   *   global IPv6 address, or the length of the address is not either {@value #IPV4_ADDRESS_LENGTH} or {@value
+   *   #IPV6_ADDRESS_LENGTH} bytes.
    */
   @NotNull
   public final Packet writeAddress(@NotNull final InetSocketAddress address) throws UnknownHostException {
