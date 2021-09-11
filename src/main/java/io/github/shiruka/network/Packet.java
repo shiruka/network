@@ -1,13 +1,17 @@
 package io.github.shiruka.network;
 
+import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.socket.DatagramPacket;
 import java.math.BigInteger;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -64,6 +68,90 @@ public abstract class Packet {
   }
 
   /**
+   * flips the bytes.
+   *
+   * @param bytes the bytes to flip.
+   */
+  private static void flip(final byte[] bytes) {
+    for (var index = 0; index < bytes.length; index++) {
+      bytes[index] = (byte) (~bytes[index] & 0xFF);
+    }
+  }
+
+  /**
+   * returns the version of the specified IP address.
+   *
+   * @param address the IP address.
+   *
+   * @return the version of the IP address, -1 if the version is unknown.
+   */
+  private static int getAddressVersion(@NotNull final InetAddress address) {
+    return switch (address.getAddress().length) {
+      case Constants.IPV4_ADDRESS_LENGTH -> Constants.IPV4;
+      case Constants.IPV6_ADDRESS_LENGTH -> Constants.IPV6;
+      default -> -1;
+    };
+  }
+
+  /**
+   * returns the version of the IP address of the specified address.
+   *
+   * @param address the address.
+   *
+   * @return the version of the IP address, -1 if the version is unknown.
+   */
+  private static int getAddressVersion(@NotNull final InetSocketAddress address) {
+    return Packet.getAddressVersion(address.getAddress());
+  }
+
+  /**
+   * returns the packet as a byte[].
+   *
+   * @return the packet as a byte[].
+   */
+  public final byte[] array() {
+    Preconditions.checkState(!this.buffer.isDirect(),
+      "The buffer is a direct buffer!");
+    return Arrays.copyOfRange(this.buffer.array(), 0, this.size());
+  }
+
+  /**
+   * clears the packet's buffer.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet clear() {
+    this.buffer.clear();
+    return this;
+  }
+
+  /**
+   * returns a copy of the packet buffer.
+   *
+   * @return a copy of the packet buffer.
+   */
+  @NotNull
+  public final ByteBuf copy() {
+    return this.buffer.copy();
+  }
+
+  /**
+   * writes the specified amount of {@code null} (0x00) bytes to the packet.
+   *
+   * @param length the amount of bytes to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet pad(final int length) {
+    for (var index = 0; index < length; index++) {
+      this.writeByte(0x00);
+    }
+    return this;
+  }
+
+  /**
    * reads data into the specified byte[].
    *
    * @param dest the byte[] to read the data into.
@@ -73,7 +161,7 @@ public abstract class Packet {
   @NotNull
   public final Packet read(final byte[] dest) {
     for (var index = 0; index < dest.length; index++) {
-      dest[index] = this.buffer.readByte();
+      dest[index] = this.readByte();
     }
     return this;
   }
@@ -87,9 +175,7 @@ public abstract class Packet {
    */
   public final byte[] read(final int length) {
     final var bytes = new byte[length];
-    for (int index = 0; index < bytes.length; index++) {
-      bytes[index] = this.buffer.readByte();
-    }
+    this.read(bytes);
     return bytes;
   }
 
@@ -132,11 +218,11 @@ public abstract class Packet {
   }
 
   /**
-   * converts the buffer into a byte array with a certain length.
+   * reads bytes.
    *
    * @param length the length to convert.
    *
-   * @return bytes
+   * @return bytes.
    */
   public final byte[] readBytes(final int length) {
     final var bytes = new byte[length];
@@ -300,7 +386,7 @@ public abstract class Packet {
    * @return an unsigned byte.
    */
   public final short readUnsignedByte() {
-    return (short) (this.buffer.readByte() & 0xFF);
+    return (short) (this.readByte() & 0xFF);
   }
 
   /**
@@ -309,7 +395,7 @@ public abstract class Packet {
    * @return an unsigned int.
    */
   public final long readUnsignedInt() {
-    return this.buffer.readInt() & 0xFFFFFFFFL;
+    return this.readInt() & 0xFFFFFFFFL;
   }
 
   /**
@@ -318,7 +404,7 @@ public abstract class Packet {
    * @return an unsigned little-endian int.
    */
   public final long readUnsignedIntLE() {
-    return this.buffer.readIntLE() & 0xFFFFFFFFL;
+    return this.readIntLE() & 0xFFFFFFFFL;
   }
 
   /**
@@ -353,7 +439,7 @@ public abstract class Packet {
    * @return an unsigned short.
    */
   public final int readUnsignedShort() {
-    return this.buffer.readShort() & 0xFFFF;
+    return this.readShort() & 0xFFFF;
   }
 
   /**
@@ -362,7 +448,7 @@ public abstract class Packet {
    * @return an unsigned little-endian short.
    */
   public final int readUnsignedShortLE() {
-    return this.buffer.readShortLE() & 0xFFFF;
+    return this.readShortLE() & 0xFFFF;
   }
 
   /**
@@ -381,6 +467,16 @@ public abstract class Packet {
    */
   public final int readUnsignedTriadLE() {
     return this.readTriad() & 0xFFFFFF;
+  }
+
+  /**
+   * releases the packet's buffer.
+   *
+   * @return {@code true} if and only if the reference count became 0 and this object has been deallocated, {@code
+   *   false} otherwise.
+   */
+  public final boolean release() {
+    return this.buffer.release();
   }
 
   /**
@@ -420,13 +516,528 @@ public abstract class Packet {
   }
 
   /**
+   * writes the specified bytes to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet write(final byte @NotNull ... data) {
+    for (final var datum : data) {
+      this.writeByte(datum);
+    }
+    return this;
+  }
+
+  /**
+   * writes the specified bytes to the packet.
+   * <p>
+   * this method is simply a shorthand for the {@link #write(byte...)} method, with all the values being automatically
+   * casted back to a byte before being sent to the original {@link #write(byte...)} method.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet write(final int @NotNull ... data) {
+    final var bytes = new byte[data.length];
+    for (var index = 0; index < data.length; index++) {
+      bytes[index] = (byte) data[index];
+    }
+    return this.write(bytes);
+  }
+
+  /**
+   * writes an IPv4/IPv6 address to the packet.
+   *
+   * @param address the address.
+   *
+   * @return the packet.
+   *
+   * @throws UnknownHostException if no IP address for the host could be found, if a scope_id was specified for a
+   *   global IPv6 address, or the length of the address is not either {@value Constants#IPV4_ADDRESS_LENGTH} or {@value
+   *   Constants#IPV6_ADDRESS_LENGTH} bytes.
+   */
+  @NotNull
+  public final Packet writeAddress(@NotNull final InetSocketAddress address) throws UnknownHostException {
+    Objects.requireNonNull(address.getAddress(), "address");
+    return switch (Packet.getAddressVersion(address)) {
+      case Constants.IPV4 -> this.writeAddressIPV4(address);
+      case Constants.IPV6 -> this.writeAddressIPV6(address);
+      default -> throw new UnknownHostException("Unknown protocol for address with length of %d bytes"
+        .formatted(address.getAddress().getAddress().length));
+    };
+  }
+
+  /**
+   * writes an IPv4 address to the packet.
+   *
+   * @param host the IP address.
+   * @param port the port.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if the port is not in between 0-65535.
+   * @throws UnknownHostException if no IP address for the host could not be found, or if a scope_id was specified for
+   *   a global IPv6 address.
+   */
+  @NotNull
+  public final Packet writeAddress(@NotNull final InetAddress host, final int port) throws IllegalArgumentException,
+    UnknownHostException {
+    Preconditions.checkArgument(port >= 0x0000 && port <= 0xFFFF, "Port must be in between 0-65535");
+    return this.writeAddress(new InetSocketAddress(host, port));
+  }
+
+  /**
+   * writes an IPv4 address to the packet (IPv6 is not yet supported).
+   *
+   * @param host the IP address.
+   * @param port the port.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if the port is not in between 0-65535.
+   * @throws UnknownHostException if no IP address for the host could not be found, or if a scope_id was specified for
+   *   a global IPv6 address.
+   */
+  @NotNull
+  public final Packet writeAddress(@NotNull final String host, final int port) throws IllegalArgumentException,
+    UnknownHostException {
+    Preconditions.checkArgument(port >= 0x0000 && port <= 0xFFFF, "Port must be in between 0-65535");
+    return this.writeAddress(InetAddress.getByName(host), port);
+  }
+
+  /**
+   * writes an IPv4 address to the packet.
+   *
+   * @param address the address.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeAddressIPV4(@NotNull final InetSocketAddress address) {
+    final var ipAddress = address.getAddress().getAddress();
+    final var port = address.getPort();
+    this.writeUnsignedByte(Constants.IPV4);
+    for (final var data : ipAddress) {
+      this.writeByte(~data & 0xFF);
+    }
+    this.writeUnsignedShort(port);
+    return this;
+  }
+
+  /**
+   * writes an IPv6 address to the packet.
+   *
+   * @param address the address.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeAddressIPV6(@NotNull final InetSocketAddress address) {
+    final var ipAddress = address.getAddress().getAddress();
+    final var port = address.getPort();
+    this.writeUnsignedByte(Constants.IPV6);
+    this.writeShortLE(Constants.AF_INET6);
+    this.writeShort(port);
+    this.writeInt(0x00);
+    this.write(ipAddress);
+    this.writeInt(0x00);
+    return this;
+  }
+
+  /**
+   * writes a boolean to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeBoolean(final boolean data) {
+    this.buffer.writeBoolean(data);
+    return this;
+  }
+
+  /**
+   * writes a byte to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeByte(final int data) {
+    this.buffer.writeByte((byte) data);
+    return this;
+  }
+
+  /**
+   * writes bytes.
+   *
+   * @param data the data to write.
+   */
+  @NotNull
+  public final Packet writeBytes(final byte[] data) {
+    this.buffer.writeBytes(data);
+    return this;
+  }
+
+  /**
+   * writes a double to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeDouble(final double data) {
+    this.buffer.writeDouble(data);
+    return this;
+  }
+
+  /**
+   * writes a double to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeDoubleLE(final double data) {
+    this.buffer.writeDoubleLE(data);
+    return this;
+  }
+
+  /**
+   * writes a float to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeFloat(final double data) {
+    this.buffer.writeFloat((float) data);
+    return this;
+  }
+
+  /**
+   * writes a little-endian float to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeFloatLE(final double data) {
+    this.buffer.writeFloatLE((float) data);
+    return this;
+  }
+
+  /**
+   * writes an int to the packet.
+   *
+   * @param i the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeInt(final int i) {
+    this.buffer.writeInt(i);
+    return this;
+  }
+
+  /**
+   * writes a little-endian int to the packet.
+   *
+   * @param i the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeIntLE(final int i) {
+    this.buffer.writeIntLE(i);
+    return this;
+  }
+
+  /**
+   * writes a long to the packet.
+   *
+   * @param l the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeLong(final long l) {
+    this.buffer.writeLong(l);
+    return this;
+  }
+
+  /**
+   * writes a little-endian long to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeLongLE(final long data) {
+    this.buffer.writeLongLE(data);
+    return this;
+  }
+
+  /**
+   * writes a short to the packet.
+   *
+   * @param s the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeShort(final int s) {
+    this.buffer.writeShort(s);
+    return this;
+  }
+
+  /**
+   * writes a little-endian short to the packet.
+   *
+   * @param s the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeShortLE(final int s) {
+    this.buffer.writeShortLE(s);
+    return this;
+  }
+
+  /**
    * writes a string.
    *
    * @param data the data to write.
    */
-  public final void writeString(@NotNull final String data) {
-    this.writeVarInt(data.length());
-    this.buffer.writeBytes(data.getBytes(StandardCharsets.UTF_8));
+  @NotNull
+  public final Packet writeString(@NotNull final String data) {
+    return this.writeVarInt(data.length())
+      .writeBytes(data.getBytes(StandardCharsets.UTF_8));
+  }
+
+  /**
+   * writes a triad to the packet.
+   *
+   * @param t the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeTriad(final int t) {
+    this.buffer.writeMedium(t);
+    return this;
+  }
+
+  /**
+   * writes a little-endian triad to the packet.
+   *
+   * @param t the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeTriadLE(final int t) {
+    this.buffer.writeMediumLE(t);
+    return this;
+  }
+
+  /**
+   * writes a UUID to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   */
+  @NotNull
+  public final Packet writeUUID(@NotNull final UUID data) throws NullPointerException {
+    return this.writeLong(data.getMostSignificantBits())
+      .writeLong(data.getLeastSignificantBits());
+  }
+
+  /**
+   * writes an unsigned byte to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is not within the range of 0-255.
+   */
+  @NotNull
+  public final Packet writeUnsignedByte(final int data) throws IllegalArgumentException {
+    Preconditions.checkArgument(data >= 0x00 && data <= 0xFF, "Value must be in between 0-255");
+    this.writeByte((byte) data & 0xFF);
+    return this;
+  }
+
+  /**
+   * writes an unsigned int to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is not in between 0-4294967295
+   */
+  @NotNull
+  public final Packet writeUnsignedInt(final long data) throws IllegalArgumentException {
+    Preconditions.checkArgument(data >= 0x00000000 && data <= 0xFFFFFFFFL, "Value must be in between 0-4294967295");
+    return this.writeInt((int) data);
+  }
+
+  /**
+   * writes an unsigned little-endian int to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is not in between 0-4294967295.
+   */
+  @NotNull
+  public final Packet writeUnsignedIntLE(final long data) throws IllegalArgumentException {
+    Preconditions.checkArgument(data >= 0x00000000 && data <= 0xFFFFFFFFL, "Value must be in between 0-4294967295");
+    this.buffer.writeIntLE((int) data);
+    return this;
+  }
+
+  /**
+   * writes an unsigned long to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is bigger than {@value Long#BYTES} bytes  or is negative.
+   */
+  @NotNull
+  public final Packet writeUnsignedLong(@NotNull final BigInteger data) throws IllegalArgumentException {
+    final var bytes = data.toByteArray();
+    Preconditions.checkArgument(bytes.length <= Long.BYTES, "Value is too big to fit into a long");
+    Preconditions.checkArgument(data.longValue() >= 0, "Value cannot be negative");
+    for (var index = 0; index < Long.BYTES; index++) {
+      this.writeByte(index < bytes.length ? bytes[index] : 0x00);
+    }
+    return this;
+  }
+
+  /**
+   * writes an unsigned long to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is less than 0.
+   */
+  @NotNull
+  public final Packet writeUnsignedLong(final long data) throws IllegalArgumentException {
+    return this.writeUnsignedLong(new BigInteger(Long.toString(data)));
+  }
+
+  /**
+   * writes an unsigned little-endian long to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if the size of the data is bigger than {@value Long#BYTES} bytes or is negative.
+   */
+  @NotNull
+  public final Packet writeUnsignedLongLE(@NotNull final BigInteger data) throws IllegalArgumentException {
+    final var bytes = data.toByteArray();
+    Preconditions.checkArgument(bytes.length <= Long.BYTES, "Value is too big to fit into a long");
+    Preconditions.checkArgument(data.longValue() >= 0, "Value cannot be negative");
+    for (var index = Long.BYTES - 1; index >= 0; index--) {
+      this.writeByte(index < bytes.length ? bytes[index] : 0x00);
+    }
+    return this;
+  }
+
+  /**
+   * writes an unsigned little-endian long to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is less than 0.
+   */
+  @NotNull
+  public final Packet writeUnsignedLongLE(final long data) throws IllegalArgumentException {
+    return this.writeUnsignedLongLE(new BigInteger(Long.toString(data)));
+  }
+
+  /**
+   * writes a unsigned short to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is not within the range of  0-65535.
+   */
+  @NotNull
+  public final Packet writeUnsignedShort(final int data) throws IllegalArgumentException {
+    Preconditions.checkArgument(data >= 0x0000 && data <= 0xFFFF, "Value must be in between 0-65535");
+    return this.writeShort((short) data & 0xFFFF);
+  }
+
+  /**
+   * writes an unsigned little-endian short to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is not in between 0-65535.
+   */
+  @NotNull
+  public final Packet writeUnsignedShortLE(final int data) throws IllegalArgumentException {
+    Preconditions.checkArgument(data >= 0x0000 && data <= 0xFFFF, "Value must be in between 0-65535");
+    return this.writeShortLE((short) data & 0xFFFF);
+  }
+
+  /**
+   * writes an unsigned triad to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is not in between 0-16777215.
+   */
+  @NotNull
+  public final Packet writeUnsignedTriad(final int data) throws IllegalArgumentException {
+    Preconditions.checkArgument(data >= 0x000000 && data <= 0xFFFFFF, "Value must be in between 0-16777215");
+    return this.writeTriad(data & 0xFFFFFF);
+  }
+
+  /**
+   * writes an unsigned little-endian triad to the packet.
+   *
+   * @param data the data to write.
+   *
+   * @return the packet.
+   *
+   * @throws IllegalArgumentException if data is not in between 0-16777215.
+   */
+  @NotNull
+  public final Packet writeUnsignedTriadLE(final int data) throws IllegalArgumentException {
+    Preconditions.checkArgument(data >= 0x000000 && data <= 0xFFFFFF, "Value must be in between 0-16777215");
+    return this.writeTriadLE(data & 0xFFFFFF);
   }
 
   /**
@@ -438,10 +1049,8 @@ public abstract class Packet {
    */
   @NotNull
   private InetSocketAddress readAddressIPV4() throws UnknownHostException {
-    final var address = new byte[Constants.IPV4_ADDRESS_LENGTH];
-    for (var index = 0; index < address.length; index++) {
-      address[index] = (byte) (~this.readByte() & 0xFF);
-    }
+    final var address = this.readBytes(Constants.IPV4_ADDRESS_LENGTH);
+    Packet.flip(address);
     final var port = this.readUnsignedShort();
     return new InetSocketAddress(InetAddress.getByAddress(address), port);
   }
@@ -458,12 +1067,9 @@ public abstract class Packet {
     this.readShortLE();
     final var port = this.readUnsignedShort();
     this.readInt();
-    final var ipAddress = new byte[Constants.IPV6_ADDRESS_LENGTH];
-    for (var index = 0; index < ipAddress.length; index++) {
-      ipAddress[index] = this.readByte();
-    }
-    this.readInt();
-    return new InetSocketAddress(InetAddress.getByAddress(ipAddress), port);
+    final var ipAddress = this.readBytes(Constants.IPV6_ADDRESS_LENGTH);
+    final var scopeId = this.readInt();
+    return new InetSocketAddress(Inet6Address.getByAddress(null, ipAddress, scopeId), port);
   }
 
   /**
@@ -474,14 +1080,14 @@ public abstract class Packet {
   private int readVarInt() {
     var result = 0;
     var indent = 0;
-    var b = this.buffer.readByte();
+    var b = this.readByte();
     while ((b & 0x80) == 0x80) {
       if (indent >= 21) {
         throw new IllegalArgumentException("Too many bytes for a VarInt32.");
       }
       result += (b & 0x7f) << indent;
       indent += 7;
-      b = this.buffer.readByte();
+      b = this.readByte();
     }
     result += (b & 0x7f) << indent;
     return result;
@@ -492,12 +1098,13 @@ public abstract class Packet {
    *
    * @param data the data to write.
    */
-  private void writeVarInt(final int data) {
+  @NotNull
+  private Packet writeVarInt(final int data) {
     var temp = data;
     while ((temp & 0xFFFFFF80) != 0L) {
-      this.buffer.writeByte(temp & 0x7F | 0x80);
+      this.writeByte(temp & 0x7F | 0x80);
       temp >>>= 7;
     }
-    this.buffer.writeByte(temp & 0x7F);
+    return this.writeByte(temp & 0x7F);
   }
 }
