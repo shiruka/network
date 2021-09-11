@@ -29,6 +29,31 @@ import org.jetbrains.annotations.NotNull;
 public abstract class Packet {
 
   /**
+   * the Inet 6 address family.
+   */
+  private static final int AF_INET6 = 23;
+
+  /**
+   * the IPv4 version.
+   */
+  private static final int IPV4 = 4;
+
+  /**
+   * the length of IPv4 addresses.
+   */
+  private static final int IPV4_ADDRESS_LENGTH = 4;
+
+  /**
+   * the IPv6 version.
+   */
+  private static final int IPV6 = 6;
+
+  /**
+   * the length of IPv6 addresses.
+   */
+  private static final int IPV6_ADDRESS_LENGTH = 16;
+
+  /**
    * the buffer.
    */
   @NotNull
@@ -88,8 +113,8 @@ public abstract class Packet {
    */
   private static int getAddressVersion(@NotNull final InetAddress address) {
     return switch (address.getAddress().length) {
-      case Constants.IPV4_ADDRESS_LENGTH -> Constants.IPV4;
-      case Constants.IPV6_ADDRESS_LENGTH -> Constants.IPV6;
+      case Packet.IPV4_ADDRESS_LENGTH -> Packet.IPV4;
+      case Packet.IPV6_ADDRESS_LENGTH -> Packet.IPV6;
       default -> -1;
     };
   }
@@ -186,15 +211,15 @@ public abstract class Packet {
    * @return an IPv4/IPv6 address.
    *
    * @throws UnknownHostException if no IP address for the host could be found, the family for an IPv6 address was not
-   *   {@value Constants#AF_INET6}, a scope_id was specified for a global IPv6 address, or the address version is an
+   *   {@value #AF_INET6}, a scope_id was specified for a global IPv6 address, or the address version is an
    *   unknown version.
    */
   @NotNull
   public final InetSocketAddress readAddress() throws UnknownHostException {
     final var version = this.readUnsignedByte();
     return switch (version) {
-      case Constants.IPV4 -> this.readAddressIPV4();
-      case Constants.IPV6 -> this.readAddressIPV6();
+      case Packet.IPV4 -> this.readAddressIPV4();
+      case Packet.IPV6 -> this.readAddressIPV6();
       default -> throw new UnknownHostException("Unknown protocol IPv%s"
         .formatted(version));
     };
@@ -221,13 +246,25 @@ public abstract class Packet {
   /**
    * reads bytes.
    *
+   * @param bytes the bytes to read.
+   *
+   * @return bytes.
+   */
+  @NotNull
+  public final ByteBuf readBytes(final byte[] bytes) {
+    return this.buffer.readBytes(bytes);
+  }
+
+  /**
+   * reads bytes.
+   *
    * @param length the length to convert.
    *
    * @return bytes.
    */
   public final byte[] readBytes(final int length) {
     final var bytes = new byte[length];
-    this.buffer.readBytes(bytes);
+    this.readBytes(bytes);
     return bytes;
   }
 
@@ -580,15 +617,15 @@ public abstract class Packet {
    * @return the packet.
    *
    * @throws UnknownHostException if no IP address for the host could be found, if a scope_id was specified for a
-   *   global IPv6 address, or the length of the address is not either {@value Constants#IPV4_ADDRESS_LENGTH} or {@value
-   *   Constants#IPV6_ADDRESS_LENGTH} bytes.
+   *   global IPv6 address, or the length of the address is not either {@value #IPV4_ADDRESS_LENGTH} or {@value
+   *   #IPV6_ADDRESS_LENGTH} bytes.
    */
   @NotNull
   public final Packet writeAddress(@NotNull final InetSocketAddress address) throws UnknownHostException {
     Objects.requireNonNull(address.getAddress(), "address");
     return switch (Packet.getAddressVersion(address)) {
-      case Constants.IPV4 -> this.writeAddressIPV4(address);
-      case Constants.IPV6 -> this.writeAddressIPV6(address);
+      case Packet.IPV4 -> this.writeAddressIPV4(address);
+      case Packet.IPV6 -> this.writeAddressIPV6(address);
       default -> throw new UnknownHostException("Unknown protocol for address with length of %d bytes"
         .formatted(address.getAddress().getAddress().length));
     };
@@ -642,7 +679,7 @@ public abstract class Packet {
   @NotNull
   public final Packet writeAddressIPV4(@NotNull final InetSocketAddress address) {
     final var ipAddress = address.getAddress().getAddress();
-    this.writeByte(Constants.IPV4);
+    this.writeByte(Packet.IPV4);
     Packet.flip(ipAddress);
     this.writeBytes(ipAddress);
     this.writeShort(address.getPort());
@@ -659,8 +696,8 @@ public abstract class Packet {
   @NotNull
   public final Packet writeAddressIPV6(@NotNull final InetSocketAddress address) {
     final var ipv6Address = (Inet6Address) address.getAddress();
-    this.writeByte(Constants.IPV6);
-    this.writeShortLE(Constants.AF_INET6);
+    this.writeByte(Packet.IPV6);
+    this.writeShortLE(Packet.AF_INET6);
     this.writeShort(address.getPort());
     this.writeInt(0);
     this.write(ipv6Address.getAddress());
@@ -1086,7 +1123,7 @@ public abstract class Packet {
    */
   @NotNull
   private InetSocketAddress readAddressIPV4() throws UnknownHostException {
-    final var address = this.readBytes(Constants.IPV4_ADDRESS_LENGTH);
+    final var address = this.readBytes(Packet.IPV4_ADDRESS_LENGTH);
     Packet.flip(address);
     final var port = this.readUnsignedShort();
     return new InetSocketAddress(InetAddress.getByAddress(address), port);
@@ -1104,9 +1141,9 @@ public abstract class Packet {
     this.readShortLE();
     final var port = this.readUnsignedShort();
     this.readInt();
-    final var ipAddress = this.readBytes(Constants.IPV6_ADDRESS_LENGTH);
+    final var address = this.readBytes(Packet.IPV6_ADDRESS_LENGTH);
     final var scopeId = this.readInt();
-    return new InetSocketAddress(Inet6Address.getByAddress(null, ipAddress, scopeId), port);
+    return new InetSocketAddress(Inet6Address.getByAddress(null, address, scopeId), port);
   }
 
   /**
