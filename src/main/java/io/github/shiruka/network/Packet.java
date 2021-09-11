@@ -221,13 +221,25 @@ public abstract class Packet {
   /**
    * reads bytes.
    *
+   * @param bytes the bytes to read.
+   *
+   * @return bytes.
+   */
+  @NotNull
+  public final ByteBuf readBytes(final byte[] bytes) {
+    return this.buffer.readBytes(bytes);
+  }
+
+  /**
+   * reads bytes.
+   *
    * @param length the length to convert.
    *
    * @return bytes.
    */
   public final byte[] readBytes(final int length) {
     final var bytes = new byte[length];
-    this.buffer.readBytes(bytes);
+    this.readBytes(bytes);
     return bytes;
   }
 
