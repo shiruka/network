@@ -6,68 +6,77 @@ plugins {
   id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
-group "io.github.shiruka"
+allprojects {
+  apply plugin: "java"
+  apply plugin: "maven-publish"
+  apply plugin: "signing"
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_16
-  targetCompatibility = JavaVersion.VERSION_16
+  group "io.github.shiruka"
+
+  java {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+  }
+
+  tasks.withType(JavaCompiler) {
+    options.encoding = "UTF-8"
+    options.compilerArgs += ["-Duser.language=en", "-Duser.country=US"]
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier "sources"
+    from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    javadoc.options.tags = ["todo"]
+    javadoc.options.addBooleanOption("html5", true)
+    classifier "javadoc"
+    from javadoc.destinationDir
+  }
 }
 
-tasks.withType(JavaCompiler) {
-  options.encoding = "UTF-8"
-  options.compilerArgs += ["-Duser.language=en", "-Duser.country=US"]
-}
+subprojects {
+  test {
+    useJUnitPlatform()
+  }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier "sources"
-  from sourceSets.main.allSource
-}
+  repositories {
+    mavenCentral()
+    maven {
+      url "https://jitpack.io"
+    }
+    mavenLocal()
+  }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  javadoc.options.tags = ["todo"]
-  javadoc.options.addBooleanOption("html5", true)
-  classifier "javadoc"
-  from javadoc.destinationDir
+  dependencies {
+    compileOnly "io.netty:netty-all:4.1.68.Final"
+    compileOnly "com.google.guava:guava:30.1.1-jre"
+    compileOnly "org.apache.logging.log4j:log4j-api:2.14.1"
+
+    compileOnly "org.jetbrains:annotations:22.0.0"
+    annotationProcessor "org.jetbrains:annotations:22.0.0"
+
+    compileOnly "org.projectlombok:lombok:1.18.20"
+    annotationProcessor "org.projectlombok:lombok:1.18.20"
+
+    testImplementation "org.hamcrest:hamcrest-library:2.2"
+    testImplementation "org.llorllale:cactoos-matchers:0.25"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.7.2"
+
+    testImplementation "org.cactoos:cactoos:0.50"
+    testImplementation "org.jetbrains:annotations:22.0.0"
+    testImplementation "org.projectlombok:lombok:1.18.20"
+    testImplementation "com.google.guava:guava:30.1.1-jre"
+    testImplementation "org.apache.logging.log4j:log4j-core:2.14.1"
+    testImplementation "org.projectlombok:lombok:1.18.20"
+    testImplementation "org.mockito:mockito-core:3.12.4"
+  }
 }
 
 checkstyle {
   configFile = file("checkstyle.xml")
   checkstyleTest.enabled = false
-}
-
-test {
-  useJUnitPlatform()
-}
-
-repositories {
-  mavenCentral()
-  maven {
-    url "https://jitpack.io"
-  }
-  mavenLocal()
-}
-
-dependencies {
-  compileOnly "io.netty:netty-all:4.1.68.Final"
-  compileOnly "com.google.guava:guava:30.1.1-jre"
-
-  compileOnly "org.jetbrains:annotations:22.0.0"
-  annotationProcessor "org.jetbrains:annotations:22.0.0"
-
-  compileOnly "org.projectlombok:lombok:1.18.20"
-  annotationProcessor "org.projectlombok:lombok:1.18.20"
-
-  testImplementation "org.hamcrest:hamcrest-library:2.2"
-  testImplementation "org.llorllale:cactoos-matchers:0.25"
-  testImplementation "org.junit.jupiter:junit-jupiter:5.7.2"
-
-  testImplementation "org.cactoos:cactoos:0.50"
-  testImplementation "org.jetbrains:annotations:22.0.0"
-  testImplementation "org.projectlombok:lombok:1.18.20"
-  testImplementation "com.google.guava:guava:30.1.1-jre"
-  testImplementation "org.apache.logging.log4j:log4j-core:2.14.1"
-  testImplementation "org.projectlombok:lombok:1.18.20"
-  testImplementation "org.mockito:mockito-core:3.12.4"
 }
 
 publishing {

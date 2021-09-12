@@ -934,7 +934,7 @@ public abstract class Packet {
    * @return the packet.
    */
   @NotNull
-  public final Packet writeUUID(@NotNull final UUID data) throws NullPointerException {
+  public final Packet writeUUID(@NotNull final UUID data) {
     return this.writeLong(data.getMostSignificantBits())
       .writeLong(data.getLeastSignificantBits());
   }
