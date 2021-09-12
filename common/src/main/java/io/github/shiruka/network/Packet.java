@@ -57,7 +57,7 @@ public abstract class Packet {
    * the buffer.
    */
   @NotNull
-  private final ByteBuf buffer;
+  private ByteBuf buffer;
 
   /**
    * ctor.
@@ -139,6 +139,19 @@ public abstract class Packet {
     Preconditions.checkState(!this.buffer.isDirect(),
       "The buffer is a direct buffer!");
     return Arrays.copyOfRange(this.buffer.array(), 0, this.size());
+  }
+
+  /**
+   * sets the buffer.
+   *
+   * @param buffer the buffer to set.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  public final Packet buffer(@NotNull final ByteBuf buffer) {
+    this.buffer = buffer;
+    return this;
   }
 
   /**
@@ -1112,6 +1125,21 @@ public abstract class Packet {
   public final Packet writeUnsignedTriadLE(final int data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x000000 && data <= 0xFFFFFF, "Value must be in between 0-16777215");
     return this.writeTriadLE(data & 0xFFFFFF);
+  }
+
+  /**
+   * flips the packet.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  public Packet flip() {
+    final var data = this.buffer.array();
+    final var increment = this.buffer.refCnt();
+    this.buffer.release(increment);
+    this.buffer = Unpooled.copiedBuffer(data);
+    this.buffer.retain(increment);
+    return this;
   }
 
   /**

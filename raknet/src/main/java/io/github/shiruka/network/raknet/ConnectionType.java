@@ -22,8 +22,8 @@ import org.jetbrains.annotations.Nullable;
 public record ConnectionType(
   @Nullable UUID uniqueId,
   @NotNull String name,
-  @NotNull String language,
-  @NotNull String version,
+  @Nullable String language,
+  @Nullable String version,
   @NotNull Map<String, String> metadata,
   boolean vanilla
 ) {
@@ -31,12 +31,23 @@ public record ConnectionType(
   /**
    * the magic.
    */
-  private static final byte[] MAGIC = new byte[]{0x03, 0x08, 0x05, 0x0B, 0x43, 0x54, 0x49};
+  public static final byte[] MAGIC = new byte[]{0x03, 0x08, 0x05, 0x0B, 0x43, 0x54, 0x49};
 
   /**
    * the max metadata values.
    */
-  private static final int MAX_METADATA_VALUES = 0xFF;
+  public static final int MAX_METADATA_VALUES = 255;
+
+  /**
+   * the rak net connection type.
+   */
+  public static final ConnectionType RAK_NET = new ConnectionType(
+    UUID.fromString("504da9b2-a31c-4db6-bcc3-18e5fe2fb178"), "Rak Net", "Java", "@version@");
+
+  /**
+   * the vanilla connection type.
+   */
+  public static final ConnectionType VANILLA = new ConnectionType(null, "Vanilla", null, null, new HashMap<>(), true);
 
   /**
    * the compact ctor.
@@ -44,6 +55,33 @@ public record ConnectionType(
   public ConnectionType {
     Preconditions.checkArgument(metadata.size() <= ConnectionType.MAX_METADATA_VALUES,
       "Too many metadata values");
+  }
+
+  /**
+   * ctor.
+   *
+   * @param uniqueId the unique id.
+   * @param name the name.
+   * @param language the language.
+   * @param version the version
+   * @param metadata the metadata.
+   */
+  public ConnectionType(@Nullable final UUID uniqueId, @NotNull final String name, @Nullable final String language,
+                        @Nullable final String version, @NotNull final Map<String, String> metadata) {
+    this(uniqueId, name, language, version, metadata, false);
+  }
+
+  /**
+   * ctor.
+   *
+   * @param uniqueId the unique id.
+   * @param name the name.
+   * @param language the language.
+   * @param version the version
+   */
+  public ConnectionType(@Nullable final UUID uniqueId, @NotNull final String name, @Nullable final String language,
+                        @Nullable final String version) {
+    this(uniqueId, name, language, version, new HashMap<>(), false);
   }
 
   /**
