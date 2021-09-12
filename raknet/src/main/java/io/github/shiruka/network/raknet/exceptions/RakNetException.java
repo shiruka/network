@@ -11,6 +11,7 @@ public final class RakNetException extends Exception {
    * ctor.
    *
    * @param message the message.
+   * @param args the args.
    */
   public RakNetException(@NotNull final String message, @NotNull final Object... args) {
     super(message.formatted(args));
