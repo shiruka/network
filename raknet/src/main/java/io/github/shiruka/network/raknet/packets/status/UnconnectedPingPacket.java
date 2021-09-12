@@ -57,7 +57,7 @@ public class UnconnectedPingPacket extends RakNetPacket implements Failable {
    * ctor.
    */
   public UnconnectedPingPacket() {
-    this(Ids.ID_UNCONNECTED_PING);
+    this(Ids.UNCONNECTED_PING);
   }
 
   /**

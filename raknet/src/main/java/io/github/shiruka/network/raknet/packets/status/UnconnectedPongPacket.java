@@ -65,7 +65,7 @@ public final class UnconnectedPongPacket extends RakNetPacket implements Failabl
    * @param server the server.
    */
   public UnconnectedPongPacket(@NotNull final RakNetServer server) {
-    super(Ids.ID_UNCONNECTED_PONG);
+    super(Ids.UNCONNECTED_PONG);
     this.server = server;
   }
 

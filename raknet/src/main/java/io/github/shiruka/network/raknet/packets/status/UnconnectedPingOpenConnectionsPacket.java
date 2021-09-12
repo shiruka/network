@@ -12,7 +12,7 @@ public final class UnconnectedPingOpenConnectionsPacket extends UnconnectedPingP
    * ctor.
    */
   public UnconnectedPingOpenConnectionsPacket() {
-    super(Ids.ID_UNCONNECTED_PING_OPEN_CONNECTIONS);
+    super(Ids.UNCONNECTED_PING_OPEN_CONNECTIONS);
   }
 
   /**

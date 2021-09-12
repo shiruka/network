@@ -31,5 +31,13 @@ public interface RakNetServerIdentifier {
      */
     @NotNull
     RakNetServerIdentifier create(@NotNull String serverIdString, @NotNull ConnectionType connectionType);
+
+    /**
+     * creates a rak net server identifier.
+     *
+     * @return server identifier.
+     */
+    @NotNull
+    RakNetServerIdentifier createEmpty();
   }
 }
