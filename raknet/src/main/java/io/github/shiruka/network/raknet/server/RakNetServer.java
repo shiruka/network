@@ -89,6 +89,22 @@ public interface RakNetServer {
   RakNetServerHandler serverHandler();
 
   /**
+   * obtains the server identifier.
+   *
+   * @return server identifier.
+   */
+  @NotNull
+  RakNetServerIdentifier serverIdentifier();
+
+  /**
+   * obtains the server identifier factory.
+   *
+   * @return server identifier factory.
+   */
+  @NotNull
+  RakNetServerIdentifier.Factory serverIdentifierFactory();
+
+  /**
    * removes the blocked address.
    *
    * @param address the address.

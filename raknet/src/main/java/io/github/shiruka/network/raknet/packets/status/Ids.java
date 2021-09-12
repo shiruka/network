@@ -14,4 +14,9 @@ interface Ids {
    * the ID of the {@link UnconnectedPingOpenConnectionsPacket} packet.
    */
   short ID_UNCONNECTED_PING_OPEN_CONNECTIONS = 0x02;
+
+  /**
+   * the ID of the {@link UnconnectedPongPacket} packet.
+   */
+  short ID_UNCONNECTED_PONG = 0x1C;
 }
