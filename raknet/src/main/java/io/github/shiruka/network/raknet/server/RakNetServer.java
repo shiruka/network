@@ -1,5 +1,6 @@
-package io.github.shiruka.network.server;
+package io.github.shiruka.network.raknet.server;
 
+import io.github.shiruka.network.BlockedAddress;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -95,7 +96,7 @@ public interface RakNetServer {
    * @return {@code this} for the builder chain.
    */
   @NotNull
-  RakNetServer unblockAddress(@NotNull final InetAddress address);
+  RakNetServer unblockAddress(@NotNull InetAddress address);
 
   /**
    * removes the blocked address.

@@ -8,6 +8,7 @@ plugins {
 
 allprojects {
   apply plugin: "java"
+  apply plugin: "checkstyle"
   apply plugin: "maven-publish"
   apply plugin: "signing"
 
@@ -33,6 +34,11 @@ allprojects {
     javadoc.options.addBooleanOption("html5", true)
     classifier "javadoc"
     from javadoc.destinationDir
+  }
+
+  checkstyle {
+    configFile = rootProject.file("checkstyle.xml")
+    checkstyleTest.enabled = false
   }
 }
 
@@ -72,11 +78,6 @@ subprojects {
     testImplementation "org.projectlombok:lombok:1.18.20"
     testImplementation "org.mockito:mockito-core:3.12.4"
   }
-}
-
-checkstyle {
-  configFile = file("checkstyle.xml")
-  checkstyleTest.enabled = false
 }
 
 publishing {

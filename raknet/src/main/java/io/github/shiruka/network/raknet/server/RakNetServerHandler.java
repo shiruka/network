@@ -1,4 +1,4 @@
-package io.github.shiruka.network.server;
+package io.github.shiruka.network.raknet.server;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;

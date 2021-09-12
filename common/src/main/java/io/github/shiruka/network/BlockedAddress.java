@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * a record class that represents blocked addresses.
  *
  * @param address the address.
+ * @param reason the reason.
  * @param blockedTime the blocked time.
  * @param expireTime the expire time.
  */

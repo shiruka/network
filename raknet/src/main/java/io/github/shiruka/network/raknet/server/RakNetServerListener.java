@@ -1,4 +1,4 @@
-package io.github.shiruka.network.server;
+package io.github.shiruka.network.raknet.server;
 
 /**
  * an interface to determine rak net server listeners.
