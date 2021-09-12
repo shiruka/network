@@ -1,8 +1,11 @@
 package io.github.shiruka.network.raknet;
 
 import com.google.common.base.Preconditions;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +44,25 @@ public record ConnectionType(
   public ConnectionType {
     Preconditions.checkArgument(metadata.size() <= ConnectionType.MAX_METADATA_VALUES,
       "Too many metadata values");
+  }
+
+  /**
+   * converts the metadata keys and values to a {@link HashMap}.
+   *
+   * @param metadata the metadata keys and values.
+   *
+   * @return the metadata as a {@link HashMap}.
+   *
+   * @throws IllegalArgumentException if there is a key without a value or if there are more than
+   *   {@value #MAX_METADATA_VALUES} metadata values.
+   */
+  @NotNull
+  public static Map<String, String> createMetaData(@NotNull final String... metadata) {
+    Preconditions.checkArgument(metadata.length % 2 == 0, "There must be a value for every key");
+    Preconditions.checkArgument(metadata.length / 2 <= ConnectionType.MAX_METADATA_VALUES, "Too many metadata values");
+    return IntStream.iterate(0, index -> index < metadata.length, index -> index + 2)
+      .boxed()
+      .collect(Collectors.toMap(index -> metadata[index], index -> metadata[index + 1], (a, b) -> b, HashMap::new));
   }
 
   /**

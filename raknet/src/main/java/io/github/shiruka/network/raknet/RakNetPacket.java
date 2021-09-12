@@ -72,8 +72,8 @@ public abstract class RakNetPacket extends Packet {
    */
   protected RakNetPacket(@NotNull final Packet packet) {
     super(packet);
-    if (packet instanceof RakNetPacket) {
-      this.id = ((RakNetPacket) packet).id;
+    if (packet instanceof RakNetPacket rakNetPacket) {
+      this.id = rakNetPacket.id();
     } else {
       Preconditions.checkArgument(this.remaining() >= 1,
         "The packet must have at least one byte to read the ID");
