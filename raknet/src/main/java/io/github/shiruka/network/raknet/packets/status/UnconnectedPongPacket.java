@@ -61,6 +61,8 @@ public final class UnconnectedPongPacket extends RakNetPacket implements Failabl
 
   /**
    * ctor.
+   *
+   * @param server the server.
    */
   public UnconnectedPongPacket(@NotNull final RakNetServer server) {
     super(Ids.ID_UNCONNECTED_PONG);
@@ -71,6 +73,7 @@ public final class UnconnectedPongPacket extends RakNetPacket implements Failabl
    * ctor.
    *
    * @param packet the packet.
+   * @param server the server.
    */
   public UnconnectedPongPacket(@NotNull final Packet packet, @NotNull final RakNetServer server) {
     super(packet);
