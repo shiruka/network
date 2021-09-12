@@ -3,6 +3,7 @@ package io.github.shiruka.network.raknet;
 import com.google.common.base.Preconditions;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.raknet.exceptions.RakNetException;
+import io.github.shiruka.network.raknet.packets.status.UnconnectedPingPacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.socket.DatagramPacket;
