@@ -1,5 +1,6 @@
 package io.github.shiruka.network.raknet.server;
 
+import io.github.shiruka.network.piplines.PacketEncoder;
 import io.github.shiruka.network.raknet.piplines.raknet.RakNetPacketEncoder;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -43,6 +44,6 @@ public final class RakNetServerHandler extends ChannelInitializer<Channel> {
   protected void initChannel(final Channel ch) {
     ch.pipeline()
       .addLast(RakNetServerHandler.RAK_NET_TIMEOUT, new ReadTimeoutHandler(10))
-      .addLast(RakNetServerHandler.RAK_NET_ENCODER, new RakNetPacketEncoder());
+      .addLast(RakNetServerHandler.RAK_NET_ENCODER, new PacketEncoder());
   }
 }

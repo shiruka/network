@@ -1,8 +1,8 @@
 package io.github.shiruka.network.raknet.packets.status;
 
-import io.github.shiruka.network.Packet;
+import io.github.shiruka.network.PacketSerializer;
 import io.github.shiruka.network.raknet.ConnectionType;
-import io.github.shiruka.network.raknet.Failable;
+import io.github.shiruka.network.Failable;
 import io.github.shiruka.network.raknet.RakNetPacket;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,7 +49,7 @@ public class UnconnectedPingPacket extends RakNetPacket implements Failable {
    *
    * @param packet the packet.
    */
-  public UnconnectedPingPacket(@NotNull final Packet packet) {
+  public UnconnectedPingPacket(@NotNull final PacketSerializer packet) {
     super(packet);
   }
 

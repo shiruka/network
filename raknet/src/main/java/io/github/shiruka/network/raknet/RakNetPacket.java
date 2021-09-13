@@ -1,7 +1,7 @@
 package io.github.shiruka.network.raknet;
 
 import com.google.common.base.Preconditions;
-import io.github.shiruka.network.Packet;
+import io.github.shiruka.network.PacketSerializer;
 import io.github.shiruka.network.raknet.exceptions.RakNetException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * an abstract class that represents rak net packets.
  */
 @Accessors(fluent = true)
-public class RakNetPacket extends Packet {
+public class RakNetPacket extends PacketSerializer {
 
   /**
    * the name of the decode() method.
@@ -74,7 +74,7 @@ public class RakNetPacket extends Packet {
    *
    * @param packet the packet.
    */
-  public RakNetPacket(@NotNull final Packet packet) {
+  public RakNetPacket(@NotNull final PacketSerializer packet) {
     super(packet);
     if (packet instanceof RakNetPacket rakNetPacket) {
       this.id = rakNetPacket.id();
@@ -217,7 +217,7 @@ public class RakNetPacket extends Packet {
    * @return {@code this} for the builder chain.
    */
   @NotNull
-  public final RakNetPacket buffer(@NotNull final Packet packet, final boolean updateId) {
+  public final RakNetPacket buffer(@NotNull final PacketSerializer packet, final boolean updateId) {
     return this.buffer(packet.copy(), updateId);
   }
 

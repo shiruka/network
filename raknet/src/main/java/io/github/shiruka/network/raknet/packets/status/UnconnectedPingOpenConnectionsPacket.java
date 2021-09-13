@@ -1,6 +1,6 @@
 package io.github.shiruka.network.raknet.packets.status;
 
-import io.github.shiruka.network.Packet;
+import io.github.shiruka.network.PacketSerializer;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -13,7 +13,7 @@ public final class UnconnectedPingOpenConnectionsPacket extends UnconnectedPingP
    *
    * @param packet the packet.
    */
-  public UnconnectedPingOpenConnectionsPacket(@NotNull final Packet packet) {
+  public UnconnectedPingOpenConnectionsPacket(@NotNull final PacketSerializer packet) {
     super(packet);
   }
 }

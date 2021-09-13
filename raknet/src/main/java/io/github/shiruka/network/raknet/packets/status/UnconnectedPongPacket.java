@@ -1,7 +1,7 @@
 package io.github.shiruka.network.raknet.packets.status;
 
 import io.github.shiruka.network.raknet.ConnectionType;
-import io.github.shiruka.network.raknet.Failable;
+import io.github.shiruka.network.Failable;
 import io.github.shiruka.network.raknet.RakNetPacket;
 import io.github.shiruka.network.raknet.server.RakNetServerIdentifier;
 import java.util.Objects;

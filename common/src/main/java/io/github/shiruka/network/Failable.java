@@ -1,4 +1,4 @@
-package io.github.shiruka.network.raknet;
+package io.github.shiruka.network;
 
 import org.jetbrains.annotations.NotNull;
 

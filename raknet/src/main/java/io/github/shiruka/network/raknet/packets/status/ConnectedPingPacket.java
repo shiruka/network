@@ -1,6 +1,6 @@
 package io.github.shiruka.network.raknet.packets.status;
 
-import io.github.shiruka.network.Packet;
+import io.github.shiruka.network.PacketSerializer;
 import io.github.shiruka.network.raknet.RakNetPacket;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +25,7 @@ public final class ConnectedPingPacket extends RakNetPacket {
    *
    * @param packet the packet.
    */
-  public ConnectedPingPacket(@NotNull final Packet packet) {
+  public ConnectedPingPacket(@NotNull final PacketSerializer packet) {
     super(packet);
   }
 
