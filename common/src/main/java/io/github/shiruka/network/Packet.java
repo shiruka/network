@@ -149,7 +149,7 @@ public abstract class Packet {
    * @return {@code this} for the builder chain.
    */
   @NotNull
-  public final Packet buffer(@NotNull final ByteBuf buffer) {
+  public Packet buffer(@NotNull final ByteBuf buffer) {
     this.buffer = buffer;
     return this;
   }

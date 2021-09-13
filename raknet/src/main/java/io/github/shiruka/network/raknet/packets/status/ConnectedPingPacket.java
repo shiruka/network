@@ -22,13 +22,6 @@ public final class ConnectedPingPacket extends RakNetPacket {
 
   /**
    * ctor.
-   */
-  public ConnectedPingPacket() {
-    super(Ids.CONNECTED_PING);
-  }
-
-  /**
-   * ctor.
    *
    * @param packet the packet.
    */
@@ -39,10 +32,5 @@ public final class ConnectedPingPacket extends RakNetPacket {
   @Override
   public void decode() {
     this.timestamp = this.readLong();
-  }
-
-  @Override
-  public void encode() {
-    this.writeLong(this.timestamp);
   }
 }

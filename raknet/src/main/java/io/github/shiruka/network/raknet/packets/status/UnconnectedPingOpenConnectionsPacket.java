@@ -10,13 +10,6 @@ public final class UnconnectedPingOpenConnectionsPacket extends UnconnectedPingP
 
   /**
    * ctor.
-   */
-  public UnconnectedPingOpenConnectionsPacket() {
-    super(Ids.UNCONNECTED_PING_OPEN_CONNECTIONS);
-  }
-
-  /**
-   * ctor.
    *
    * @param packet the packet.
    */

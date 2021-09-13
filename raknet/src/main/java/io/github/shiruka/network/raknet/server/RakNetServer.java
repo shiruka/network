@@ -14,11 +14,6 @@ import org.jetbrains.annotations.NotNull;
 public interface RakNetServer {
 
   /**
-   * the rak net server prefix.
-   */
-  String RAK_NET_SERVER_PREFIX = "rns";
-
-  /**
    * adds the listeners to the server.
    *
    * @param listeners the listeners to add.

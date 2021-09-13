@@ -1,16 +1,13 @@
 package io.github.shiruka.network.raknet.packets.status;
 
-import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.raknet.ConnectionType;
 import io.github.shiruka.network.raknet.Failable;
 import io.github.shiruka.network.raknet.RakNetPacket;
-import io.github.shiruka.network.raknet.server.RakNetServer;
 import io.github.shiruka.network.raknet.server.RakNetServerIdentifier;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -20,12 +17,6 @@ import org.jetbrains.annotations.Nullable;
 @Setter
 @Accessors(fluent = true)
 public final class UnconnectedPongPacket extends RakNetPacket implements Failable {
-
-  /**
-   * the server.
-   */
-  @NotNull
-  private final RakNetServer server;
 
   /**
    * the server's connection type.
@@ -61,34 +52,9 @@ public final class UnconnectedPongPacket extends RakNetPacket implements Failabl
 
   /**
    * ctor.
-   *
-   * @param server the server.
    */
-  public UnconnectedPongPacket(@NotNull final RakNetServer server) {
+  public UnconnectedPongPacket() {
     super(Ids.UNCONNECTED_PONG);
-    this.server = server;
-  }
-
-  /**
-   * ctor.
-   *
-   * @param packet the packet.
-   * @param server the server.
-   */
-  public UnconnectedPongPacket(@NotNull final Packet packet, @NotNull final RakNetServer server) {
-    super(packet);
-    this.server = server;
-  }
-
-  @Override
-  public void decode() throws UnsupportedOperationException {
-    this.unchecked(() -> {
-      this.timestamp = this.readLong();
-      this.pongId = this.readLong();
-      this.magic = this.readMagic();
-      this.connectionType = this.readConnectionType();
-      this.identifier = this.server.serverIdentifierFactory().create(this.readString(), this.connectionType);
-    });
   }
 
   @Override

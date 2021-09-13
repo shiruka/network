@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * an abstract class that represents rak net packets.
  */
 @Accessors(fluent = true)
-public abstract class RakNetPacket extends Packet {
+public class RakNetPacket extends Packet {
 
   /**
    * the name of the decode() method.
@@ -60,7 +60,7 @@ public abstract class RakNetPacket extends Packet {
    *
    * @param buffer the buffer.
    */
-  protected RakNetPacket(@NotNull final ByteBuf buffer) {
+  public RakNetPacket(@NotNull final ByteBuf buffer) {
     super(buffer);
     Preconditions.checkArgument(this.remaining() >= 1,
       "Buffer must have at least one readable byte for the ID");
@@ -74,7 +74,7 @@ public abstract class RakNetPacket extends Packet {
    *
    * @param packet the packet.
    */
-  protected RakNetPacket(@NotNull final Packet packet) {
+  public RakNetPacket(@NotNull final Packet packet) {
     super(packet);
     if (packet instanceof RakNetPacket rakNetPacket) {
       this.id = rakNetPacket.id();
@@ -92,7 +92,7 @@ public abstract class RakNetPacket extends Packet {
    *
    * @param id the id.
    */
-  protected RakNetPacket(final int id) {
+  public RakNetPacket(final int id) {
     super();
     Preconditions.checkArgument(id >= 0x00 && id <= 0xFF,
       "ID must be in between 0-255");
@@ -107,7 +107,7 @@ public abstract class RakNetPacket extends Packet {
    *
    * @param datagram the datagram.
    */
-  protected RakNetPacket(@NotNull final DatagramPacket datagram) {
+  public RakNetPacket(@NotNull final DatagramPacket datagram) {
     this(datagram.content());
   }
 
@@ -116,7 +116,7 @@ public abstract class RakNetPacket extends Packet {
    *
    * @param data the data.
    */
-  protected RakNetPacket(final byte @NotNull [] data) {
+  public RakNetPacket(final byte @NotNull [] data) {
     this(Unpooled.copiedBuffer(data));
   }
 
@@ -168,6 +168,18 @@ public abstract class RakNetPacket extends Packet {
       this.id = this.readUnsignedByte();
     }
     return this;
+  }
+
+  @NotNull
+  @Override
+  public final RakNetPacket buffer(final @NotNull ByteBuf buffer) {
+    return this.buffer(buffer, true);
+  }
+
+  @NotNull
+  @Override
+  public final RakNetPacket flip() {
+    return this.flip(true);
   }
 
   /**
@@ -226,12 +238,6 @@ public abstract class RakNetPacket extends Packet {
       this.id = this.readUnsignedByte();
     }
     return this;
-  }
-
-  @NotNull
-  @Override
-  public final Packet flip() {
-    return this.flip(true);
   }
 
   /**

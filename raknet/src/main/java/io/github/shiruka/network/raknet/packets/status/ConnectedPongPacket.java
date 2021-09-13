@@ -1,11 +1,9 @@
 package io.github.shiruka.network.raknet.packets.status;
 
-import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.raknet.RakNetPacket;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * a class that represents connected pong packets.
@@ -30,24 +28,6 @@ public final class ConnectedPongPacket extends RakNetPacket {
    */
   public ConnectedPongPacket() {
     super(Ids.CONNECTED_PONG);
-  }
-
-  /**
-   * ctor.
-   *
-   * @param packet the packet.
-   */
-  public ConnectedPongPacket(@NotNull final Packet packet) {
-    super(packet);
-  }
-
-  @Override
-  public void decode() {
-    this.timestamp = this.readLong();
-    this.timestampPong = -1L;
-    if (this.remaining() >= Long.BYTES) {
-      this.timestampPong = this.readLong();
-    }
   }
 
   @Override

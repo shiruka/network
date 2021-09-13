@@ -47,22 +47,6 @@ public class UnconnectedPingPacket extends RakNetPacket implements Failable {
   /**
    * ctor.
    *
-   * @param id the id.
-   */
-  protected UnconnectedPingPacket(final int id) {
-    super(id);
-  }
-
-  /**
-   * ctor.
-   */
-  public UnconnectedPingPacket() {
-    this(Ids.UNCONNECTED_PING);
-  }
-
-  /**
-   * ctor.
-   *
    * @param packet the packet.
    */
   public UnconnectedPingPacket(@NotNull final Packet packet) {
@@ -76,18 +60,6 @@ public class UnconnectedPingPacket extends RakNetPacket implements Failable {
       this.magic = this.readMagic();
       this.pingId = this.readLong();
       this.connectionType = this.readConnectionType();
-    });
-  }
-
-  @Override
-  public final void encode() throws UnsupportedOperationException {
-    this.unchecked(() -> {
-      this.writeLong(this.timestamp);
-      this.writeMagic();
-      this.writeLong(this.pingId);
-      this.writeConnectionType(this.connectionType == null
-        ? ConnectionType.RAK_NET
-        : this.connectionType);
     });
   }
 
