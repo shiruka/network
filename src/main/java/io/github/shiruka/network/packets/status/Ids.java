@@ -8,25 +8,25 @@ interface Ids {
   /**
    * the ID of the {@link ConnectedPingPacket} packet.
    */
-  short CONNECTED_PING = 0x00;
+  short CONNECTED_PING = 0;
 
   /**
    * the ID of the {@link ConnectedPongPacket} packet.
    */
-  short CONNECTED_PONG = 0x03;
+  short CONNECTED_PONG = 3;
 
   /**
    * the ID of the {@link UnconnectedPingPacket} packet.
    */
-  short UNCONNECTED_PING = 0x01;
+  short UNCONNECTED_PING = 1;
 
   /**
    * the ID of the {@link UnconnectedPingOpenConnectionsPacket} packet.
    */
-  short UNCONNECTED_PING_OPEN_CONNECTIONS = 0x02;
+  short UNCONNECTED_PING_OPEN_CONNECTIONS = 2;
 
   /**
    * the ID of the {@link UnconnectedPongPacket} packet.
    */
-  short UNCONNECTED_PONG = 0x1C;
+  short UNCONNECTED_PONG = 28;
 }
