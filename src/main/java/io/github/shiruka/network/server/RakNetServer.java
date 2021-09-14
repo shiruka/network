@@ -76,14 +76,6 @@ public interface RakNetServer {
   RakNetServer removeListeners(@NotNull RakNetServerListener... listeners);
 
   /**
-   * obtains the server handler.
-   *
-   * @return server handler.
-   */
-  @NotNull
-  RakNetServerHandler serverHandler();
-
-  /**
    * removes the blocked address.
    *
    * @param address the address.
