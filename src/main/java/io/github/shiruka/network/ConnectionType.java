@@ -42,7 +42,7 @@ public record ConnectionType(
    * the rak net connection type.
    */
   public static final ConnectionType RAK_NET = new ConnectionType(
-    UUID.fromString("504da9b2-a31c-4db6-bcc3-18e5fe2fb178"), "Rak Net", "Java", "@version@");
+    UUID.fromString("504da9b2-a31c-4db6-bcc3-18e5fe2fb178"), "RakNet", "Java", "@version@");
 
   /**
    * the vanilla connection type.
@@ -54,7 +54,7 @@ public record ConnectionType(
    */
   public ConnectionType {
     Preconditions.checkArgument(metadata.size() <= ConnectionType.MAX_METADATA_VALUES,
-      "Too many metadata values");
+      "Too many metadata values!");
   }
 
   /**
@@ -95,7 +95,7 @@ public record ConnectionType(
    *   {@value #MAX_METADATA_VALUES} metadata values.
    */
   @NotNull
-  public static Map<String, String> createMetaData(@NotNull final String... metadata) {
+  public static Map<String, String> metaData(@NotNull final String... metadata) {
     Preconditions.checkArgument(metadata.length % 2 == 0, "There must be a value for every key");
     Preconditions.checkArgument(metadata.length / 2 <= ConnectionType.MAX_METADATA_VALUES, "Too many metadata values");
     return IntStream.iterate(0, index -> index < metadata.length, index -> index + 2)
@@ -117,9 +117,8 @@ public record ConnectionType(
    * @return {@code true} if both implementations are the same, {@code false} otherwise.
    */
   public boolean is(@NotNull final ConnectionType connectionType) {
-    if (connectionType.uniqueId() == null || this.uniqueId() == null) {
-      return false;
-    }
-    return this.uniqueId().equals(connectionType.uniqueId());
+    return connectionType.uniqueId() != null &&
+      this.uniqueId() != null &&
+      this.uniqueId().equals(connectionType.uniqueId());
   }
 }

@@ -33,7 +33,7 @@ public interface ServerIdentifier {
   /**
    * registers the factory.
    *
-   * @param factory the factory to regsiter.
+   * @param factory the factory to register.
    */
   static void register(@NotNull final Factory factory) {
     ServerIdentifier.FACTORIES.add(factory);

@@ -1,7 +1,7 @@
 package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
-import io.github.shiruka.network.exceptions.RakNetException;
+import io.github.shiruka.network.exceptions.PacketException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.AsciiString;
@@ -276,11 +276,11 @@ public record PacketBuffer(
    *
    * @return a {@link ConnectionType}, {@link ConnectionType#VANILLA} if not enough data to read one is present.
    *
-   * @throws RakNetException if not enough data is present in the packet after the connection type magic or there are
+   * @throws PacketException if not enough data is present in the packet after the connection type magic or there are
    *   duplicate keys in the metadata.
    */
   @NotNull
-  public ConnectionType readConnectionType() throws RakNetException {
+  public ConnectionType readConnectionType() throws PacketException {
     if (this.remaining() < ConnectionType.MAGIC.length) {
       return ConnectionType.VANILLA;
     }
@@ -298,7 +298,7 @@ public record PacketBuffer(
       final var key = this.readString();
       final var value = this.readString();
       if (metadata.containsKey(key)) {
-        throw new RakNetException("Duplicate metadata key \"%s\"", key);
+        throw new PacketException("Duplicate metadata key \"%s\"", key);
       }
       metadata.put(key, value);
     }
@@ -795,11 +795,11 @@ public record PacketBuffer(
    *
    * @return the packet.
    *
-   * @throws RakNetException if there are too many values in the metadata.
+   * @throws PacketException if there are too many values in the metadata.
    * @throws NullPointerException if connection type's unique id or language or version is null.
    */
   @NotNull
-  public PacketBuffer writeConnectionType(@NotNull final ConnectionType connectionType) throws RakNetException {
+  public PacketBuffer writeConnectionType(@NotNull final ConnectionType connectionType) throws PacketException {
     Objects.requireNonNull(connectionType.uniqueId(), "unique id");
     Objects.requireNonNull(connectionType.language(), "language");
     Objects.requireNonNull(connectionType.version(), "version");
@@ -809,7 +809,7 @@ public record PacketBuffer(
     this.writeString(connectionType.language());
     this.writeString(connectionType.version());
     if (connectionType.metadata().size() > ConnectionType.MAX_METADATA_VALUES) {
-      throw new RakNetException("Too many metadata values!");
+      throw new PacketException("Too many metadata values!");
     }
     this.writeUnsignedByte(connectionType.metadata().size());
     connectionType.metadata().forEach((key, value) -> {

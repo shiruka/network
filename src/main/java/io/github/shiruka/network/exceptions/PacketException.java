@@ -3,9 +3,9 @@ package io.github.shiruka.network.exceptions;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * an exception class that represents rak net exceptions.
+ * an exception class that represents packet exceptions.
  */
-public final class RakNetException extends Exception {
+public final class PacketException extends Exception {
 
   /**
    * ctor.
@@ -13,7 +13,7 @@ public final class RakNetException extends Exception {
    * @param message the message.
    * @param args the args.
    */
-  public RakNetException(@NotNull final String message, @NotNull final Object... args) {
+  public PacketException(@NotNull final String message, @NotNull final Object... args) {
     super(message.formatted(args));
   }
 
@@ -22,7 +22,7 @@ public final class RakNetException extends Exception {
    *
    * @param cause the cause.
    */
-  public RakNetException(@NotNull final Throwable cause) {
+  public PacketException(@NotNull final Throwable cause) {
     this(cause.getMessage());
   }
 }

@@ -1,7 +1,6 @@
 package io.github.shiruka.network.server;
 
 import io.github.shiruka.network.BlockedAddress;
-import io.github.shiruka.network.ServerIdentifier;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -22,7 +21,7 @@ public interface RakNetServer {
    * @return {@code this} for the builder chain.
    */
   @NotNull
-  RakNetServer addListeners(@NotNull io.github.shiruka.network.server.RakNetServerListener... listeners);
+  RakNetServer addListeners(@NotNull RakNetServerListener... listeners);
 
   /**
    * adds the blocked address.
@@ -56,7 +55,7 @@ public interface RakNetServer {
    * @return listeners.
    */
   @NotNull
-  Collection<io.github.shiruka.network.server.RakNetServerListener> listeners();
+  Collection<RakNetServerListener> listeners();
 
   /**
    * obtains the logger.
@@ -74,7 +73,7 @@ public interface RakNetServer {
    * @return {@code this} for the builder chain.
    */
   @NotNull
-  RakNetServer removeListeners(@NotNull io.github.shiruka.network.server.RakNetServerListener... listeners);
+  RakNetServer removeListeners(@NotNull RakNetServerListener... listeners);
 
   /**
    * obtains the server handler.
@@ -82,23 +81,7 @@ public interface RakNetServer {
    * @return server handler.
    */
   @NotNull
-  io.github.shiruka.network.server.RakNetServerHandler serverHandler();
-
-  /**
-   * obtains the server identifier.
-   *
-   * @return server identifier.
-   */
-  @NotNull
-  ServerIdentifier serverIdentifier();
-
-  /**
-   * obtains the server identifier factory.
-   *
-   * @return server identifier factory.
-   */
-  @NotNull
-  ServerIdentifier.Factory serverIdentifierFactory();
+  RakNetServerHandler serverHandler();
 
   /**
    * removes the blocked address.
@@ -122,6 +105,9 @@ public interface RakNetServer {
     return this.unblockAddress(blocked.address());
   }
 
+  /**
+   * an interface to determine rak net server handlers.
+   */
   interface Handler {
 
     /**
