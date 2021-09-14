@@ -13,7 +13,6 @@ public final class PacketRegistry {
    * the registry.
    */
   private static final Map<Integer, Factory> FACTORIES = Map.of(
-
   );
 
   /**
