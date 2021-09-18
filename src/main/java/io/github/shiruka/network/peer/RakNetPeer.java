@@ -4,7 +4,6 @@ import io.github.shiruka.network.ConnectionType;
 import io.github.shiruka.network.Constants;
 import io.github.shiruka.network.maps.ConcurrentIntMap;
 import io.github.shiruka.network.packets.message.EncapsulatedPacket;
-import io.github.shiruka.network.packets.message.acknowledge.Record;
 import io.netty.channel.Channel;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
