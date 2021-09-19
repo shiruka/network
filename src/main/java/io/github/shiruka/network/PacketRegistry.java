@@ -18,7 +18,7 @@ public final class PacketRegistry {
   /**
    * the registry.
    */
-  private static final Map<Integer, Factory> FACTORIES = Map.of(
+  private static final Map<Integer, Supplier<@NotNull Packet>> FACTORIES = Map.of(
     0, ConnectedPingPacket::new,
     1, UnconnectedPingPacket::new,
     2, UnconnectedPingOpenConnectionsPacket::new,
@@ -43,12 +43,5 @@ public final class PacketRegistry {
   public static Packet get(final int id) {
     return Objects.requireNonNull(PacketRegistry.FACTORIES.get(id), "packet %s not found".formatted(id))
       .get();
-  }
-
-  /**
-   * an interface to determine packet factories.
-   */
-  private interface Factory extends Supplier<@NotNull Packet> {
-
   }
 }
