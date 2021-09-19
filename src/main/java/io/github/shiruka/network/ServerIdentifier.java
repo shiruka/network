@@ -71,13 +71,5 @@ public interface ServerIdentifier {
      */
     @NotNull
     ServerIdentifier create(@NotNull String serverIdString, @NotNull ConnectionType connectionType);
-
-    /**
-     * creates a rak net server identifier.
-     *
-     * @return server identifier.
-     */
-    @NotNull
-    ServerIdentifier createEmpty();
   }
 }
