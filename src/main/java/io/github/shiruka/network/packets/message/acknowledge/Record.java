@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Range;
 public final class Record {
 
   /**
-   * rhe record is not ranged.
+   * the record is not ranged.
    */
   private static final int NOT_RANGED = -1;
 
