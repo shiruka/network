@@ -31,9 +31,4 @@ public final class ConnectedPingPacket extends Packet {
   public void decode(@NotNull final PacketBuffer buffer) {
     this.timestamp = buffer.readLong();
   }
-
-  @Override
-  public void encode(@NotNull final PacketBuffer buffer) {
-    buffer.writeLong(this.timestamp);
-  }
 }

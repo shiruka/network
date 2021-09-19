@@ -75,18 +75,6 @@ public final class UnconnectedPongPacket extends Packet implements Failable {
   }
 
   @Override
-  public void decode(@NotNull final PacketBuffer buffer) {
-    this.unchecked(buffer, () -> {
-      this.timestamp = buffer.readLong();
-      this.pongId = buffer.readLong();
-      this.magic = buffer.readMagic();
-      final var identifierText = buffer.readString();
-      this.connectionType = buffer.readConnectionType();
-      this.identifier = ServerIdentifier.find(identifierText).create(identifierText, this.connectionType());
-    });
-  }
-
-  @Override
   public void encode(@NotNull final PacketBuffer buffer) {
     this.unchecked(buffer, () -> {
       buffer.writeLong(this.timestamp);

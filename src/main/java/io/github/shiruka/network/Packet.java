@@ -24,12 +24,16 @@ public abstract class Packet {
    *
    * @param buffer the buffer to decode.
    */
-  public abstract void decode(@NotNull PacketBuffer buffer);
+  public void decode(@NotNull final PacketBuffer buffer) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * encodes the packet.
    *
    * @param buffer the buffer to encode.
    */
-  public abstract void encode(@NotNull PacketBuffer buffer);
+  public void encode(@NotNull final PacketBuffer buffer) {
+    throw new UnsupportedOperationException();
+  }
 }

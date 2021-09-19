@@ -76,16 +76,6 @@ public final class UnconnectedPingOpenConnectionsPacket extends Packet implement
   }
 
   @Override
-  public void encode(@NotNull final PacketBuffer buffer) {
-    this.unchecked(buffer, () -> {
-      buffer.writeLong(this.timestamp);
-      buffer.writeMagic();
-      buffer.writeLong(this.pingId);
-      buffer.writeConnectionType(this.connectionType());
-    });
-  }
-
-  @Override
   public void onFail(@NotNull final PacketBuffer buffer) {
     this.timestamp = 0;
     this.magic = false;
