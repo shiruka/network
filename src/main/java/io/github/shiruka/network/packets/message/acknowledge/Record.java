@@ -149,7 +149,6 @@ public final class Record {
       .distinct()
       .boxed()
       .mapToInt(value -> value)
-      .sorted()
       .toArray();
     Arrays.sort(sequenceIds);
     return sequenceIds;
