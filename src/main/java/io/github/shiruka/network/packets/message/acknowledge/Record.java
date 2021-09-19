@@ -228,11 +228,12 @@ public final class Record {
    * @param endIndex the ending index, a value of {@value #NOT_RANGED} or lower or to the value of the index itself
    *   indicates that the record is not ranged.
    */
-  public void setEndIndex(int endIndex) {
-    if (endIndex <= this.index) {
-      endIndex = Record.NOT_RANGED;
+  public void setEndIndex(final int endIndex) {
+    var tempEndIndex = endIndex;
+    if (tempEndIndex <= this.index) {
+      tempEndIndex = Record.NOT_RANGED;
     }
-    this.endIndex = endIndex;
+    this.endIndex = tempEndIndex;
     this.updateSequenceIds();
   }
 

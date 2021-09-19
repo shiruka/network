@@ -2,7 +2,6 @@ package io.github.shiruka.network.server;
 
 import io.github.shiruka.network.BlockedAddress;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Map;
 import org.apache.logging.log4j.Logger;
@@ -40,14 +39,6 @@ public interface RakNetServer {
    */
   @NotNull
   Map<InetAddress, BlockedAddress> blockedAddresses();
-
-  /**
-   * obtains the handler.
-   *
-   * @return handler.
-   */
-  @NotNull
-  Handler handler();
 
   /**
    * obtains the listeners.
@@ -95,19 +86,5 @@ public interface RakNetServer {
   @NotNull
   default RakNetServer unblockAddress(@NotNull final BlockedAddress blocked) {
     return this.unblockAddress(blocked.address());
-  }
-
-  /**
-   * an interface to determine rak net server handlers.
-   */
-  interface Handler {
-
-    /**
-     * handles the handler's exception.
-     *
-     * @param causeAddress the cause address.
-     * @param cause the cause.
-     */
-    void handlerException(@NotNull InetSocketAddress causeAddress, @NotNull Throwable cause) throws Exception;
   }
 }

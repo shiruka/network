@@ -1,7 +1,6 @@
 package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
-import io.github.shiruka.network.exceptions.PacketException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.AsciiString;
@@ -276,11 +275,11 @@ public record PacketBuffer(
    *
    * @return a {@link ConnectionType}, {@link ConnectionType#VANILLA} if not enough data to read one is present.
    *
-   * @throws PacketException if not enough data is present in the packet after the connection type magic or there are
-   *   duplicate keys in the metadata.
+   * @throws IllegalArgumentException if not enough data is present in the packet after the connection type magic or
+   *   there are duplicate keys in the metadata.
    */
   @NotNull
-  public ConnectionType readConnectionType() throws PacketException {
+  public ConnectionType readConnectionType() {
     if (this.remaining() < ConnectionType.MAGIC.length) {
       return ConnectionType.VANILLA;
     }
@@ -297,9 +296,7 @@ public record PacketBuffer(
     for (var index = 0; index < metadataLength; index++) {
       final var key = this.readString();
       final var value = this.readString();
-      if (metadata.containsKey(key)) {
-        throw new PacketException("Duplicate metadata key \"%s\"", key);
-      }
+      Preconditions.checkArgument(!metadata.containsKey(key), "Duplicate metadata key \"%s\"", key);
       metadata.put(key, value);
     }
     return new ConnectionType(uuid, name, language, version, metadata);
@@ -795,24 +792,23 @@ public record PacketBuffer(
    *
    * @return the packet.
    *
-   * @throws PacketException if there are too many values in the metadata.
+   * @throws IllegalArgumentException if there are too many values in the metadata.
    * @throws NullPointerException if connection type's unique id or language or version is null.
    */
   @NotNull
-  public PacketBuffer writeConnectionType(@NotNull final ConnectionType connectionType) throws PacketException {
+  public PacketBuffer writeConnectionType(@NotNull final ConnectionType connectionType) {
     Objects.requireNonNull(connectionType.uniqueId(), "unique id");
     Objects.requireNonNull(connectionType.language(), "language");
     Objects.requireNonNull(connectionType.version(), "version");
+    final var metadata = connectionType.metadata();
+    Preconditions.checkArgument(metadata.size() <= ConnectionType.MAX_METADATA_VALUES, "Too many metadata values!");
     this.write(ConnectionType.MAGIC);
     this.writeUUID(connectionType.uniqueId());
     this.writeString(connectionType.name());
     this.writeString(connectionType.language());
     this.writeString(connectionType.version());
-    if (connectionType.metadata().size() > ConnectionType.MAX_METADATA_VALUES) {
-      throw new PacketException("Too many metadata values!");
-    }
-    this.writeUnsignedByte(connectionType.metadata().size());
-    connectionType.metadata().forEach((key, value) -> {
+    this.writeUnsignedByte(metadata.size());
+    metadata.forEach((key, value) -> {
       this.writeString(key);
       this.writeString(value);
     });

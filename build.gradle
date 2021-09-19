@@ -14,6 +14,11 @@ java {
   targetCompatibility = JavaVersion.VERSION_16
 }
 
+blossom {
+  def constants = "src/main/java/io/github/shiruka/network/ConnectionType.java"
+  replaceToken("@version@", project.version, constants)
+}
+
 tasks.withType(JavaCompiler) {
   options.encoding = "UTF-8"
   options.compilerArgs += ["-Duser.language=en", "-Duser.country=US"]
@@ -31,18 +36,13 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
-checkstyle {
-  configFile = rootProject.file("checkstyle.xml")
-  checkstyleTest.enabled = false
-}
-
 test {
   useJUnitPlatform()
 }
 
-blossom {
-  def constants = "src/main/java/io/github/shiruka/network/ConnectionType.java"
-  replaceToken("@version@", project.version, constants)
+checkstyle {
+  configFile = rootProject.file("checkstyle.xml")
+  checkstyleTest.enabled = false
 }
 
 repositories {
