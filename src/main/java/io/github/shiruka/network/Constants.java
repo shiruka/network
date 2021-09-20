@@ -11,11 +11,6 @@ import java.util.Random;
 public final class Constants {
 
   /**
-   * the channel count.
-   */
-  public static final int CHANNEL_COUNT = 32;
-
-  /**
    * the internal write listener.
    */
   public static final ChannelFutureListener INTERNAL_WRITE_LISTENER = future -> {
