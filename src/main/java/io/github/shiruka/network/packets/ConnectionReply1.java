@@ -1,7 +1,6 @@
 package io.github.shiruka.network.packets;
 
 import com.google.common.base.Preconditions;
-import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +14,6 @@ public final class ConnectionReply1 extends ConnectionReply {
    * ctor.
    */
   public ConnectionReply1() {
-    super(Ids.CONNECTION_REPLY_1);
   }
 
   /**
@@ -26,7 +24,7 @@ public final class ConnectionReply1 extends ConnectionReply {
    * @param serverId the server id.
    */
   public ConnectionReply1(@NotNull final RakNetMagic magic, final int mtu, final long serverId) {
-    super(Ids.CONNECTION_REPLY_1, magic, mtu, serverId);
+    super(magic, mtu, serverId);
   }
 
   @Override

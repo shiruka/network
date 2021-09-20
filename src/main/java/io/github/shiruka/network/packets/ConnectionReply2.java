@@ -1,7 +1,6 @@
 package io.github.shiruka.network.packets;
 
 import com.google.common.base.Preconditions;
-import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
 import java.net.InetSocketAddress;
@@ -26,7 +25,6 @@ public final class ConnectionReply2 extends ConnectionReply {
    * ctor.
    */
   public ConnectionReply2() {
-    super(Ids.OPEN_CONNECTION_REPLY_2);
   }
 
   /**
@@ -38,7 +36,7 @@ public final class ConnectionReply2 extends ConnectionReply {
    */
   public ConnectionReply2(@NotNull final RakNetMagic magic, final int mtu, final long serverId,
                           @NotNull final InetSocketAddress address) {
-    super(Ids.OPEN_CONNECTION_REPLY_2, magic, mtu, serverId);
+    super(magic, mtu, serverId);
     this.address = address;
   }
 
