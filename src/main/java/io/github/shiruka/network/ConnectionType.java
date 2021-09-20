@@ -1,32 +1,26 @@
 package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * a record class that represents connection types.
- *
- * @param uniqueId the unique id.
- * @param name the name.
- * @param language the language.
- * @param version the version
- * @param metadata the metadata.
- * @param vanilla the vanilla.
+ * a class that represents connection types.
  */
-public record ConnectionType(
-  @Nullable UUID uniqueId,
-  @NotNull String name,
-  @Nullable String language,
-  @Nullable String version,
-  @NotNull Map<String, String> metadata,
-  boolean vanilla
-) {
+@Accessors(fluent = true)
+@ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
+public final class ConnectionType {
 
   /**
    * the magic.
@@ -42,7 +36,7 @@ public record ConnectionType(
    * the rak net connection type.
    */
   public static final ConnectionType RAK_NET = new ConnectionType(
-    UUID.fromString("504da9b2-a31c-4db6-bcc3-18e5fe2fb178"), "RakNet", "Java", "@version@");
+    UUID.fromString("504da9b2-a31c-4db6-bcc3-18e5fe2fb178"), "RakNet", "Java", Constants.VERSION);
 
   /**
    * the vanilla connection type.
@@ -50,11 +44,79 @@ public record ConnectionType(
   public static final ConnectionType VANILLA = new ConnectionType(null, "Vanilla", null, null, new HashMap<>(), true);
 
   /**
-   * the compact ctor.
+   * the language.
    */
-  public ConnectionType {
+  @Nullable
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final String language;
+
+  /**
+   * the metadata.
+   */
+  @NotNull
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final Map<String, String> metadata;
+
+  /**
+   * the name.
+   */
+  @NotNull
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final String name;
+
+  /**
+   * the unique id.
+   */
+  @Nullable
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final UUID uniqueId;
+
+  /**
+   * the vanilla.
+   */
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final boolean vanilla;
+
+  /**
+   * the version.
+   */
+  @Nullable
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final String version;
+
+  /**
+   * ctor.
+   *
+   * @param uniqueId the unique id.
+   * @param name the name.
+   * @param language the language.
+   * @param version the version
+   * @param metadata the metadata.
+   * @param vanilla the vanilla.
+   */
+  public ConnectionType(@Nullable final UUID uniqueId, @NotNull final String name, @Nullable final String language,
+                        @Nullable final String version, @NotNull final Map<String, String> metadata,
+                        final boolean vanilla) {
     Preconditions.checkArgument(metadata.size() <= ConnectionType.MAX_METADATA_VALUES,
       "Too many metadata values!");
+    this.uniqueId = uniqueId;
+    this.name = name;
+    this.language = language;
+    this.version = version;
+    this.metadata = Collections.unmodifiableMap(metadata);
+    this.vanilla = vanilla;
   }
 
   /**
@@ -95,7 +157,7 @@ public record ConnectionType(
    *   {@value #MAX_METADATA_VALUES} metadata values.
    */
   @NotNull
-  public static Map<String, String> metaData(@NotNull final String... metadata) {
+  public static Map<String, String> createMetaData(@NotNull final String... metadata) {
     Preconditions.checkArgument(metadata.length % 2 == 0, "There must be a value for every key");
     Preconditions.checkArgument(metadata.length / 2 <= ConnectionType.MAX_METADATA_VALUES, "Too many metadata values");
     return IntStream.iterate(0, index -> index < metadata.length, index -> index + 2)
@@ -104,13 +166,8 @@ public record ConnectionType(
   }
 
   /**
-   * Returns whether or not this implementation and the specified
-   * implementation are the same implementation based on the UUID.
-   * <p>
-   * If the UUID of both implementations are {@code null} then
-   * {@code false} will be returned since we have no logical way of
-   * telling if the two implementations are actually the same as there are no
-   * UUIDs to compare.
+   * returns whether or not this implementation and the specified implementation are the same implementation based on
+   * the UUID.
    *
    * @param connectionType the connection type.
    *
@@ -118,7 +175,7 @@ public record ConnectionType(
    */
   public boolean is(@NotNull final ConnectionType connectionType) {
     return connectionType.uniqueId() != null &&
-      this.uniqueId() != null &&
-      this.uniqueId().equals(connectionType.uniqueId());
+      this.uniqueId != null &&
+      this.uniqueId.equals(connectionType.uniqueId());
   }
 }

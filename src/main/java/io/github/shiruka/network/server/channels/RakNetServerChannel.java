@@ -22,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * a class that represents rak net server channels.
+ */
 public final class RakNetServerChannel extends DatagramChannelProxy {
 
   /**

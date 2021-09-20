@@ -2,22 +2,19 @@ package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
 import java.net.InetAddress;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * a record class that represents blocked addresses.
- *
- * @param address the address.
- * @param reason the reason.
- * @param blockedTime the blocked time.
- * @param expireTime the expire time.
+ * a class that represents blocked addresses.
  */
-public record BlockedAddress(
-  @NotNull InetAddress address,
-  @NotNull String reason,
-  long blockedTime,
-  long expireTime
-) {
+@Accessors(fluent = true)
+@ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
+public final class BlockedAddress {
 
   /**
    * the permanent block time.
@@ -25,12 +22,51 @@ public record BlockedAddress(
   private static final long PERMANENT_BLOCK = -1L;
 
   /**
+   * the address.
+   */
+  @NotNull
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final InetAddress address;
+
+  /**
+   * the blocked time.
+   */
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final long blockedTime;
+
+  /**
+   * the expire time.
+   */
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final long expireTime;
+
+  /**
+   * the reason.
+   */
+  @NotNull
+  @Getter
+  @ToString.Include
+  @EqualsAndHashCode.Include
+  private final String reason;
+
+  /**
    * the compact ctor.
    */
-  public BlockedAddress {
+  public BlockedAddress(@NotNull final InetAddress address, @NotNull final String reason, final long blockedTime,
+                        final long expireTime) {
     Preconditions.checkArgument(expireTime > 0L || expireTime == BlockedAddress.PERMANENT_BLOCK,
       "Block time must be greater than 0 or equal to %s for a permanent block",
       BlockedAddress.PERMANENT_BLOCK);
+    this.address = address;
+    this.reason = reason;
+    this.blockedTime = blockedTime;
+    this.expireTime = expireTime;
   }
 
   /**
