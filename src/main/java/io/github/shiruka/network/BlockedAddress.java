@@ -56,7 +56,12 @@ public final class BlockedAddress {
   private final String reason;
 
   /**
-   * the compact ctor.
+   * ctor.
+   *
+   * @param address the address.
+   * @param reason the reason.
+   * @param blockedTime the blocked time.
+   * @param expireTime the expire time.
    */
   public BlockedAddress(@NotNull final InetAddress address, @NotNull final String reason, final long blockedTime,
                         final long expireTime) {
