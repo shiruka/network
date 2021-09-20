@@ -11,9 +11,6 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -118,25 +115,16 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the magic.
      */
-    @Setter
-    @Getter
-    @Accessors(fluent = true)
     private volatile RakNetMagic magic = RakNetMagic.simple();
 
     /**
      * the max connections.
      */
-    @Setter
-    @Getter
-    @Accessors(fluent = true)
     private volatile int maxConnections = 2048;
 
     /**
      * the server id.
      */
-    @Setter
-    @Getter
-    @Accessors(fluent = true)
     private volatile long serverId = Constants.RANDOM.nextLong();
 
     /**
@@ -157,6 +145,37 @@ public interface RakNetConfig extends ChannelConfig {
     @Override
     public final void blockedAddress(@NotNull final BlockedAddress address) {
       this.blockedAddresses.put(address.address(), address);
+    }
+
+    @Override
+    @NotNull
+    public final RakNetMagic magic() {
+      return this.magic;
+    }
+
+    @Override
+    public final void magic(@NotNull final RakNetMagic magic) {
+      this.magic = magic;
+    }
+
+    @Override
+    public final int maxConnections() {
+      return this.maxConnections;
+    }
+
+    @Override
+    public final void maxConnections(final int maxConnections) {
+      this.maxConnections = maxConnections;
+    }
+
+    @Override
+    public final long serverId() {
+      return this.serverId;
+    }
+
+    @Override
+    public final void serverId(final long serverId) {
+      this.serverId = serverId;
     }
 
     @Override

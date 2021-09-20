@@ -42,7 +42,7 @@ public abstract class DatagramChannelProxy implements Channel {
    * the config.
    */
   @Getter
-  private final RakNetConfig config = new Config();
+  private final RakNetConfig config = new Config(this);
 
   /**
    * the parent.
@@ -338,6 +338,46 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   /**
+   * a class that represents datagram channel proxy configurations.
+   */
+  private static final class Config extends RakNetConfig.Base {
+
+    /**
+     * ctor.
+     *
+     * @param channel the channel.
+     */
+    private Config(@NotNull final DatagramChannelProxy channel) {
+      super(channel);
+    }
+
+    @Override
+    public <T> T getOption(final ChannelOption<T> option) {
+      final var superOption = super.getOption(option);
+      if (superOption == null) {
+        return this.channel().parent().config().getOption(option);
+      }
+      return superOption;
+    }
+
+    @Override
+    public <T> boolean setOption(final ChannelOption<T> option, final T value) {
+      return super.setOption(option, value) ||
+        this.channel().parent().config().setOption(option, value);
+    }
+
+    /**
+     * obtains the channel.
+     *
+     * @return channel.
+     */
+    @NotNull
+    private DatagramChannelProxy channel() {
+      return (DatagramChannelProxy) this.channel;
+    }
+  }
+
+  /**
    * a class that represents listener inbound proxy.
    *
    * @param channel the channel.
@@ -464,34 +504,6 @@ public abstract class DatagramChannelProxy implements Channel {
       if (!(cause instanceof PortUnreachableException)) {
         ctx.fireExceptionCaught(cause);
       }
-    }
-  }
-
-  /**
-   * a class that represents datagram channel proxy configurations.
-   */
-  private final class Config extends RakNetConfig.Base {
-
-    /**
-     * ctor.
-     */
-    private Config() {
-      super(DatagramChannelProxy.this);
-    }
-
-    @Override
-    public <T> T getOption(final ChannelOption<T> option) {
-      final var superOption = super.getOption(option);
-      if (superOption == null) {
-        return DatagramChannelProxy.this.parent.config().getOption(option);
-      }
-      return superOption;
-    }
-
-    @Override
-    public <T> boolean setOption(final ChannelOption<T> option, final T value) {
-      return super.setOption(option, value) ||
-        DatagramChannelProxy.this.parent.config().setOption(option, value);
     }
   }
 }
