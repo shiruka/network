@@ -679,7 +679,7 @@ public final class Frame extends AbstractReferenceCounted {
 
     @Override
     public String toString() {
-      return String.format("PacketData(%s, length: %s, framed: %s, packetId: %s)",
+      return String.format("Frame.Data(%s, length: %s, framed: %s, packetId: %s)",
         this.reliability, this.dataSize(), this.fragment,
         this.fragment ? "n/a" : String.format("%02x", this.packetId()));
     }
@@ -934,7 +934,7 @@ public final class Frame extends AbstractReferenceCounted {
     @NotNull
     @Override
     public String toString() {
-      return String.format("FramedData(frames: %s, seq: %s)", this.frames.size(), this.sequenceId);
+      return String.format("Frame.Set(frames: %s, seq: %s)", this.frames.size(), this.sequenceId);
     }
 
     @Override
