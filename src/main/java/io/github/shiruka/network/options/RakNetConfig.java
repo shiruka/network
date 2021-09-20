@@ -1,19 +1,16 @@
 package io.github.shiruka.network.options;
 
 import io.github.shiruka.network.BlockedAddress;
+import io.github.shiruka.network.Constants;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.DefaultChannelConfig;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
@@ -106,11 +103,6 @@ public interface RakNetConfig extends ChannelConfig {
   abstract class Base extends DefaultChannelConfig implements RakNetConfig {
 
     /**
-     * the random.
-     */
-    private static final Random RANDOM = new SecureRandom();
-
-    /**
      * the blocked addresses.
      */
     private final Map<InetAddress, BlockedAddress> blockedAddresses = new ConcurrentHashMap<>();
@@ -118,23 +110,17 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the magic.
      */
-    @Setter
-    @Getter
-    private volatile RakNetMagic magic = RakNetMagic.simple();
+    private final RakNetMagic magic = RakNetMagic.simple();
 
     /**
      * the max connections.
      */
-    @Setter
-    @Getter
     private volatile int maxConnections = 2048;
 
     /**
      * the server id.
      */
-    @Setter
-    @Getter
-    private volatile long serverId = Base.RANDOM.nextLong();
+    private volatile long serverId = Constants.RANDOM.nextLong();
 
     /**
      * ctor.
@@ -154,6 +140,32 @@ public interface RakNetConfig extends ChannelConfig {
     @Override
     public final void blockedAddress(@NotNull final BlockedAddress address) {
       this.blockedAddresses.put(address.address(), address);
+    }
+
+    @NotNull
+    @Override
+    public final RakNetMagic magic() {
+      return this.magic;
+    }
+
+    @Override
+    public final int maxConnections() {
+      return this.maxConnections;
+    }
+
+    @Override
+    public final void maxConnections(final int maxConnections) {
+      this.maxConnections = maxConnections;
+    }
+
+    @Override
+    public final long serverId() {
+      return this.serverId;
+    }
+
+    @Override
+    public final void serverId(final long serverId) {
+      this.serverId = serverId;
     }
 
     @Override

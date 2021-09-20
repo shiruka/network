@@ -2,6 +2,8 @@ package io.github.shiruka.network;
 
 import io.netty.channel.ChannelFutureListener;
 import java.nio.channels.ClosedChannelException;
+import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * a class that contains constant values.
@@ -22,6 +24,11 @@ public final class Constants {
       future.channel().close();
     }
   };
+
+  /**
+   * the random.
+   */
+  public static final Random RANDOM = new SecureRandom();
 
   /**
    * ctor.

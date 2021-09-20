@@ -47,7 +47,9 @@ public interface RakNetMagic {
   }
 
   /**
-   * reads the
+   * reads and checks the buffer.
+   *
+   * @param buffer the buffer.
    */
   void read(@NotNull ByteBuf buffer);
 
@@ -67,6 +69,8 @@ public interface RakNetMagic {
 
   /**
    * a simple implementation of {@link RakNetMagic}.
+   *
+   * @param magic the magic.
    */
   record Impl(
     byte @NotNull [] magic

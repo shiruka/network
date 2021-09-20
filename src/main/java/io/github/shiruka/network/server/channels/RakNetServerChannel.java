@@ -2,10 +2,8 @@ package io.github.shiruka.network.server.channels;
 
 import com.google.common.base.Preconditions;
 import io.github.shiruka.network.BlockedAddress;
-import io.github.shiruka.network.Codec;
 import io.github.shiruka.network.channels.DatagramChannelProxy;
 import io.github.shiruka.network.packets.NoFreeConnections;
-import io.github.shiruka.network.server.RakNetServer;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;

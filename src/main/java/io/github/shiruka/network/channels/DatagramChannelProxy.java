@@ -67,9 +67,9 @@ public abstract class DatagramChannelProxy implements Channel {
     this.parent = supplier.get();
     this.pipeline = this.newChannelPipeline();
     this.parent.pipeline()
-      .addLast(DatagramChannelProxy.LISTENER_HANDLER_NAME, new ListenerInboundProxy());
+      .addLast(DatagramChannelProxy.LISTENER_HANDLER_NAME, new ListenerInboundProxy(this));
     this.pipeline()
-      .addLast(DatagramChannelProxy.LISTENER_HANDLER_NAME, new ListenerOutboundProxy())
+      .addLast(DatagramChannelProxy.LISTENER_HANDLER_NAME, new ListenerOutboundProxy(this))
       .addLast(new FlushConsolidationHandler(FlushConsolidationHandler.DEFAULT_EXPLICIT_FLUSH_AFTER_FLUSHES, true));
   }
 
@@ -291,25 +291,6 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   /**
-   * creates a new channel pipeline.
-   *
-   * @return a newly created channel pipeline.
-   */
-  @NotNull
-  protected final DefaultChannelPipeline newChannelPipeline() {
-    return new DefaultChannelPipeline(this) {
-      @Override
-      protected void onUnhandledInboundException(final Throwable cause) {
-        if (cause instanceof ClosedChannelException) {
-          ReferenceCountUtil.safeRelease(cause);
-          return;
-        }
-        super.onUnhandledInboundException(cause);
-      }
-    };
-  }
-
-  /**
    * wraps the promise.
    *
    * @param promise the promise to wrap.
@@ -338,6 +319,155 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   /**
+   * creates a new channel pipeline.
+   *
+   * @return a newly created channel pipeline.
+   */
+  @NotNull
+  private DefaultChannelPipeline newChannelPipeline() {
+    return new DefaultChannelPipeline(this) {
+      @Override
+      protected void onUnhandledInboundException(final Throwable cause) {
+        if (cause instanceof ClosedChannelException) {
+          ReferenceCountUtil.safeRelease(cause);
+          return;
+        }
+        super.onUnhandledInboundException(cause);
+      }
+    };
+  }
+
+  /**
+   * a class that represents listener inbound proxy.
+   *
+   * @param channel the channel.
+   */
+  private record ListenerInboundProxy(
+    @NotNull DatagramChannelProxy channel
+  ) implements ChannelInboundHandler {
+
+    @Override
+    public void channelRegistered(final ChannelHandlerContext ctx) {
+      this.channel.pipeline().fireChannelRegistered();
+    }
+
+    @Override
+    public void channelUnregistered(final ChannelHandlerContext ctx) {
+      this.channel.pipeline().fireChannelUnregistered();
+    }
+
+    @Override
+    public void channelActive(final ChannelHandlerContext ctx) {
+    }
+
+    @Override
+    public void channelInactive(final ChannelHandlerContext ctx) {
+      this.channel.pipeline().fireChannelInactive();
+    }
+
+    @Override
+    public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+      this.channel.pipeline().fireChannelRead(msg);
+    }
+
+    @Override
+    public void channelReadComplete(final ChannelHandlerContext ctx) {
+      this.channel.pipeline().fireChannelReadComplete();
+    }
+
+    @Override
+    public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
+    }
+
+    @Override
+    public void channelWritabilityChanged(final ChannelHandlerContext ctx) {
+      this.channel.pipeline().fireChannelWritabilityChanged();
+    }
+
+    @Override
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+      if (!(cause instanceof ClosedChannelException)) {
+        this.channel.pipeline().fireExceptionCaught(cause);
+      }
+    }
+
+    @Override
+    public void handlerAdded(final ChannelHandlerContext ctx) {
+      assert this.channel.parent().eventLoop().inEventLoop();
+    }
+
+    @Override
+    public void handlerRemoved(final ChannelHandlerContext ctx) {
+    }
+  }
+
+  /**
+   * a class that represents listener outbound proxy.
+   *
+   * @param channel the channel.
+   */
+  private record ListenerOutboundProxy(
+    @NotNull DatagramChannelProxy channel
+  ) implements ChannelOutboundHandler {
+
+    @Override
+    public void bind(final ChannelHandlerContext ctx, final SocketAddress localAddress, final ChannelPromise promise) {
+      this.channel.parent().bind(localAddress, this.channel.wrapPromise(promise));
+    }
+
+    @Override
+    public void connect(final ChannelHandlerContext ctx, final SocketAddress remoteAddress,
+                        final SocketAddress localAddress, final ChannelPromise promise) {
+      this.channel.parent().connect(remoteAddress, localAddress, this.channel.wrapPromise(promise));
+    }
+
+    @Override
+    public void disconnect(final ChannelHandlerContext ctx, final ChannelPromise promise) {
+      this.channel.parent().disconnect(this.channel.wrapPromise(promise));
+    }
+
+    @Override
+    public void close(final ChannelHandlerContext ctx, final ChannelPromise promise) {
+      this.channel.gracefulClose(promise);
+    }
+
+    @Override
+    public void deregister(final ChannelHandlerContext ctx, final ChannelPromise promise) {
+      this.channel.parent().deregister(this.channel.wrapPromise(promise));
+    }
+
+    @Override
+    public void read(final ChannelHandlerContext ctx) {
+    }
+
+    @Override
+    public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) {
+      this.channel.parent().write(msg, this.channel.wrapPromise(promise));
+    }
+
+    @Override
+    public void flush(final ChannelHandlerContext ctx) {
+      this.channel.parent().flush();
+    }
+
+    @Override
+    public void handlerAdded(final ChannelHandlerContext ctx) {
+      assert this.channel.parent().eventLoop().inEventLoop();
+    }
+
+    @Override
+    public void handlerRemoved(final ChannelHandlerContext ctx) {
+    }
+
+    @Override
+    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+      if (!(cause instanceof PortUnreachableException)) {
+        ctx.fireExceptionCaught(cause);
+      }
+    }
+  }
+
+  /**
    * a class that represents datagram channel proxy configurations.
    */
   private final class Config extends RakNetConfig.Base {
@@ -362,128 +492,6 @@ public abstract class DatagramChannelProxy implements Channel {
     public <T> boolean setOption(final ChannelOption<T> option, final T value) {
       return super.setOption(option, value) ||
         DatagramChannelProxy.this.parent.config().setOption(option, value);
-    }
-  }
-
-  /**
-   * a class that represents listener inbound proxy.
-   */
-  protected final class ListenerInboundProxy implements ChannelInboundHandler {
-
-    @Override
-    public void channelRegistered(final ChannelHandlerContext ctx) {
-      DatagramChannelProxy.this.pipeline.fireChannelRegistered();
-    }
-
-    @Override
-    public void channelUnregistered(final ChannelHandlerContext ctx) {
-      DatagramChannelProxy.this.pipeline.fireChannelUnregistered();
-    }
-
-    @Override
-    public void channelActive(final ChannelHandlerContext ctx) {
-    }
-
-    @Override
-    public void channelInactive(final ChannelHandlerContext ctx) {
-      DatagramChannelProxy.this.pipeline.fireChannelInactive();
-    }
-
-    @Override
-    public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-      DatagramChannelProxy.this.pipeline.fireChannelRead(msg);
-    }
-
-    @Override
-    public void channelReadComplete(final ChannelHandlerContext ctx) {
-      DatagramChannelProxy.this.pipeline.fireChannelReadComplete();
-    }
-
-    @Override
-    public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
-    }
-
-    @Override
-    public void channelWritabilityChanged(final ChannelHandlerContext ctx) {
-      DatagramChannelProxy.this.pipeline.fireChannelWritabilityChanged();
-    }
-
-    @Override
-    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-      if (!(cause instanceof ClosedChannelException)) {
-        DatagramChannelProxy.this.pipeline.fireExceptionCaught(cause);
-      }
-    }
-
-    @Override
-    public void handlerAdded(final ChannelHandlerContext ctx) {
-      assert DatagramChannelProxy.this.parent.eventLoop().inEventLoop();
-    }
-
-    @Override
-    public void handlerRemoved(final ChannelHandlerContext ctx) {
-    }
-  }
-
-  /**
-   * a class that represents listener outbound proxy.
-   */
-  protected final class ListenerOutboundProxy implements ChannelOutboundHandler {
-
-    @Override
-    public void bind(final ChannelHandlerContext ctx, final SocketAddress localAddress, final ChannelPromise promise) {
-      DatagramChannelProxy.this.parent.bind(localAddress, DatagramChannelProxy.this.wrapPromise(promise));
-    }
-
-    @Override
-    public void connect(final ChannelHandlerContext ctx, final SocketAddress remoteAddress,
-                        final SocketAddress localAddress, final ChannelPromise promise) {
-      DatagramChannelProxy.this.parent.connect(remoteAddress, localAddress, DatagramChannelProxy.this.wrapPromise(promise));
-    }
-
-    @Override
-    public void disconnect(final ChannelHandlerContext ctx, final ChannelPromise promise) {
-      DatagramChannelProxy.this.parent.disconnect(DatagramChannelProxy.this.wrapPromise(promise));
-    }
-
-    @Override
-    public void close(final ChannelHandlerContext ctx, final ChannelPromise promise) {
-      DatagramChannelProxy.this.gracefulClose(promise);
-    }
-
-    @Override
-    public void deregister(final ChannelHandlerContext ctx, final ChannelPromise promise) {
-      DatagramChannelProxy.this.parent.deregister(DatagramChannelProxy.this.wrapPromise(promise));
-    }
-
-    @Override
-    public void read(final ChannelHandlerContext ctx) {
-    }
-
-    @Override
-    public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) {
-      DatagramChannelProxy.this.parent.write(msg, DatagramChannelProxy.this.wrapPromise(promise));
-    }
-
-    @Override
-    public void flush(final ChannelHandlerContext ctx) {
-      DatagramChannelProxy.this.parent.flush();
-    }
-
-    @Override
-    public void handlerAdded(final ChannelHandlerContext ctx) {
-      assert DatagramChannelProxy.this.parent.eventLoop().inEventLoop();
-    }
-
-    @Override
-    public void handlerRemoved(final ChannelHandlerContext ctx) {
-    }
-
-    @Override
-    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-      if (!(cause instanceof PortUnreachableException)) {
-        ctx.fireExceptionCaught(cause);
-      }
     }
   }
 }
