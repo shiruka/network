@@ -29,4 +29,17 @@ public interface Packet {
   default int initialSizeHint() {
     return 128;
   }
+
+  /**
+   * an interface to determine client packets.
+   */
+  interface Client extends Packet {
+
+    /**
+     * obtains the client id.
+     *
+     * @return client id.
+     */
+    long clientId();
+  }
 }

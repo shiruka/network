@@ -44,6 +44,7 @@ public interface FramedPacket extends Packet {
   /**
    * an enum class that contains reliabilities.
    */
+  @Accessors(fluent = true)
   enum Reliability {
     /**
      * the unreliable.
@@ -86,22 +87,26 @@ public interface FramedPacket extends Packet {
     /**
      * the is ackd
      */
-    public final boolean isAckd;
+    @Getter
+    private final boolean isAckd;
 
     /**
      * the is ordered
      */
-    public final boolean isOrdered;
+    @Getter
+    private final boolean isOrdered;
 
     /**
      * the is reliable
      */
-    public final boolean isReliable;
+    @Getter
+    private final boolean isReliable;
 
     /**
      * the is sequenced
      */
-    public final boolean isSequenced;
+    @Getter
+    private final boolean isSequenced;
 
     /**
      * ctor.

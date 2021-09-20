@@ -12,6 +12,7 @@ import io.github.shiruka.network.packets.ConnectionReply1;
 import io.github.shiruka.network.packets.ConnectionReply2;
 import io.github.shiruka.network.packets.ConnectionRequest;
 import io.github.shiruka.network.packets.ConnectionRequest1;
+import io.github.shiruka.network.packets.ConnectionRequest2;
 import io.github.shiruka.network.packets.Nack;
 import io.github.shiruka.network.packets.NoFreeConnections;
 import io.github.shiruka.network.packets.ServerHandshake;
@@ -90,12 +91,12 @@ public interface Ids {
   int CONNECTION_REQUEST_2 = 7;
 
   /**
-   * the id of the {@link FrameDataEnd} packet.
+   * the frame data end.
    */
   int FRAME_DATA_END = 143;
 
   /**
-   * the id of the {@link FrameDataStart} packet.
+   * the frame data start.
    */
   int FRAME_DATA_START = 128;
 
