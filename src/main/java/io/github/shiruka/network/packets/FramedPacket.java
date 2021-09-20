@@ -23,8 +23,11 @@ public interface FramedPacket extends Packet {
    * sets the order channel.
    *
    * @param orderChannel the order channel to set.
+   *
+   * @return {@code this} for the builder chain.
    */
-  void orderChannel(int orderChannel);
+  @NotNull
+  FramedPacket orderChannel(int orderChannel);
 
   /**
    * obtains reliability.
@@ -38,8 +41,11 @@ public interface FramedPacket extends Packet {
    * sets the reliability
    *
    * @param reliability the reliability to set.
+   *
+   * @return {@code this} for the builder chain.
    */
-  void reliability(@NotNull Reliability reliability);
+  @NotNull
+  FramedPacket reliability(@NotNull Reliability reliability);
 
   /**
    * an enum class that contains reliabilities.
@@ -196,16 +202,6 @@ public interface FramedPacket extends Packet {
      * @param reliability the reliability.
      */
     protected Base(@NotNull final Reliability reliability) {
-      this.reliability = reliability;
-    }
-
-    @Override
-    public final void orderChannel(final int orderChannel) {
-      this.orderChannel = orderChannel;
-    }
-
-    @Override
-    public final void reliability(@NotNull final Reliability reliability) {
       this.reliability = reliability;
     }
   }

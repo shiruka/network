@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
@@ -73,8 +74,11 @@ public interface RakNetConfig extends ChannelConfig {
    * sets the magic.
    *
    * @param magic the magic to set.
+   *
+   * @return {@code this} for the builder chain.
    */
-  void magic(@NotNull RakNetMagic magic);
+  @NotNull
+  RakNetConfig magic(@NotNull RakNetMagic magic);
 
   /**
    * obtains the max connections.
@@ -87,8 +91,11 @@ public interface RakNetConfig extends ChannelConfig {
    * sets the max connections.
    *
    * @param maxConnections the max connections tos et.
+   *
+   * @return {@code this} for the builder chain.
    */
-  void maxConnections(int maxConnections);
+  @NotNull
+  RakNetConfig maxConnections(int maxConnections);
 
   /**
    * obtains the server id.
@@ -101,12 +108,17 @@ public interface RakNetConfig extends ChannelConfig {
    * sets the server id.
    *
    * @param serverId the server id to set.
+   *
+   * @return {@code this} for the builder chain.
    */
-  void serverId(long serverId);
+  @NotNull
+  RakNetConfig serverId(long serverId);
 
   /**
    * an abstract implementation of {@link RakNetConfig}.
    */
+  @Getter
+  @Setter
   @Accessors(fluent = true)
   abstract class Base extends DefaultChannelConfig implements RakNetConfig {
 
@@ -151,21 +163,6 @@ public interface RakNetConfig extends ChannelConfig {
     @Override
     public final void blockedAddress(@NotNull final BlockedAddress address) {
       this.blockedAddresses.put(address.address(), address);
-    }
-
-    @Override
-    public final void magic(@NotNull final RakNetMagic magic) {
-      this.magic = magic;
-    }
-
-    @Override
-    public final void maxConnections(final int maxConnections) {
-      this.maxConnections = maxConnections;
-    }
-
-    @Override
-    public final void serverId(final long serverId) {
-      this.serverId = serverId;
     }
 
     @Override
