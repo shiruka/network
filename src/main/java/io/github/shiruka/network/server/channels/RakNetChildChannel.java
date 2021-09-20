@@ -6,6 +6,7 @@ import io.github.shiruka.network.options.RakNetConfig;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.AbstractChannel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelMetadata;
 import io.netty.channel.ChannelOutboundBuffer;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
@@ -107,7 +108,8 @@ public final class RakNetChildChannel extends AbstractChannel {
   protected AbstractChannel.AbstractUnsafe newUnsafe() {
     return new AbstractChannel.AbstractUnsafe() {
       @Override
-      public void connect(final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
+      public void connect(final SocketAddress remoteAddress, final SocketAddress localAddress,
+                          final ChannelPromise promise) {
         throw new UnsupportedOperationException();
       }
     };
@@ -156,19 +158,19 @@ public final class RakNetChildChannel extends AbstractChannel {
    * adds the default pipeline.
    */
   private void addDefaultPipeline() {
-//    this.pipeline().addLast(RakNetServer.DefaultChildInitializer.INSTANCE);
-//    this.connectPromise.addListener(future -> {
-//      if (!future.isSuccess()) {
-//        RakNetChildChannel.this.close();
-//      }
-//    });
-//    this.pipeline().addLast(new ChannelInitializer<RakNetChildChannel>() {
-//      @Override
-//      protected void initChannel(final RakNetChildChannel ch) {
-//        RakNetChildChannel.this.pipeline().replace(ConnectionInitializer.NAME, ConnectionInitializer.NAME,
-//          new ConnectionInitializer(RakNetChildChannel.this.connectPromise));
-//      }
-//    });
+    this.pipeline().addLast(RakNetServer.DefaultChildInitializer.INSTANCE);
+    this.connectPromise.addListener(future -> {
+      if (!future.isSuccess()) {
+        RakNetChildChannel.this.close();
+      }
+    });
+    this.pipeline().addLast(new ChannelInitializer<RakNetChildChannel>() {
+      @Override
+      protected void initChannel(final RakNetChildChannel ch) {
+        RakNetChildChannel.this.pipeline().replace(ConnectionInitializer.NAME, ConnectionInitializer.NAME,
+          new ConnectionInitializer(RakNetChildChannel.this.connectPromise));
+      }
+    });
   }
 
   /**
