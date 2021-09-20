@@ -1,7 +1,8 @@
-package io.github.shiruka.network.packets.status;
+package io.github.shiruka.network.packets;
 
 import io.github.shiruka.network.ConnectionType;
 import io.github.shiruka.network.Failable;
+import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.ServerIdentifier;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
  */
 @Setter
 @Accessors(fluent = true)
-public final class UnconnectedPongPacket extends Packet implements Failable {
+public final class UnconnectedPong extends Packet implements Failable {
 
   /**
    * the server's connection type.
@@ -58,7 +59,7 @@ public final class UnconnectedPongPacket extends Packet implements Failable {
   /**
    * ctor.
    */
-  public UnconnectedPongPacket() {
+  public UnconnectedPong() {
     super(Ids.UNCONNECTED_PONG);
   }
 
@@ -76,13 +77,12 @@ public final class UnconnectedPongPacket extends Packet implements Failable {
 
   @Override
   public void encode(@NotNull final PacketBuffer buffer) {
-    this.unchecked(buffer, () -> {
-      buffer.writeLong(this.timestamp);
-      buffer.writeLong(this.pongId);
-      buffer.writeMagic();
-      buffer.writeString(this.identifier().build());
-      buffer.writeConnectionType(this.connectionType());
-    });
+    this.unchecked(buffer, () -> buffer
+      .writeLong(this.timestamp)
+      .writeLong(this.pongId)
+      .writeMagic()
+      .writeString(this.identifier().build())
+      .writeConnectionType(this.connectionType()));
   }
 
   /**

@@ -36,4 +36,13 @@ public abstract class Packet {
   public void encode(@NotNull final PacketBuffer buffer) {
     throw new UnsupportedOperationException();
   }
+
+  /**
+   * obtains the initial size hint.
+   *
+   * @return initial size hint.
+   */
+  public int initialSizeHint() {
+    return 128;
+  }
 }

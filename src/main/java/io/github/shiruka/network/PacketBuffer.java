@@ -392,8 +392,8 @@ public record PacketBuffer(
    * @return {@code true} if the magic array was valid, {@code false} otherwise.
    */
   public boolean readMagic() {
-    final var magicCheck = this.read(PacketBuffer.MAGIC.length);
-    return Arrays.equals(PacketBuffer.MAGIC, magicCheck);
+    final var magic = this.read(PacketBuffer.MAGIC.length);
+    return Arrays.equals(PacketBuffer.MAGIC, magic);
   }
 
   /**

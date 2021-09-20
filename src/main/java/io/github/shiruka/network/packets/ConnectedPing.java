@@ -1,5 +1,6 @@
-package io.github.shiruka.network.packets.status;
+package io.github.shiruka.network.packets;
 
+import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 @Setter
 @Accessors(fluent = true)
-public final class ConnectedPingPacket extends Packet {
+public final class ConnectedPing extends Packet {
 
   /**
    * the timestamp of the sender.
@@ -23,7 +24,7 @@ public final class ConnectedPingPacket extends Packet {
   /**
    * ctor.
    */
-  public ConnectedPingPacket() {
+  public ConnectedPing() {
     super(Ids.CONNECTED_PING);
   }
 

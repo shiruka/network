@@ -36,13 +36,13 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
   from javadoc.destinationDir
 }
 
-test {
-  useJUnitPlatform()
-}
-
 checkstyle {
   configFile = rootProject.file("checkstyle.xml")
   checkstyleTest.enabled = false
+}
+
+test {
+  useJUnitPlatform()
 }
 
 repositories {
@@ -54,16 +54,11 @@ repositories {
 }
 
 dependencies {
-  implementation "org.apache.logging.log4j:log4j-api:2.14.1"
-  implementation "com.lmax:disruptor:3.4.4"
-  implementation "org.apache.logging.log4j:log4j-iostreams:2.14.1"
-  implementation "org.apache.logging.log4j:log4j-slf4j-impl:2.14.1"
-  implementation "org.apache.logging.log4j:log4j-core:2.14.1"
-
   implementation "io.netty:netty-all:4.1.68.Final"
   implementation "com.google.guava:guava:30.1.1-jre"
-  implementation "network.ycc:netty-raknet-common:0.8-SNAPSHOT"
-  implementation "network.ycc:netty-raknet-server:0.8-SNAPSHOT"
+  implementation "it.unimi.dsi:fastutil-core:8.5.6"
+  implementation "it.unimi.dsi:fastutil:8.5.6"
+  implementation "org.apache.logging.log4j:log4j-api:2.14.1"
 
   implementation "org.jetbrains:annotations:22.0.0"
   annotationProcessor "org.jetbrains:annotations:22.0.0"

@@ -1,7 +1,8 @@
-package io.github.shiruka.network.packets.status;
+package io.github.shiruka.network.packets;
 
 import io.github.shiruka.network.ConnectionType;
 import io.github.shiruka.network.Failable;
+import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import java.util.Objects;
@@ -12,11 +13,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * a class that represents unconnected ping open connections packets.
+ * a class that represents unconnected ping packets.
  */
 @Setter
 @Accessors(fluent = true)
-public final class UnconnectedPingOpenConnectionsPacket extends Packet implements Failable {
+public final class UnconnectedPing extends Packet implements Failable {
 
   /**
    * the client's connection type.
@@ -51,8 +52,8 @@ public final class UnconnectedPingOpenConnectionsPacket extends Packet implement
   /**
    * ctor.
    */
-  public UnconnectedPingOpenConnectionsPacket() {
-    super(Ids.UNCONNECTED_PING_OPEN_CONNECTIONS);
+  public UnconnectedPing() {
+    super(Ids.UNCONNECTED_PING);
   }
 
   /**
