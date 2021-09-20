@@ -1,27 +1,21 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 plugins {
   id "java"
   id "checkstyle"
   id "maven-publish"
   id "signing"
+  id "net.kyori.blossom" version "1.2.0"
   id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
 group "io.github.shiruka"
 
-task replaceToken(type: Copy) {
-  from "src/main/java/io/github/shiruka/network/Constants.java"
-  into("$buildDir/replaceToken")
-  filter(ReplaceTokens, tokens: [version: project.version])
+blossom {
+  replaceToken("@version@", project.version)
 }
 
-java {
+compileJava {
   sourceCompatibility = JavaVersion.VERSION_16
   targetCompatibility = JavaVersion.VERSION_16
-}
-
-tasks.withType(JavaCompile) {
   options.encoding = "UTF-8"
   options.deprecation = true
 }
