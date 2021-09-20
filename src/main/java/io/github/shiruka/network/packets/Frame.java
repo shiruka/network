@@ -482,7 +482,7 @@ public final class Frame extends AbstractReferenceCounted {
     /**
      * the recycler.
      */
-    private static final ObjectPool<Data> recycler = ObjectPool.newPool(Data::new);
+    private static final ObjectPool<Data> RECYCLER = ObjectPool.newPool(Data::new);
 
     /**
      * the handle.
@@ -513,6 +513,7 @@ public final class Frame extends AbstractReferenceCounted {
     /**
      * teh reliability.
      */
+    @Nullable
     @Setter
     @Getter
     private Reliability reliability;
@@ -520,9 +521,9 @@ public final class Frame extends AbstractReferenceCounted {
     /**
      * the tracker.
      */
+    @Nullable
     @Setter
     @Getter
-    @Nullable
     private ResourceLeakTracker<Data> tracker;
 
     /**
@@ -571,8 +572,8 @@ public final class Frame extends AbstractReferenceCounted {
       assert length > 0;
       final var packet = Data.createRaw();
       try {
-        packet.data(buffer.readRetainedSlice(length));
-        packet.fragment(fragment);
+        packet.data(buffer.readRetainedSlice(length))
+          .fragment(fragment);
         assert packet.dataSize() == length;
         return packet.retain();
       } finally {
@@ -587,13 +588,13 @@ public final class Frame extends AbstractReferenceCounted {
      */
     @NotNull
     private static Data createRaw() {
-      final var out = Data.recycler.get();
+      final var out = Data.RECYCLER.get();
       assert out.refCnt() == 0 && out.tracker() == null : "bad reuse";
-      out.orderChannel(0);
-      out.fragment(false);
-      out.data(null);
-      out.reliability(FramedPacket.Reliability.RELIABLE_ORDERED);
-      out.setRefCnt(1);
+      out.orderChannel(0)
+        .fragment(false)
+        .data(null)
+        .reliability(FramedPacket.Reliability.RELIABLE_ORDERED)
+        .setRefCnt(1);
       out.tracker(Data.LEAK_DETECTOR.track(out));
       return out;
     }
@@ -622,9 +623,13 @@ public final class Frame extends AbstractReferenceCounted {
      * sets the data.
      *
      * @param data the data to set.
+     *
+     * @return {@code this} for builder chain.
      */
-    public void data(@Nullable final ByteBuf data) {
+    @NotNull
+    public Data data(@Nullable final ByteBuf data) {
       this.data = data;
+      return this;
     }
 
     /**
@@ -749,6 +754,7 @@ public final class Frame extends AbstractReferenceCounted {
     /**
      * the tracker.
      */
+    @Nullable
     @Getter
     @Setter
     private ResourceLeakTracker<Set> tracker;
@@ -908,7 +914,7 @@ public final class Frame extends AbstractReferenceCounted {
      */
     public int roughSize() {
       var out = Set.HEADER_SIZE;
-      out += this.frames.stream().mapToInt(packet -> packet.roughPacketSize()).sum();
+      out += this.frames.stream().mapToInt(Frame::roughPacketSize).sum();
       return out;
     }
 
