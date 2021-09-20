@@ -13,6 +13,7 @@ import io.github.shiruka.network.packets.ConnectionReply2;
 import io.github.shiruka.network.packets.ConnectionRequest;
 import io.github.shiruka.network.packets.ConnectionRequest1;
 import io.github.shiruka.network.packets.ConnectionRequest2;
+import io.github.shiruka.network.packets.InvalidVersion;
 import io.github.shiruka.network.packets.Nack;
 import io.github.shiruka.network.packets.NoFreeConnections;
 import io.github.shiruka.network.packets.ServerHandshake;

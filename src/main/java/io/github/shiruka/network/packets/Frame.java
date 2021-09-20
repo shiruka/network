@@ -1,19 +1,25 @@
 package io.github.shiruka.network.packets;
 
 import com.google.common.base.Preconditions;
+import io.github.shiruka.network.Ids;
+import io.github.shiruka.network.Packet;
+import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.utils.Integers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.ReferenceCounted;
 import io.netty.util.ResourceLeakDetector;
 import io.netty.util.ResourceLeakDetectorFactory;
 import io.netty.util.ResourceLeakTracker;
 import io.netty.util.internal.ObjectPool;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -64,7 +70,7 @@ public final class Frame extends AbstractReferenceCounted {
    */
   @Nullable
   @Setter
-  private FrameData frameData;
+  private Data frameData;
 
   /**
    * the has split.
@@ -149,7 +155,7 @@ public final class Frame extends AbstractReferenceCounted {
    * @return frame.
    */
   @NotNull
-  public static Frame create(@NotNull final FrameData packet) {
+  public static Frame create(@NotNull final Data packet) {
     Preconditions.checkArgument(!packet.reliability().isOrdered(), "Must provided indices for ordered data.");
     return Frame.createRaw()
       .frameData(packet.retain());
@@ -165,7 +171,7 @@ public final class Frame extends AbstractReferenceCounted {
    * @return ordered frame.
    */
   @NotNull
-  public static Frame createOrdered(final FrameData packet, final int orderIndex, final int sequenceIndex) {
+  public static Frame createOrdered(final Data packet, final int orderIndex, final int sequenceIndex) {
     Preconditions.checkArgument(packet.reliability().isOrdered(), "No indices needed for non-ordered data.");
     return Frame.createRaw()
       .frameData(packet.retain())
@@ -206,7 +212,7 @@ public final class Frame extends AbstractReferenceCounted {
           .splitIndex(buffer.readInt())
           .hasSplit(true);
       }
-      out.frameData(FrameData.read(buffer, length, hasSplit));
+      out.frameData(Data.read(buffer, length, hasSplit));
       out.frameData().reliability(reliability);
       out.frameData().orderChannel(orderChannel);
       return out.retain();
@@ -253,7 +259,7 @@ public final class Frame extends AbstractReferenceCounted {
     out.reliableIndex(this.reliableIndex).
       sequenceIndex(this.sequenceIndex)
       .orderIndex(this.orderIndex)
-      .frameData(FrameData.read(fullData, fullData.readableBytes(), false));
+      .frameData(Data.read(fullData, fullData.readableBytes(), false));
     out.frameData().orderChannel(this.orderChannel());
     out.frameData().reliability(this.reliability());
     return out;
@@ -288,7 +294,7 @@ public final class Frame extends AbstractReferenceCounted {
           .splitId(splitID)
           .splitIndex(splitIndexIterator)
           .hasSplit(true)
-          .frameData(FrameData.read(data, length, true));
+          .frameData(Data.read(data, length, true));
         out.frameData().orderChannel(this.orderChannel());
         out.frameData().reliability(this.reliability().makeReliable());
         assert out.frameData().fragment();
@@ -309,7 +315,7 @@ public final class Frame extends AbstractReferenceCounted {
    * @return frame data.
    */
   @NotNull
-  public FrameData frameData() {
+  public Data frameData() {
     return Objects.requireNonNull(this.frameData, "frame data");
   }
 
@@ -385,7 +391,7 @@ public final class Frame extends AbstractReferenceCounted {
    * @return retained frame data.
    */
   @NotNull
-  public FrameData retainedFrameData() {
+  public Data retainedFrameData() {
     return this.frameData().retain();
   }
 
@@ -458,6 +464,501 @@ public final class Frame extends AbstractReferenceCounted {
         return 1;
       }
       return Integers.B3.minusWrap(a.reliableIndex, b.reliableIndex) < 0 ? -1 : 1;
+    }
+  }
+
+  /**
+   * a class that represents frame data packets.
+   */
+  @Accessors(fluent = true)
+  public static final class Data extends AbstractReferenceCounted implements FramedPacket {
+
+    /**
+     * the leak detector.
+     */
+    private static final ResourceLeakDetector<Data> LEAK_DETECTOR =
+      ResourceLeakDetectorFactory.instance().newResourceLeakDetector(Data.class);
+
+    /**
+     * the recycler.
+     */
+    private static final ObjectPool<Data> recycler = ObjectPool.newPool(Data::new);
+
+    /**
+     * the handle.
+     */
+    @NotNull
+    private final ObjectPool.Handle<Data> handle;
+
+    /**
+     * the data.
+     */
+    @Nullable
+    private ByteBuf data;
+
+    /**
+     * the fragment.
+     */
+    @Setter
+    @Getter
+    private boolean fragment;
+
+    /**
+     * the order id.
+     */
+    @Setter
+    @Getter
+    private int orderChannel;
+
+    /**
+     * teh reliability.
+     */
+    @Setter
+    @Getter
+    private Reliability reliability;
+
+    /**
+     * the tracker.
+     */
+    @Setter
+    @Getter
+    @Nullable
+    private ResourceLeakTracker<Data> tracker;
+
+    /**
+     * ctor.
+     *
+     * @param handle the handle.
+     */
+    private Data(@NotNull final ObjectPool.Handle<Data> handle) {
+      this.handle = handle;
+      this.setRefCnt(0);
+    }
+
+    /**
+     * creates a frame data.
+     *
+     * @param alloc the alloc to create.
+     * @param packetId the packet id to create.
+     * @param buffer the buffer to create.
+     *
+     * @return frame data.
+     */
+    @NotNull
+    public static Data create(@NotNull final ByteBufAllocator alloc, final int packetId,
+                              @NotNull final ByteBuf buffer) {
+      final var out = alloc.compositeDirectBuffer(2);
+      try {
+        out.addComponent(true, alloc.ioBuffer(1, 1).writeByte(packetId));
+        out.addComponent(true, buffer.retain());
+        return Data.read(out, out.readableBytes(), false);
+      } finally {
+        out.release();
+      }
+    }
+
+    /**
+     * reads buffer and creates a frame data from it.
+     *
+     * @param buffer the buffer to read.
+     * @param length the length to read.
+     * @param fragment the fragment to read.
+     *
+     * @return frame data.
+     */
+    @NotNull
+    public static Data read(@NotNull final ByteBuf buffer, final int length, final boolean fragment) {
+      assert length > 0;
+      final var packet = Data.createRaw();
+      try {
+        packet.data(buffer.readRetainedSlice(length));
+        packet.fragment(fragment);
+        assert packet.dataSize() == length;
+        return packet.retain();
+      } finally {
+        packet.release();
+      }
+    }
+
+    /**
+     * creates a raw frame data.
+     *
+     * @return raw frame data.
+     */
+    @NotNull
+    private static Data createRaw() {
+      final var out = Data.recycler.get();
+      assert out.refCnt() == 0 && out.tracker() == null : "bad reuse";
+      out.orderChannel(0);
+      out.fragment(false);
+      out.data(null);
+      out.reliability(FramedPacket.Reliability.RELIABLE_ORDERED);
+      out.setRefCnt(1);
+      out.tracker(Data.LEAK_DETECTOR.track(out));
+      return out;
+    }
+
+    /**
+     * creates a data.
+     *
+     * @return data.
+     */
+    @NotNull
+    public ByteBuf createData() {
+      return this.data().retainedDuplicate();
+    }
+
+    /**
+     * obtains the data.
+     *
+     * @return data.
+     */
+    @NotNull
+    public ByteBuf data() {
+      return Objects.requireNonNull(this.data, "data");
+    }
+
+    /**
+     * sets the data.
+     *
+     * @param data the data to set.
+     */
+    public void data(@Nullable final ByteBuf data) {
+      this.data = data;
+    }
+
+    /**
+     * obtains the data size.
+     *
+     * @return data size.
+     */
+    public int dataSize() {
+      return this.data().readableBytes();
+    }
+
+    @Override
+    public void decode(@NotNull final PacketBuffer buffer) {
+    }
+
+    @Override
+    public void encode(@NotNull final PacketBuffer buffer) {
+    }
+
+    /**
+     * obtains the packet id.
+     *
+     * @return packet id.
+     */
+    public int packetId() {
+      assert !this.fragment;
+      return this.data().getUnsignedByte(this.data().readerIndex());
+    }
+
+    @Override
+    public Data retain() {
+      return (Data) super.retain();
+    }
+
+    @Override
+    protected void deallocate() {
+      if (this.data != null) {
+        this.data().release();
+        this.data = null;
+      }
+      if (this.tracker != null) {
+        this.tracker.close(this);
+        this.tracker = null;
+      }
+      this.handle.recycle(this);
+    }
+
+    @Override
+    public String toString() {
+      return String.format("PacketData(%s, length: %s, framed: %s, packetId: %s)",
+        this.reliability, this.dataSize(), this.fragment,
+        this.fragment ? "n/a" : String.format("%02x", this.packetId()));
+    }
+
+    @Override
+    public ReferenceCounted touch(final Object hint) {
+      if (this.tracker != null) {
+        this.tracker.record(hint);
+      }
+      this.data().touch(hint);
+      return this;
+    }
+
+    /**
+     * writes the packet into the buffer.
+     *
+     * @param buffer the buffer to write.
+     */
+    public void write(final ByteBuf buffer) {
+      buffer.writeBytes(this.data, this.data().readerIndex(), this.data().readableBytes());
+    }
+  }
+
+  /**
+   * a class that represents frame set packets.
+   */
+  @Accessors(fluent = true)
+  public static final class Set extends AbstractReferenceCounted implements Packet {
+
+    /**
+     * the header size.
+     */
+    public static final int HEADER_SIZE = 4;
+
+    /**
+     * the leak detector.
+     */
+    private static final ResourceLeakDetector<Set> LEAK_DETECTOR =
+      ResourceLeakDetectorFactory.instance().newResourceLeakDetector(Set.class);
+
+    /**
+     * the recycler.
+     */
+    private static final ObjectPool<Set> RECYCLER = ObjectPool.newPool(Set::new);
+
+    /**
+     * the frames.
+     */
+    @Getter
+    private final List<Frame> frames = new ArrayList<>(8);
+
+    /**
+     * the handle.
+     */
+    @NotNull
+    private final ObjectPool.Handle<Set> handle;
+
+    /**
+     * the sent time.
+     */
+    @Getter
+    @Setter
+    private long sentTime;
+
+    /**
+     * the sequence id.
+     */
+    @Getter
+    @Setter
+    private int sequenceId;
+
+    /**
+     * the tracker.
+     */
+    @Getter
+    @Setter
+    private ResourceLeakTracker<Set> tracker;
+
+    /**
+     * ctor.
+     *
+     * @param handle the handle.
+     */
+    private Set(@NotNull final ObjectPool.Handle<Set> handle) {
+      this.handle = handle;
+      this.setRefCnt(0);
+    }
+
+    /**
+     * create a frame set packet
+     *
+     * @return frame set.
+     */
+    @NotNull
+    public static Frame.Set create() {
+      final var out = Set.RECYCLER.get();
+      assert out.refCnt() == 0;
+      assert out.tracker() == null;
+      out.sentTime(System.nanoTime());
+      out.sequenceId(0);
+      out.tracker(Set.LEAK_DETECTOR.track(out));
+      out.setRefCnt(1);
+      return out;
+    }
+
+    /**
+     * reads the buffer and creates a frame set.
+     *
+     * @param buffer the buffer to read.
+     *
+     * @return frame set.
+     */
+    @NotNull
+    public static Frame.Set read(@NotNull final ByteBuf buffer) {
+      final var out = Set.create();
+      try {
+        buffer.skipBytes(1);
+        out.sequenceId(buffer.readUnsignedMediumLE());
+        while (buffer.isReadable()) {
+          out.frames().add(Frame.read(buffer));
+        }
+        return out.retain();
+      } catch (final IndexOutOfBoundsException e) {
+        throw new CorruptedFrameException("Failed to parse Frame", e);
+      } finally {
+        out.release();
+      }
+    }
+
+    /**
+     * adds the packet.
+     *
+     * @param packet the packet to add.
+     */
+    public void addPacket(@NotNull final Frame packet) {
+      this.frames.add(packet);
+    }
+
+    /**
+     * creates frames.
+     *
+     * @param consumer the consumer to craete.
+     */
+    public void createFrames(@NotNull final Consumer<Frame> consumer) {
+      this.frames.forEach(frame -> consumer.accept(frame.retain()));
+    }
+
+    @Override
+    public void decode(@NotNull final PacketBuffer buffer) {
+    }
+
+    @Override
+    public void encode(@NotNull final PacketBuffer buffer) {
+    }
+
+    @Override
+    public int initialSizeHint() {
+      return this.roughSize();
+    }
+
+    /**
+     * does fail with the throwable.
+     *
+     * @param throwable the throwable to fail.
+     */
+    public void fail(@NotNull final Throwable throwable) {
+      this.frames.forEach(frame -> {
+        final var promise = frame.promise();
+        if (promise != null) {
+          promise.tryFailure(throwable);
+          frame.promise(null);
+        }
+      });
+    }
+
+    /**
+     * checks if the frames is empty.
+     *
+     * @return frames is empty.
+     */
+    public boolean isEmpty() {
+      return this.frames.isEmpty();
+    }
+
+    /**
+     * produces a byte buffer.
+     *
+     * @param alloc the alloc to produce.
+     *
+     * @return byte buffer.
+     */
+    @NotNull
+    public ByteBuf produce(@NotNull final ByteBufAllocator alloc) {
+      final var header = alloc.ioBuffer(Set.HEADER_SIZE, Set.HEADER_SIZE);
+      final var out = alloc.compositeDirectBuffer(1 + this.frames.size() * 2);
+      try {
+        this.writeHeader(header);
+        out.addComponent(true, header.retain());
+        this.frames.forEach(frame -> frame.produce(alloc, out));
+        return out.retain();
+      } finally {
+        header.release();
+        out.release();
+      }
+    }
+
+    @Override
+    public Set retain() {
+      super.retain();
+      return this;
+    }
+
+    /**
+     * deallocates the frame set.
+     */
+    @Override
+    public void deallocate() {
+      this.frames.forEach(Frame::release);
+      this.frames.clear();
+      if (this.tracker != null) {
+        this.tracker.close(this);
+        this.tracker = null;
+      }
+      this.handle.recycle(this);
+    }
+
+    /**
+     * obtains rough size.
+     *
+     * @return rough size.
+     */
+    public int roughSize() {
+      var out = Set.HEADER_SIZE;
+      out += this.frames.stream().mapToInt(packet -> packet.roughPacketSize()).sum();
+      return out;
+    }
+
+    /**
+     * success all frames.
+     */
+    public void succeed() {
+      this.frames.forEach(frame -> {
+        final var promise = frame.promise();
+        if (promise != null) {
+          promise.trySuccess();
+          frame.promise(null);
+        }
+      });
+    }
+
+    @NotNull
+    @Override
+    public String toString() {
+      return String.format("FramedData(frames: %s, seq: %s)", this.frames.size(), this.sequenceId);
+    }
+
+    @Override
+    @NotNull
+    public ReferenceCounted touch(@NotNull final Object hint) {
+      if (this.tracker != null) {
+        this.tracker.record(hint);
+      }
+      this.frames.forEach(packet -> packet.touch(hint));
+      return this;
+    }
+
+    /**
+     * writes the buffer.
+     *
+     * @param buffer the buffer to write.
+     */
+    public void write(@NotNull final ByteBuf buffer) {
+      this.writeHeader(buffer);
+      this.frames.forEach(frame -> frame.write(buffer));
+    }
+
+    /**
+     * writes the header.
+     *
+     * @param buffer the buffer to write.
+     */
+    public void writeHeader(@NotNull final ByteBuf buffer) {
+      buffer.writeByte(Ids.FRAME_DATA_START);
+      buffer.writeMediumLE(this.sequenceId);
     }
   }
 }
