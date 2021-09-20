@@ -1,8 +1,20 @@
 package io.github.shiruka.network;
 
+import io.github.shiruka.network.packets.Ack;
+import io.github.shiruka.network.packets.AlreadyConnected;
+import io.github.shiruka.network.packets.ClientDisconnect;
+import io.github.shiruka.network.packets.ClientHandshake;
 import io.github.shiruka.network.packets.ConnectedPing;
 import io.github.shiruka.network.packets.ConnectedPong;
+import io.github.shiruka.network.packets.ConnectionBanned;
+import io.github.shiruka.network.packets.ConnectionFailed;
+import io.github.shiruka.network.packets.ConnectionReply1;
+import io.github.shiruka.network.packets.ConnectionReply2;
+import io.github.shiruka.network.packets.ConnectionRequest;
+import io.github.shiruka.network.packets.ConnectionRequest1;
+import io.github.shiruka.network.packets.Nack;
 import io.github.shiruka.network.packets.NoFreeConnections;
+import io.github.shiruka.network.packets.ServerHandshake;
 import io.github.shiruka.network.packets.UnconnectedPing;
 import io.github.shiruka.network.packets.UnconnectedPingOpenConnections;
 import io.github.shiruka.network.packets.UnconnectedPong;
@@ -53,9 +65,29 @@ public interface Ids {
   int CONNECTION_FAILED = 17;
 
   /**
+   * the id of the {@link ConnectionReply1} packet.
+   */
+  int CONNECTION_REPLY_1 = 6;
+
+  /**
+   * the id of the {@link ConnectionReply2} packet.
+   */
+  int CONNECTION_REPLY_2 = 8;
+
+  /**
    * the id of the {@link ConnectionRequest} packet.
    */
   int CONNECTION_REQUEST = 9;
+
+  /**
+   * the id of the {@link ConnectionRequest1} packet.
+   */
+  int CONNECTION_REQUEST_1 = 5;
+
+  /**
+   * the id of the {@link ConnectionRequest2} packet.
+   */
+  int CONNECTION_REQUEST_2 = 7;
 
   /**
    * the id of the {@link FrameDataEnd} packet.
@@ -81,26 +113,6 @@ public interface Ids {
    * the id of the {@link NoFreeConnections} packet.
    */
   int NO_FREE_CONNECTIONS = 20;
-
-  /**
-   * the id of the {@link OpenConnectionReply1} packet.
-   */
-  int OPEN_CONNECTION_REPLY_1 = 6;
-
-  /**
-   * the id of the {@link OpenConnectionRequest2} packet.
-   */
-  int OPEN_CONNECTION_REPLY_2 = 8;
-
-  /**
-   * the id of the {@link OpenConnectionRequest1} packet.
-   */
-  int OPEN_CONNECTION_REQUEST_1 = 5;
-
-  /**
-   * the id of the {@link OpenConnectionRequest2} packet.
-   */
-  int OPEN_CONNECTION_REQUEST_2 = 7;
 
   /**
    * the id of the {@link ServerHandshake} packet.

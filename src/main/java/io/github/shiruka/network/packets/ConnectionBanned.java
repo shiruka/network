@@ -11,17 +11,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * a class that represents unconnected ping open connections packets.
+ * a class that represents connection banned packets.
  */
 @Setter
 @Accessors(fluent = true)
-public final class UnconnectedPingOpenConnections implements Packet {
-
-  /**
-   * the client ID.
-   */
-  @Getter
-  private long clientId;
+public final class ConnectionBanned implements Packet {
 
   /**
    * the magic.
@@ -30,42 +24,38 @@ public final class UnconnectedPingOpenConnections implements Packet {
   private RakNetMagic magic;
 
   /**
-   * the timestamp of the sender.
+   * the server id.
    */
   @Getter
-  private long timestamp;
+  private long serverId;
 
   /**
    * ctor.
    */
-  public UnconnectedPingOpenConnections() {
+  public ConnectionBanned() {
   }
 
   /**
    * ctor.
    *
    * @param magic the magic.
-   * @param clientId the client id.
-   * @param timestamp the timestamp.
+   * @param serverId the server id.
    */
-  public UnconnectedPingOpenConnections(@Nullable final RakNetMagic magic, final long clientId, final long timestamp) {
+  public ConnectionBanned(@NotNull final RakNetMagic magic, final long serverId) {
     this.magic = magic;
-    this.clientId = clientId;
-    this.timestamp = timestamp;
+    this.serverId = serverId;
   }
 
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {
-    this.timestamp = buffer.readLong();
     this.magic = RakNetMagic.from(buffer);
-    this.clientId = buffer.readLong();
+    this.serverId = buffer.readLong();
   }
 
   @Override
   public void encode(@NotNull final PacketBuffer buffer) {
-    buffer.writeLong(this.timestamp);
     this.magic().write(buffer);
-    buffer.writeLong(this.clientId);
+    buffer.writeLong(this.serverId);
   }
 
   /**

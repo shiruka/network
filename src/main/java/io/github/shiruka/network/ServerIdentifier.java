@@ -15,16 +15,17 @@ public interface ServerIdentifier {
   Set<Factory> FACTORIES = new HashSet<>();
 
   /**
-   * finds a factory for the text.
+   * finds and creates a factory for the text.
    *
    * @param text the text to find.
    *
-   * @return found factory.
+   * @return found server identifier.
    */
   @NotNull
-  static Factory find(@NotNull final String text) {
+  static ServerIdentifier create(@NotNull final String text) {
     return ServerIdentifier.FACTORIES.stream()
       .filter(factory -> factory.check(text))
+      .map(factory -> factory.create(text))
       .findFirst()
       .orElseThrow(() ->
         new IllegalStateException("Factory for %s not found!".formatted(text)));
@@ -64,12 +65,11 @@ public interface ServerIdentifier {
     /**
      * creates a rak net server identifier.
      *
-     * @param serverIdString the server id string to create.
-     * @param connectionType the connection type to create.
+     * @param serverInfo the server info to create.
      *
      * @return server identifier.
      */
     @NotNull
-    ServerIdentifier create(@NotNull String serverIdString, @NotNull ConnectionType connectionType);
+    ServerIdentifier create(@NotNull String serverInfo);
   }
 }

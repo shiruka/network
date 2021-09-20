@@ -1,7 +1,7 @@
 package io.github.shiruka.network.options;
 
 import com.google.common.base.Preconditions;
-import io.netty.buffer.ByteBuf;
+import io.github.shiruka.network.PacketBuffer;
 import io.netty.buffer.Unpooled;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +18,7 @@ public interface RakNetMagic {
    * @return magic.
    */
   @NotNull
-  static RakNetMagic from(@NotNull final ByteBuf buffer) {
+  static RakNetMagic from(@NotNull final PacketBuffer buffer) {
     final var magicData = new byte[16];
     buffer.readBytes(magicData);
     return RakNetMagic.from(magicData);
@@ -51,7 +51,7 @@ public interface RakNetMagic {
    *
    * @param buffer the buffer.
    */
-  void read(@NotNull ByteBuf buffer);
+  void read(@NotNull PacketBuffer buffer);
 
   /**
    * verifies the given magic.
@@ -65,7 +65,7 @@ public interface RakNetMagic {
    *
    * @param buffer the buffer to write.
    */
-  void write(@NotNull ByteBuf buffer);
+  void write(@NotNull PacketBuffer buffer);
 
   /**
    * a simple implementation of {@link RakNetMagic}.
@@ -90,7 +90,7 @@ public interface RakNetMagic {
     private static final RakNetMagic INSTANCE = RakNetMagic.from(Impl.DEFAULT);
 
     @Override
-    public void read(@NotNull final ByteBuf buffer) {
+    public void read(@NotNull final PacketBuffer buffer) {
       for (final var data : this.magic) {
         Preconditions.checkArgument(buffer.readByte() == data, "Incorrect RakNet magic value");
       }
@@ -98,13 +98,13 @@ public interface RakNetMagic {
 
     @Override
     public void verify(@NotNull final RakNetMagic magic) {
-      final var buffer = Unpooled.buffer(16);
+      final var buffer = new PacketBuffer(Unpooled.buffer(16));
       this.write(buffer);
       magic.read(buffer);
     }
 
     @Override
-    public void write(@NotNull final ByteBuf buffer) {
+    public void write(@NotNull final PacketBuffer buffer) {
       buffer.writeBytes(this.magic);
     }
   }

@@ -1,11 +1,9 @@
 package io.github.shiruka.network.packets;
 
-import io.github.shiruka.network.ConnectionType;
-import io.github.shiruka.network.Failable;
-import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.ServerIdentifier;
+import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,13 +16,7 @@ import org.jetbrains.annotations.Nullable;
  */
 @Setter
 @Accessors(fluent = true)
-public final class UnconnectedPong extends Packet implements Failable {
-
-  /**
-   * the server's connection type.
-   */
-  @Nullable
-  public ConnectionType connectionType;
+public final class UnconnectedPong implements Packet {
 
   /**
    * the server's identifier.
@@ -33,16 +25,16 @@ public final class UnconnectedPong extends Packet implements Failable {
   public ServerIdentifier identifier;
 
   /**
-   * whether or not the magic bytes read in the packet are valid.
+   * the magic.
    */
-  @Getter
-  public boolean magic;
+  @Nullable
+  public RakNetMagic magic;
 
   /**
-   * the server's pong ID.
+   * the server id.
    */
   @Getter
-  public long pongId;
+  public long serverId;
 
   /**
    * the timestamp sent in the ping packet.
@@ -51,38 +43,42 @@ public final class UnconnectedPong extends Packet implements Failable {
   public long timestamp;
 
   /**
-   * whether or not the packet failed to encode/decode.
-   */
-  @Getter
-  private boolean failed;
-
-  /**
    * ctor.
    */
   public UnconnectedPong() {
-    super(Ids.UNCONNECTED_PONG);
   }
 
   /**
-   * obtains the connection type.
+   * ctor.
    *
-   * @return connection type.
+   * @param identifier the identifier.
+   * @param magic the magic.
+   * @param serverId the server id.
+   * @param timestamp the timestamp
    */
-  @NotNull
-  public ConnectionType connectionType() {
-    return this.connectionType == null
-      ? ConnectionType.RAK_NET
-      : this.connectionType;
+  public UnconnectedPong(@Nullable final ServerIdentifier identifier, @Nullable final RakNetMagic magic,
+                         final long serverId, final long timestamp) {
+    this.identifier = identifier;
+    this.magic = magic;
+    this.serverId = serverId;
+    this.timestamp = timestamp;
+  }
+
+  @Override
+  public void decode(@NotNull final PacketBuffer buffer) {
+    this.timestamp = buffer.readLong();
+    this.serverId = buffer.readLong();
+    this.magic = RakNetMagic.from(buffer);
+    final var serverInfo = buffer.readString();
+    this.identifier = ServerIdentifier.create(serverInfo);
   }
 
   @Override
   public void encode(@NotNull final PacketBuffer buffer) {
-    this.unchecked(buffer, () -> buffer
-      .writeLong(this.timestamp)
-      .writeLong(this.pongId)
-      .writeMagic()
-      .writeString(this.identifier().build())
-      .writeConnectionType(this.connectionType()));
+    buffer.writeLong(this.timestamp);
+    buffer.writeLong(this.serverId);
+    this.magic().write(buffer);
+    buffer.writeString(this.identifier().build());
   }
 
   /**
@@ -95,14 +91,13 @@ public final class UnconnectedPong extends Packet implements Failable {
     return Objects.requireNonNull(this.identifier, "identifier");
   }
 
-  @Override
-  public void onFail(@NotNull final PacketBuffer buffer) {
-    this.timestamp = 0;
-    this.pongId = 0;
-    this.magic = false;
-    this.identifier = null;
-    this.connectionType = null;
-    buffer.clear();
-    this.failed = true;
+  /**
+   * obtains the magic.
+   *
+   * @return magic.
+   */
+  @NotNull
+  public RakNetMagic magic() {
+    return Objects.requireNonNull(this.magic, "magic");
   }
 }

@@ -4,68 +4,56 @@ import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * a class that represents unconnected ping open connections packets.
+ * a class that represents connection failed packets.
  */
 @Setter
 @Accessors(fluent = true)
-public final class UnconnectedPingOpenConnections implements Packet {
+public final class ConnectionFailed implements Packet {
 
   /**
-   * the client ID.
+   * the code.
    */
-  @Getter
-  private long clientId;
+  public long code;
 
   /**
    * the magic.
    */
   @Nullable
-  private RakNetMagic magic;
-
-  /**
-   * the timestamp of the sender.
-   */
-  @Getter
-  private long timestamp;
+  public RakNetMagic magic;
 
   /**
    * ctor.
    */
-  public UnconnectedPingOpenConnections() {
+  public ConnectionFailed() {
   }
 
   /**
    * ctor.
    *
+   * @param code the code.
    * @param magic the magic.
-   * @param clientId the client id.
-   * @param timestamp the timestamp.
    */
-  public UnconnectedPingOpenConnections(@Nullable final RakNetMagic magic, final long clientId, final long timestamp) {
+  public ConnectionFailed(final long code, @NotNull final RakNetMagic magic) {
+    this.code = code;
     this.magic = magic;
-    this.clientId = clientId;
-    this.timestamp = timestamp;
   }
 
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {
-    this.timestamp = buffer.readLong();
     this.magic = RakNetMagic.from(buffer);
-    this.clientId = buffer.readLong();
+    this.code = buffer.readLong();
   }
 
   @Override
   public void encode(@NotNull final PacketBuffer buffer) {
-    buffer.writeLong(this.timestamp);
     this.magic().write(buffer);
-    buffer.writeLong(this.clientId);
+    buffer.writeLong(this.code);
   }
 
   /**

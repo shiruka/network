@@ -1,10 +1,8 @@
 package io.github.shiruka.network.packets;
 
-import io.github.shiruka.network.ConnectionType;
-import io.github.shiruka.network.Failable;
-import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
+import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,31 +15,19 @@ import org.jetbrains.annotations.Nullable;
  */
 @Setter
 @Accessors(fluent = true)
-public final class UnconnectedPing extends Packet implements Failable {
+public final class UnconnectedPing implements Packet {
 
   /**
-   * the client's connection type.
+   * the client id.
+   */
+  @Getter
+  private long clientId;
+
+  /**
+   * the magic.
    */
   @Nullable
-  private ConnectionType connectionType;
-
-  /**
-   * the failed.
-   */
-  @Getter
-  private boolean failed;
-
-  /**
-   * whether or not the magic bytes read in the packet are valid.
-   */
-  @Getter
-  private boolean magic;
-
-  /**
-   * the client's ping ID.
-   */
-  @Getter
-  private long pingId;
+  private RakNetMagic magic;
 
   /**
    * the timestamp of the sender.
@@ -53,36 +39,42 @@ public final class UnconnectedPing extends Packet implements Failable {
    * ctor.
    */
   public UnconnectedPing() {
-    super(Ids.UNCONNECTED_PING);
   }
 
   /**
-   * obtains the connection type.
+   * ctor.
    *
-   * @return connection type.
+   * @param magic the magic.
+   * @param clientId the client id.
+   * @param timestamp the timestamp.
    */
-  @NotNull
-  public ConnectionType connectionType() {
-    return Objects.requireNonNull(this.connectionType, "connection type");
+  public UnconnectedPing(@NotNull final RakNetMagic magic, final long clientId, final long timestamp) {
+    this.magic = magic;
+    this.clientId = clientId;
+    this.timestamp = timestamp;
   }
 
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {
-    this.unchecked(buffer, () -> {
-      this.timestamp = buffer.readLong();
-      this.magic = buffer.readMagic();
-      this.pingId = buffer.readLong();
-      this.connectionType = buffer.readConnectionType();
-    });
+    this.timestamp = buffer.readLong();
+    this.magic = RakNetMagic.from(buffer);
+    this.clientId = buffer.readLong();
   }
 
   @Override
-  public void onFail(@NotNull final PacketBuffer buffer) {
-    this.timestamp = 0;
-    this.magic = false;
-    this.pingId = 0;
-    this.connectionType = null;
-    buffer.clear();
-    this.failed = true;
+  public void encode(@NotNull final PacketBuffer buffer) {
+    buffer.writeLong(this.timestamp);
+    this.magic().write(buffer);
+    buffer.writeLong(this.clientId);
+  }
+
+  /**
+   * obtains the magic.
+   *
+   * @return magic.
+   */
+  @NotNull
+  public RakNetMagic magic() {
+    return Objects.requireNonNull(this.magic, "magic");
   }
 }

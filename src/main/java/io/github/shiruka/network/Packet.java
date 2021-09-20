@@ -1,48 +1,32 @@
 package io.github.shiruka.network;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * an abstract class that represents packets.
+ * an interface to determine rak net packets.
  */
-@Getter
-@Accessors(fluent = true)
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class Packet {
-
-  /**
-   * the id.
-   */
-  private final int id;
+public interface Packet {
 
   /**
    * decodes the packet.
    *
    * @param buffer the buffer to decode.
    */
-  public void decode(@NotNull final PacketBuffer buffer) {
-    throw new UnsupportedOperationException();
-  }
+  void decode(@NotNull PacketBuffer buffer);
 
   /**
    * encodes the packet.
    *
    * @param buffer the buffer to encode.
    */
-  public void encode(@NotNull final PacketBuffer buffer) {
-    throw new UnsupportedOperationException();
-  }
+  void encode(@NotNull PacketBuffer buffer);
 
   /**
    * obtains the initial size hint.
    *
    * @return initial size hint.
    */
-  public int initialSizeHint() {
+  default int initialSizeHint() {
     return 128;
   }
 }

@@ -1,5 +1,6 @@
 package io.github.shiruka.network.packets;
 
+import com.google.common.base.Preconditions;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
@@ -11,17 +12,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * a class that represents unconnected ping open connections packets.
+ * a class that represents connection request 1 packets.
  */
 @Setter
 @Accessors(fluent = true)
-public final class UnconnectedPingOpenConnections implements Packet {
-
-  /**
-   * the client ID.
-   */
-  @Getter
-  private long clientId;
+public final class ConnectionRequest1 implements Packet {
 
   /**
    * the magic.
@@ -30,42 +25,53 @@ public final class UnconnectedPingOpenConnections implements Packet {
   private RakNetMagic magic;
 
   /**
-   * the timestamp of the sender.
+   * the mtu.
    */
   @Getter
-  private long timestamp;
+  private int mtu;
+
+  /**
+   * the protocol version.
+   */
+  @Getter
+  private int protocolVersion;
 
   /**
    * ctor.
    */
-  public UnconnectedPingOpenConnections() {
+  public ConnectionRequest1() {
   }
 
   /**
    * ctor.
    *
    * @param magic the magic.
-   * @param clientId the client id.
-   * @param timestamp the timestamp.
+   * @param protocolVersion the protocol version.
+   * @param mtu the mtu.
    */
-  public UnconnectedPingOpenConnections(@Nullable final RakNetMagic magic, final long clientId, final long timestamp) {
+  public ConnectionRequest1(@NotNull final RakNetMagic magic, final int protocolVersion, final int mtu) {
     this.magic = magic;
-    this.clientId = clientId;
-    this.timestamp = timestamp;
+    this.protocolVersion = protocolVersion;
+    this.mtu = mtu;
   }
 
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {
-    this.timestamp = buffer.readLong();
+    this.mtu = buffer.remaining();
     this.magic = RakNetMagic.from(buffer);
-    this.clientId = buffer.readLong();
+    this.protocolVersion = buffer.readByte();
+    buffer.skip(buffer.remaining());
+    Preconditions.checkArgument(this.mtu >= 128, "ConnectionRequest1 MTU is too small!");
+    if (this.mtu > 8192) {
+      this.mtu = 8192;
+    }
   }
 
   @Override
   public void encode(@NotNull final PacketBuffer buffer) {
-    buffer.writeLong(this.timestamp);
-    this.magic().write(buffer);
-    buffer.writeLong(this.clientId);
+    this.magic.write(buffer);
+    buffer.writeByte(this.protocolVersion);
+    buffer.writeZero(this.mtu - buffer.remaining());
   }
 
   /**
