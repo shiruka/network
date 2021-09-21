@@ -12,6 +12,35 @@ public final class Integers {
   }
 
   /**
+   * a class that represents b2 math operations.
+   */
+  public static final class B2 {
+
+    /**
+     * the max value.
+     */
+    private static final int MAX_VALUE = (1 << Byte.SIZE * 2) - 1;
+
+    /**
+     * ctor.
+     */
+    private B2() {
+    }
+
+    /**
+     * plus.
+     *
+     * @param value the value to plus.
+     * @param add the add to plus.
+     *
+     * @return plus.
+     */
+    public static int plus(final int value, final int add) {
+      return value + add & B2.MAX_VALUE;
+    }
+  }
+
+  /**
    * a class that represents b3 math operations.
    */
   public static final class B3 {

@@ -169,6 +169,23 @@ public interface RakNetConfig extends ChannelConfig {
   RakNetConfig maxConnections(int maxConnections);
 
   /**
+   * obtains the max queued bytes.
+   *
+   * @return max queued bytes.
+   */
+  int maxQueuedBytes();
+
+  /**
+   * sets the max queued bytes.
+   *
+   * @param maxQueuedBytes the max queued bytes tos et.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  RakNetConfig maxQueuedBytes(int maxQueuedBytes);
+
+  /**
    * obtains the mtu.
    *
    * @return mtu.
@@ -267,6 +284,11 @@ public interface RakNetConfig extends ChannelConfig {
      */
     @Getter
     private volatile int maxConnections = 2048;
+
+    /**
+     * the max queued bytes.
+     */
+    private volatile int maxQueuedBytes = 3 * 1024 * 1024;
 
     /**
      * the mtu.

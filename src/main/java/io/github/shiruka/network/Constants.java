@@ -1,6 +1,7 @@
 package io.github.shiruka.network;
 
 import io.netty.channel.ChannelFutureListener;
+import io.netty.util.internal.SystemPropertyUtil;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.security.SecureRandom;
@@ -50,6 +51,11 @@ public final class Constants {
    * the length of IPv6 addresses.
    */
   public static final int IPV6_ADDRESS_LENGTH = 16;
+
+  /**
+   * the max packet loss.
+   */
+  public static final int MAX_PACKET_LOSS = SystemPropertyUtil.getInt("raknetserver.maxPacketLoss", 8192);
 
   /**
    * the null address.
