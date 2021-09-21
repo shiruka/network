@@ -18,7 +18,7 @@ public final class FrameSplitter extends MessageToMessageEncoder<Frame> {
   public static final String NAME = "rn-split";
 
   /**
-   * the netx reliable id.
+   * the next reliable id.
    */
   private int nextReliableId = 0;
 

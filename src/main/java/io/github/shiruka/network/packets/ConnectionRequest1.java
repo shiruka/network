@@ -69,7 +69,7 @@ public final class ConnectionRequest1 implements Packet {
 
   @Override
   public void encode(@NotNull final PacketBuffer buffer) {
-    this.magic.write(buffer);
+    this.magic().write(buffer);
     buffer.writeByte(this.protocolVersion);
     buffer.writeZero(this.mtu - buffer.remaining());
   }

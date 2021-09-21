@@ -18,14 +18,14 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
   public static final String NAME = "rn-flush-tick";
 
   /**
-   * the tick resolution.
-   */
-  public static final long TICK_RESOLUTION = TimeUnit.NANOSECONDS.convert(5, TimeUnit.MILLISECONDS);
-
-  /**
    * fired near the end of a pipeline to trigger a flush check.
    */
   private static final Object FLUSH_CHECK_SIGNAL = new Object();
+
+  /**
+   * the tick resolution.
+   */
+  private static final long TICK_RESOLUTION = TimeUnit.NANOSECONDS.convert(5, TimeUnit.MILLISECONDS);
 
   /**
    * the flush task.

@@ -452,18 +452,18 @@ public interface RakNetConfig extends ChannelConfig {
     }
 
     @Override
-    public long rttNanos() {
+    public final long rttNanos() {
       return Math.max((long) this.rttStats.getMean(), 1);
     }
 
     @Override
-    public void rttNanos(final long rtt) {
+    public final void rttNanos(final long rtt) {
       this.rttStats.clear();
       this.rttStats.addValue(rtt);
     }
 
     @Override
-    public long rttStdDevNanos() {
+    public final long rttStdDevNanos() {
       return (long) this.rttStats.getStandardDeviation();
     }
 

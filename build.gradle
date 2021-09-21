@@ -12,6 +12,7 @@ sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
 compileJava {
+  options.deprecation true
   options.encoding "UTF-8"
 }
 

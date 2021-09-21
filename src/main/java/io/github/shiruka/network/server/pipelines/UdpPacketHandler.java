@@ -5,6 +5,7 @@ import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetConfig;
 import io.github.shiruka.network.packets.FramedPacket;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.DatagramPacket;
@@ -45,6 +46,48 @@ public abstract class UdpPacketHandler<T extends Packet> extends SimpleChannelIn
     Preconditions.checkArgument(!FramedPacket.class.isAssignableFrom(type),
       "Framed packet types cannot be directly handled by UdpPacketHandler");
     this.type = type;
+  }
+
+  /**
+   * resends the packet.
+   *
+   * @param ctx the ctx to resend.
+   * @param sender the sender to resend.
+   * @param packet the packet to resend.
+   */
+  protected static void resendRequest(@NotNull final ChannelHandlerContext ctx, @NotNull final InetSocketAddress sender,
+                                      @NotNull final Packet packet) {
+    final var config = RakNetConfig.cast(ctx);
+    final var buf = new PacketBuffer(ctx.alloc().ioBuffer(packet.initialSizeHint()));
+    try {
+      config.codec().encode(packet, buf);
+      ctx.pipeline().fireChannelRead(new DatagramPacket(buf.retain().buffer(), null, sender))
+        .fireChannelReadComplete();
+    } finally {
+      ReferenceCountUtil.safeRelease(packet);
+      buf.release();
+    }
+  }
+
+  /**
+   * sends response.
+   *
+   * @param ctx the ctx to send.
+   * @param sender the sender to send.
+   * @param packet the packet to send.
+   */
+  protected static void sendResponse(@NotNull final ChannelHandlerContext ctx, @NotNull final InetSocketAddress sender,
+                                     @NotNull final Packet packet) {
+    final var config = RakNetConfig.cast(ctx);
+    final var buf = new PacketBuffer(ctx.alloc().ioBuffer(packet.initialSizeHint()));
+    try {
+      config.codec().encode(packet, buf);
+      final var datagram = new DatagramPacket(buf.retain().buffer(), sender);
+      ctx.writeAndFlush(datagram).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+    } finally {
+      ReferenceCountUtil.safeRelease(packet);
+      buf.release();
+    }
   }
 
   @Override

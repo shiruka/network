@@ -21,6 +21,6 @@ public final class ReliableFrameHandling extends ChannelInitializer<Channel> {
       .addLast(FrameSplitter.NAME, new FrameSplitter())
       .addLast(FrameOrderIn.NAME, new FrameOrderIn())
       .addLast(FrameOrderOut.NAME, new FrameOrderOut())
-      .addLast(FramedPacketCodec.NAME, new FramedPacketCodec());
+      .addLast(FramedPacketCodec.NAME, FramedPacketCodec.INSTANCE);
   }
 }

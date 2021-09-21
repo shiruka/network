@@ -41,11 +41,6 @@ public final class Frame extends AbstractReferenceCounted {
   public static final int HEADER_SIZE = 24;
 
   /**
-   * the split flag.
-   */
-  public static final int SPLIT_FLAG = 0x10;
-
-  /**
    * the leak detector.
    */
   private static final ResourceLeakDetector<Frame> LEAK_DETECTOR =
@@ -55,6 +50,11 @@ public final class Frame extends AbstractReferenceCounted {
    * the recycler.
    */
   private static final ObjectPool<Frame> RECYCLER = ObjectPool.newPool(Frame::new);
+
+  /**
+   * the split flag.
+   */
+  private static final int SPLIT_FLAG = 0x10;
 
   /**
    * the handle.
@@ -178,6 +178,30 @@ public final class Frame extends AbstractReferenceCounted {
   }
 
   /**
+   * creates a raw frame.
+   *
+   * @return raw frame.
+   */
+  @NotNull
+  private static Frame createRaw() {
+    final var out = Frame.RECYCLER.get();
+    assert out.refCnt() == 0;
+    assert out.tracker == null;
+    assert out.frameData == null;
+    assert out.promise == null;
+    out.hasSplit(false)
+      .reliableIndex(0)
+      .sequenceIndex(0)
+      .orderIndex(0)
+      .splitCount(0)
+      .splitId(0)
+      .splitIndex(0)
+      .setRefCnt(1);
+    out.tracker(Frame.LEAK_DETECTOR.track(out));
+    return out;
+  }
+
+  /**
    * reads the buffer and creates a frame.
    *
    * @param buffer the buffer to create.
@@ -185,7 +209,7 @@ public final class Frame extends AbstractReferenceCounted {
    * @return frame.
    */
   @NotNull
-  public static Frame read(@NotNull final PacketBuffer buffer) {
+  private static Frame read(@NotNull final PacketBuffer buffer) {
     final var out = Frame.createRaw();
     try {
       final var flags = buffer.readUnsignedByte();
@@ -217,30 +241,6 @@ public final class Frame extends AbstractReferenceCounted {
     } finally {
       out.release();
     }
-  }
-
-  /**
-   * creates a raw frame.
-   *
-   * @return raw frame.
-   */
-  @NotNull
-  private static Frame createRaw() {
-    final var out = Frame.RECYCLER.get();
-    assert out.refCnt() == 0;
-    assert out.tracker == null;
-    assert out.frameData == null;
-    assert out.promise == null;
-    out.hasSplit(false)
-      .reliableIndex(0)
-      .sequenceIndex(0)
-      .orderIndex(0)
-      .splitCount(0)
-      .splitId(0)
-      .splitIndex(0)
-      .setRefCnt(1);
-    out.tracker(Frame.LEAK_DETECTOR.track(out));
-    return out;
   }
 
   /**
@@ -335,23 +335,6 @@ public final class Frame extends AbstractReferenceCounted {
   }
 
   /**
-   * produces to the out.
-   *
-   * @param alloc the alloc to produce.
-   * @param out the out to produce.
-   */
-  public void produce(@NotNull final ByteBufAllocator alloc, @NotNull final PacketBuffer out) {
-    final var header = new PacketBuffer(alloc.ioBuffer(Frame.HEADER_SIZE, Frame.HEADER_SIZE));
-    try {
-      this.writeHeader(header);
-      out.addComponent(true, header.retain());
-      out.addComponent(true, this.frameData().createData());
-    } finally {
-      header.release();
-    }
-  }
-
-  /**
    * obtains the frame data's reliability.
    *
    * @return frame data's reliability.
@@ -420,16 +403,6 @@ public final class Frame extends AbstractReferenceCounted {
   }
 
   /**
-   * writes into the buffer.
-   *
-   * @param buffer the buffer to write.
-   */
-  public void write(@NotNull final PacketBuffer buffer) {
-    this.writeHeader(buffer);
-    this.frameData().write(buffer);
-  }
-
-  /**
    * writes header.
    *
    * @param buffer the buffer to write.
@@ -453,6 +426,33 @@ public final class Frame extends AbstractReferenceCounted {
       buffer.writeShort(this.splitId);
       buffer.writeInt(this.splitIndex);
     }
+  }
+
+  /**
+   * produces to the out.
+   *
+   * @param alloc the alloc to produce.
+   * @param out the out to produce.
+   */
+  private void produce(@NotNull final ByteBufAllocator alloc, @NotNull final PacketBuffer out) {
+    final var header = new PacketBuffer(alloc.ioBuffer(Frame.HEADER_SIZE, Frame.HEADER_SIZE));
+    try {
+      this.writeHeader(header);
+      out.addComponent(true, header.retain());
+      out.addComponent(true, this.frameData().createData());
+    } finally {
+      header.release();
+    }
+  }
+
+  /**
+   * writes into the buffer.
+   *
+   * @param buffer the buffer to write.
+   */
+  private void write(@NotNull final PacketBuffer buffer) {
+    this.writeHeader(buffer);
+    this.frameData().write(buffer);
   }
 
   /**
@@ -709,7 +709,7 @@ public final class Frame extends AbstractReferenceCounted {
      *
      * @param buffer the buffer to write.
      */
-    public void write(@NotNull final PacketBuffer buffer) {
+    private void write(@NotNull final PacketBuffer buffer) {
       buffer.writeBytes(this.data(), this.data().readerIndex(), this.data().remaining());
     }
   }
@@ -833,7 +833,7 @@ public final class Frame extends AbstractReferenceCounted {
     /**
      * creates frames.
      *
-     * @param consumer the consumer to craete.
+     * @param consumer the consumer to create.
      */
     public void createFrames(@NotNull final Consumer<Frame> consumer) {
       this.frames.forEach(frame -> consumer.accept(frame.retain()));
@@ -973,7 +973,7 @@ public final class Frame extends AbstractReferenceCounted {
      *
      * @param buffer the buffer to write.
      */
-    public void writeHeader(@NotNull final PacketBuffer buffer) {
+    private void writeHeader(@NotNull final PacketBuffer buffer) {
       buffer.writeByte(Ids.FRAME_DATA_START);
       buffer.writeTriadLE(this.sequenceId);
     }
