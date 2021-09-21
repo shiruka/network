@@ -118,17 +118,6 @@ public record PacketBuffer(
   }
 
   /**
-   * gets the unsigned byte.
-   *
-   * @param length the length
-   *
-   * @return unsigned byte.
-   */
-  public short unsignedByte(final int length) {
-    return this.buffer.getUnsignedByte(length);
-  }
-
-  /**
    * checks if the buffer is readable.
    *
    * @return {@code true} if the buffer is readable.
@@ -590,6 +579,17 @@ public record PacketBuffer(
    */
   public void touch(@NotNull final Object hint) {
     this.buffer.touch(hint);
+  }
+
+  /**
+   * gets the unsigned byte.
+   *
+   * @param length the length
+   *
+   * @return unsigned byte.
+   */
+  public short unsignedByte(final int length) {
+    return this.buffer.getUnsignedByte(length);
   }
 
   /**
