@@ -68,11 +68,6 @@ public final class Constants {
   public static final Random RANDOM = new SecureRandom();
 
   /**
-   * the version.
-   */
-  public static final String VERSION = "@version@";
-
-  /**
    * ctor.
    */
   private Constants() {
