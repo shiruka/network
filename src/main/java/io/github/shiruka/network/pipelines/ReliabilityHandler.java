@@ -256,14 +256,14 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ack the ack to read.
    */
   private void readAck(@NotNull final ChannelHandlerContext ctx, @NotNull final Ack ack) {
-    var ackdBytes = 0;
+//    var ackdBytes = 0;
     var nIterations = 0;
     for (final var entry : ack.entries()) {
       final var max = Integers.B3.plus(entry.idFinish(), 1);
       for (var id = entry.idStart(); id != max; id = Integers.B3.plus(id, 1)) {
         final var frameSet = this.pendingFrameSets.remove(id);
         if (frameSet != null) {
-          ackdBytes += frameSet.roughSize();
+//          ackdBytes += frameSet.roughSize();
           this.adjustResendGauge(ctx, 1);
           frameSet.succeed();
           frameSet.release();
@@ -303,14 +303,14 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param nack the nack to read.
    */
   private void readNack(@NotNull final ChannelHandlerContext ctx, @NotNull final Nack nack) {
-    var bytesNACKd = 0;
+//    var bytesNACKd = 0;
     var nIterations = 0;
     for (final var entry : nack.entries()) {
       final var max = Integers.B3.plus(entry.idFinish(), 1);
       for (var id = entry.idStart(); id != max; id = Integers.B3.plus(id, 1)) {
         final var frameSet = this.pendingFrameSets.remove(id);
         if (frameSet != null) {
-          bytesNACKd += frameSet.roughSize();
+//          bytesNACKd += frameSet.roughSize();
           this.recallFrameSet(ctx, frameSet);
         }
         if (nIterations++ > Constants.MAX_PACKET_LOSS) {
