@@ -1,5 +1,7 @@
 package io.github.shiruka.network.utils;
 
+import it.unimi.dsi.fastutil.ints.IntComparator;
+
 /**
  * a class that contains utility methods for integers.
  */
@@ -46,6 +48,11 @@ public final class Integers {
   public static final class B3 {
 
     /**
+     * the comparator.
+     */
+    public static final IntComparator COMPARATOR = new Comparator();
+
+    /**
      * the max value.
      */
     private static final int MAX_VALUE = (1 << Byte.SIZE * 3) - 1;
@@ -90,6 +97,18 @@ public final class Integers {
      */
     public static int plus(final int value, final int add) {
       return value + add & B3.MAX_VALUE;
+    }
+
+    /**
+     * a class that represents int comparators.
+     */
+    public static final class Comparator implements IntComparator {
+
+      @Override
+      public int compare(final int k1, final int k2) {
+        final var d = B3.minusWrap(k1, k2);
+        return Integer.compare(d, 0);
+      }
     }
   }
 }

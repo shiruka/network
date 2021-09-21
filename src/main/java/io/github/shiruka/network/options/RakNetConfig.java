@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -134,6 +135,23 @@ public interface RakNetConfig extends ChannelConfig {
   boolean containsProtocolVersion(int protocolVersion);
 
   /**
+   * sets the default pending frame sets
+   *
+   * @param defaultPendingFrameSets the default pending frame sets to set.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  RakNetConfig defaultPendingFrameSets(int defaultPendingFrameSets);
+
+  /**
+   * obtains the default pending frame sets.
+   *
+   * @return default pending frame sets.
+   */
+  int defaultPendingFrameSets();
+
+  /**
    * obtains the magic.
    *
    * @return magic.
@@ -169,6 +187,23 @@ public interface RakNetConfig extends ChannelConfig {
   RakNetConfig maxConnections(int maxConnections);
 
   /**
+   * obtains the max pending frame sets.
+   *
+   * @return max pending frame sets.
+   */
+  int maxPendingFrameSets();
+
+  /**
+   * sets the max pending frame sets.
+   *
+   * @param maxPendingFrameSets the max pending frame sets set.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  RakNetConfig maxPendingFrameSets(int maxPendingFrameSets);
+
+  /**
    * obtains the max queued bytes.
    *
    * @return max queued bytes.
@@ -178,7 +213,7 @@ public interface RakNetConfig extends ChannelConfig {
   /**
    * sets the max queued bytes.
    *
-   * @param maxQueuedBytes the max queued bytes tos et.
+   * @param maxQueuedBytes the max queued bytes to set.
    *
    * @return {@code this} for the builder chain.
    */
@@ -218,6 +253,44 @@ public interface RakNetConfig extends ChannelConfig {
    * @return protocol version.
    */
   int protocolVersion();
+
+  /**
+   * obtains the retry delay nanos.
+   *
+   * @return retry delay nanos.
+   */
+  long retryDelayNanos();
+
+  /**
+   * sets the retry delay nanos.
+   *
+   * @param retryDelayNanos the retry delay nanos to set.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  RakNetConfig retryDelayNanos(long retryDelayNanos);
+
+  /**
+   * obtains the rtt nanos.
+   *
+   * @return rtt nanos.
+   */
+  long rttNanos();
+
+  /**
+   * sets the rtt nanos.
+   *
+   * @param rtt the rtt to set.
+   */
+  void rttNanos(long rtt);
+
+  /**
+   * obtains the rtt std dev nanos.
+   *
+   * @return rtt std dev nanos.
+   */
+  long rttStdDevNanos();
 
   /**
    * obtains the server id.
@@ -274,6 +347,11 @@ public interface RakNetConfig extends ChannelConfig {
     private volatile RakNetCodec codec = RakNetCodec.simple();
 
     /**
+     * the default pending frame sets.
+     */
+    private volatile int defaultPendingFrameSets = 32;
+
+    /**
      * the magic.
      */
     @Getter
@@ -284,6 +362,11 @@ public interface RakNetConfig extends ChannelConfig {
      */
     @Getter
     private volatile int maxConnections = 2048;
+
+    /**
+     * the max pending frame sets.
+     */
+    private volatile int maxPendingFrameSets = 1024;
 
     /**
      * the max queued bytes.
@@ -305,6 +388,11 @@ public interface RakNetConfig extends ChannelConfig {
      * the protocol versions.
      */
     private volatile int[] protocolVersions = new int[]{9, 10};
+
+    /**
+     * the retry delay nanos.
+     */
+    private volatile long retryDelayNanos = TimeUnit.NANOSECONDS.convert(15, TimeUnit.MILLISECONDS);
 
     /**
      * the server id.
@@ -335,6 +423,22 @@ public interface RakNetConfig extends ChannelConfig {
     @Override
     public final boolean containsProtocolVersion(final int protocolVersion) {
       return Arrays.stream(this.protocolVersions).anyMatch(version -> version == protocolVersion);
+    }
+
+    @Override
+    public long rttNanos() {
+      return Math.max((long) this.rttStats.getMean(), 1);
+    }
+
+    @Override
+    public void rttNanos(final long rtt) {
+      this.rttStats.clear();
+      this.rttStats.addValue(rtt);
+    }
+
+    @Override
+    public long rttStdDevNanos() {
+      return (long) this.rttStats.getStandardDeviation();
     }
 
     @Override

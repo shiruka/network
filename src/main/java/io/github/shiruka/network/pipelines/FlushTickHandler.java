@@ -119,10 +119,11 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
   /**
    * a record class that represents missed flushes.
    *
-   * @param nFlushes the n flushes.
+   * @param flushes the flushes.
    */
-  private record MissedFlushes(
-    int nFlushes) {
+  public record MissedFlushes(
+    int flushes
+  ) {
 
   }
 }
