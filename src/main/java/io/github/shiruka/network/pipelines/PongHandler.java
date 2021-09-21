@@ -12,8 +12,14 @@ import io.netty.channel.SimpleChannelInboundHandler;
 @ChannelHandler.Sharable
 public final class PongHandler extends SimpleChannelInboundHandler<ConnectedPong> {
 
+  /**
+   * the instance.
+   */
   public static final PongHandler INSTANCE = new PongHandler();
 
+  /**
+   * the name.
+   */
   public static final String NAME = "rn-pong";
 
   @Override

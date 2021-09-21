@@ -281,9 +281,9 @@ public interface RakNetCodec {
      *
      * @param id the id to register.
      * @param cls the cls to register.
+     * @param supplier the supplier to register.
      * @param <T> type of the packet class.
      */
-
     private <T extends Packet> void register(final int id, @NotNull final Class<T> cls,
                                              @NotNull final Supplier<T> supplier) {
       this.register(id, cls, Impl.decodeSimple(supplier), Impl.encodeSimple(id));

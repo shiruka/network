@@ -33,6 +33,7 @@ public final class ConnectionReply2 extends ConnectionReply {
    * @param magic the magic.
    * @param mtu the mtu.
    * @param serverId the server id.
+   * @param address the address.
    */
   public ConnectionReply2(@NotNull final RakNetMagic magic, final int mtu, final long serverId,
                           @NotNull final InetSocketAddress address) {
@@ -40,6 +41,11 @@ public final class ConnectionReply2 extends ConnectionReply {
     this.address = address;
   }
 
+  /**
+   * obtains the address.
+   *
+   * @return address.
+   */
   @NotNull
   public InetSocketAddress address() {
     return Objects.requireNonNull(this.address, "address");

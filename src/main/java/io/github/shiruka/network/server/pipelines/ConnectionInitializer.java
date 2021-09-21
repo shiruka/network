@@ -98,7 +98,7 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
           this.state(State.CR2);
         }
         break;
-      case CR2: {
+      case CR2:
         if (msg instanceof ConnectionRequest request) {
           ctx.writeAndFlush(new ServerHandshake((InetSocketAddress) ctx.channel().remoteAddress(), request.timestamp()))
             .addListener(Constants.INTERNAL_WRITE_LISTENER);
@@ -106,14 +106,14 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
           BaseConnectionInitializer.startPing(ctx);
         }
         break;
-      }
-      case CR3: {
+      case CR3:
         if (msg instanceof ClientHandshake) {
           this.finish(ctx);
           return;
         }
         break;
-      }
+      default:
+        break;
     }
     this.sendRequest(ctx);
   }
@@ -129,21 +129,19 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
     assert ctx.channel().eventLoop().inEventLoop();
     final var config = RakNetConfig.cast(ctx);
     switch (this.state()) {
-      case CR1: {
+      case CR1 -> {
         if (this.seenFirst) {
           ctx.writeAndFlush(new ConnectionReply1(config.magic(), config.mtu(), config.serverId()))
             .addListener(Constants.INTERNAL_WRITE_LISTENER);
         }
-        break;
       }
-      case CR2: {
+      case CR2 -> {
         final var packet = new ConnectionReply2(config.magic(), config.mtu(), config.serverId(),
           (InetSocketAddress) ctx.channel().remoteAddress());
         ctx.writeAndFlush(packet).addListener(Constants.INTERNAL_WRITE_LISTENER);
-        break;
       }
-      case CR3:
-        break;
+      default -> {
+      }
     }
   }
 

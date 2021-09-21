@@ -273,9 +273,17 @@ public final class Frame extends AbstractReferenceCounted {
   }
 
   /**
+   * fragments.
    *
+   * @param splitId the split id to fragment.
+   * @param splitSize the split size to fragment.
+   * @param reliableIndex the reliable index to fragment.
+   * @param outList the out list to fragment.
+   *
+   * @return split count.
    */
-  public int fragment(final int splitID, final int splitSize, int reliableIndex, final List<Object> outList) {
+  public int fragment(final int splitId, final int splitSize, final int reliableIndex, final List<Object> outList) {
+    var tempReliableIndex = reliableIndex;
     final var data = this.frameData().createData();
     try {
       final var dataSplitSize = splitSize - Frame.HEADER_SIZE;
@@ -285,11 +293,11 @@ public final class Frame extends AbstractReferenceCounted {
            splitIndexIterator++) {
         final var length = Math.min(dataSplitSize, data.remaining());
         final var out = Frame.createRaw();
-        out.reliableIndex(reliableIndex)
+        out.reliableIndex(tempReliableIndex)
           .sequenceIndex(this.sequenceIndex)
           .orderIndex(this.orderIndex)
           .splitCount(splitCountTotal)
-          .splitId(splitID)
+          .splitId(splitId)
           .splitIndex(splitIndexIterator)
           .hasSplit(true)
           .frameData(Data.read(data, length, true));
@@ -297,7 +305,7 @@ public final class Frame extends AbstractReferenceCounted {
         out.frameData().reliability(this.reliability().makeReliable());
         assert out.frameData().fragment();
         Preconditions.checkState(out.roughPacketSize() <= splitSize, "mtu fragment mismatch");
-        reliableIndex = Integers.B3.plus(reliableIndex, 1);
+        tempReliableIndex = Integers.B3.plus(tempReliableIndex, 1);
         outList.add(out);
       }
       assert !data.isReadable();
@@ -773,7 +781,7 @@ public final class Frame extends AbstractReferenceCounted {
     }
 
     /**
-     * create a frame set packet
+     * create a frame set packet.
      *
      * @return frame set.
      */

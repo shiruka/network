@@ -38,7 +38,7 @@ public interface FramedPacket extends Packet {
   Reliability reliability();
 
   /**
-   * sets the reliability
+   * sets the reliability.
    *
    * @param reliability the reliability to set.
    *
@@ -91,25 +91,25 @@ public interface FramedPacket extends Packet {
     private static final Reliability[] CACHE = Reliability.values();
 
     /**
-     * the is ackd
+     * the is ackd.
      */
     @Getter
     private final boolean isAckd;
 
     /**
-     * the is ordered
+     * the is ordered.
      */
     @Getter
     private final boolean isOrdered;
 
     /**
-     * the is reliable
+     * the is reliable.
      */
     @Getter
     private final boolean isReliable;
 
     /**
-     * the is sequenced
+     * the is sequenced.
      */
     @Getter
     private final boolean isSequenced;

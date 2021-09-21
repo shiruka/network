@@ -127,7 +127,7 @@ public interface RakNetConfig extends ChannelConfig {
   RakNetConfig codec(@NotNull RakNetCodec codec);
 
   /**
-   * checks if the protocol version contains in the config
+   * checks if the protocol version contains in the config.
    *
    * @param protocolVersion the protocol version to check.
    *
@@ -136,7 +136,7 @@ public interface RakNetConfig extends ChannelConfig {
   boolean containsProtocolVersion(int protocolVersion);
 
   /**
-   * sets the default pending frame sets
+   * sets the default pending frame sets.
    *
    * @param defaultPendingFrameSets the default pending frame sets to set.
    *
