@@ -4,9 +4,7 @@ import io.github.shiruka.network.packets.ConnectedPing;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.ScheduledFuture;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -44,15 +42,5 @@ public final class PingProducer implements ChannelHandler {
   @Override
   public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
     ctx.fireExceptionCaught(cause);
-  }
-
-  /**
-   * obtains the ping task.
-   *
-   * @return ping task.
-   */
-  @NotNull
-  public ScheduledFuture<?> pingTask() {
-    return Objects.requireNonNull(this.pingTask, "ping task");
   }
 }
