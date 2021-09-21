@@ -44,6 +44,15 @@ public final class ConnectionFailed implements Packet {
     this.magic = magic;
   }
 
+  /**
+   * ctor.
+   *
+   * @param magic the magic.
+   */
+  public ConnectionFailed(@NotNull final RakNetMagic magic) {
+    this(0, magic);
+  }
+
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {
     this.magic = RakNetMagic.from(buffer);

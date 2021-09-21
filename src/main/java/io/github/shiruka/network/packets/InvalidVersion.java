@@ -54,6 +54,16 @@ public final class InvalidVersion implements Packet {
     this.serverId = serverId;
   }
 
+  /**
+   * ctor.
+   *
+   * @param magic the magic.
+   * @param serverId the server id.
+   */
+  public InvalidVersion(@NotNull final RakNetMagic magic, final long serverId) {
+    this(magic, 0, serverId);
+  }
+
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {
     this.version = buffer.readUnsignedByte();

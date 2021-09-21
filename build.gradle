@@ -67,6 +67,7 @@ dependencies {
   compileOnly "it.unimi.dsi:fastutil-core:8.5.6"
   compileOnly "it.unimi.dsi:fastutil:8.5.6"
   compileOnly "org.apache.logging.log4j:log4j-api:2.14.1"
+  compileOnly "org.apache.commons:commons-math3:3.6.1"
 
   testImplementation "org.junit.jupiter:junit-jupiter:5.8.0"
 }

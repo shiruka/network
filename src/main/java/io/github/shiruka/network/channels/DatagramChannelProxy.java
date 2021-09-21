@@ -34,9 +34,9 @@ import org.jetbrains.annotations.NotNull;
 public abstract class DatagramChannelProxy implements Channel {
 
   /**
-   * the listener handler name.
+   * the name.
    */
-  private static final String LISTENER_HANDLER_NAME = "rn-udp-listener-handler";
+  private static final String NAME = "rn-udp-listener-handler";
 
   /**
    * the config.
@@ -67,9 +67,9 @@ public abstract class DatagramChannelProxy implements Channel {
     this.parent = supplier.get();
     this.pipeline = this.newChannelPipeline();
     this.parent.pipeline()
-      .addLast(DatagramChannelProxy.LISTENER_HANDLER_NAME, new ListenerInboundProxy(this));
+      .addLast(DatagramChannelProxy.NAME, new ListenerInboundProxy(this));
     this.pipeline()
-      .addLast(DatagramChannelProxy.LISTENER_HANDLER_NAME, new ListenerOutboundProxy(this))
+      .addLast(DatagramChannelProxy.NAME, new ListenerOutboundProxy(this))
       .addLast(new FlushConsolidationHandler(FlushConsolidationHandler.DEFAULT_EXPLICIT_FLUSH_AFTER_FLUSHES, true));
   }
 

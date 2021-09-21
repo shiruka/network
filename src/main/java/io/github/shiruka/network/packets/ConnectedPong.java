@@ -88,11 +88,11 @@ public final class ConnectedPong extends FramedPacket.Base {
   }
 
   /**
-   * gets the rtt.
+   * obtains the rtt.
    *
    * @return rtt.
    */
-  public long getRTT() {
+  public long rtt() {
     return System.nanoTime() - this.timestamp;
   }
 }

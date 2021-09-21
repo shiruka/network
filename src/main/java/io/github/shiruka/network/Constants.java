@@ -17,6 +17,11 @@ public final class Constants {
   public static final int AF_INET6 = 23;
 
   /**
+   * the default mtu.
+   */
+  public static final int DEFAULT_MTU = 8192;
+
+  /**
    * the internal write listener.
    */
   public static final ChannelFutureListener INTERNAL_WRITE_LISTENER = future -> {

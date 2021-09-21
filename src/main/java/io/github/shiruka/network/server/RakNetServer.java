@@ -1,8 +1,14 @@
 package io.github.shiruka.network.server;
 
+import io.github.shiruka.network.pipelines.DatagramConsumer;
+import io.github.shiruka.network.pipelines.FlushTickHandler;
+import io.github.shiruka.network.pipelines.PacketHandling;
+import io.github.shiruka.network.pipelines.RawPacketCodec;
+import io.github.shiruka.network.pipelines.ReliableFrameHandling;
 import io.github.shiruka.network.server.channels.RakNetServerChannel;
+import io.github.shiruka.network.server.pipelines.ConnectionInitializer;
+import io.github.shiruka.network.server.pipelines.ConnectionListener;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +40,7 @@ public interface RakNetServer {
         .addLast(RawPacketCodec.NAME, RawPacketCodec.INSTANCE)
         .addLast(ReliableFrameHandling.INSTANCE)
         .addLast(PacketHandling.INSTANCE)
-        .addLast(ConnectionInitializer.NAME, new ChannelInboundHandlerAdapter());
+        .addLast(ConnectionInitializer.NAME, new ConnectionInitializer(channel.newPromise()));
     }
   }
 

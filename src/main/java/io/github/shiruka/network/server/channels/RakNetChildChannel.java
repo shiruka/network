@@ -4,6 +4,7 @@ import io.github.shiruka.network.Constants;
 import io.github.shiruka.network.options.RakNetChannelOptions;
 import io.github.shiruka.network.options.RakNetConfig;
 import io.github.shiruka.network.server.RakNetServer;
+import io.github.shiruka.network.server.pipelines.ConnectionInitializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.AbstractChannel;
 import io.netty.channel.ChannelHandlerContext;

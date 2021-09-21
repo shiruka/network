@@ -57,6 +57,16 @@ public final class ServerHandshake extends FramedPacket.Base {
   }
 
   /**
+   * ctor.
+   *
+   * @param clientAddress the client address.
+   * @param timestamp the timestamp.
+   */
+  public ServerHandshake(@NotNull final InetSocketAddress clientAddress, final long timestamp) {
+    this(clientAddress, timestamp, 20);
+  }
+
+  /**
    * obtains the client address.
    *
    * @return client address.
