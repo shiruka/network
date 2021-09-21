@@ -32,27 +32,6 @@ public final class PingListener extends UdpPacketHandler<UnconnectedPing> {
   }
 
   /**
-   * resends the request.
-   *
-   * @param ctx the ctx to resend.
-   * @param sender the sender to resend.
-   * @param ping the ping to resend.
-   */
-  private static void resendRequest(@NotNull final ChannelHandlerContext ctx, @NotNull final InetSocketAddress sender,
-                                    @NotNull final Packet ping) {
-    final var config = RakNetConfig.cast(ctx);
-    final var buf = new PacketBuffer(ctx.alloc().ioBuffer(ping.initialSizeHint()));
-    try {
-      config.codec().encode(ping, buf);
-      final var packet = new DatagramPacket(buf.retain().buffer(), null, sender);
-      ctx.pipeline().fireChannelRead(packet).fireChannelReadComplete();
-    } finally {
-      ReferenceCountUtil.safeRelease(ping);
-      buf.release();
-    }
-  }
-
-  /**
    * sends response.
    *
    * @param ctx the ctx to send.

@@ -136,7 +136,6 @@ public final class RakNetServerChannel extends DatagramChannelProxy implements S
       }
       final var content = datagram.content();
       final var packetId = content.getUnsignedByte(content.readerIndex());
-      System.out.println("Packet with id '%s' received!".formatted(packetId));
       final var sender = datagram.sender();
       if (this.channel.config().blockedAddress(sender).map(BlockedAddress::shouldUnblock).isPresent()) {
         datagram.release();

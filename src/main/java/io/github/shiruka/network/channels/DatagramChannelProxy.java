@@ -330,7 +330,6 @@ public abstract class DatagramChannelProxy implements Channel {
 
       @Override
       protected void onUnhandledInboundException(final Throwable cause) {
-        System.out.println("test1");
         if (cause instanceof ClosedChannelException) {
           ReferenceCountUtil.safeRelease(cause);
           return;
@@ -410,7 +409,6 @@ public abstract class DatagramChannelProxy implements Channel {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
-      System.out.println("Packet received!");
       this.channel.pipeline().fireChannelRead(msg);
     }
 

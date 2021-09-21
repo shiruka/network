@@ -20,11 +20,14 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.ReferenceCountUtil;
 import java.net.InetSocketAddress;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * a class that represents connection initializer pipelines.
  */
+@Accessors(fluent = true)
 public final class ConnectionInitializer extends BaseConnectionInitializer {
 
   /**
@@ -35,6 +38,7 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
   /**
    * the mtu fixed.
    */
+  @Setter
   private boolean mtuFixed;
 
   /**
@@ -59,7 +63,7 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
    */
   public static void fixedMTU(@NotNull final Channel channel, final int mtu) {
     channel.eventLoop().execute(() -> {
-      channel.pipeline().get(ConnectionInitializer.class).mtuFixed = true;
+      channel.pipeline().get(ConnectionInitializer.class).mtuFixed(true);
       RakNetConfig.cast(channel).mtu(mtu);
     });
   }
@@ -74,19 +78,19 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
     }
     switch (this.state()) {
       case CR1:
-        if (msg instanceof final ConnectionRequest1 request1) {
+        if (msg instanceof ConnectionRequest1 request1) {
           request1.magic().verify(config.magic());
           if (!this.mtuFixed) {
             config.mtu(request1.mtu());
           }
           this.seenFirst = true;
           if (!config.containsProtocolVersion(request1.protocolVersion())) {
-            final var packet = new InvalidVersion(config.magic(), config.serverId());
-            ctx.writeAndFlush(packet).addListener(ChannelFutureListener.CLOSE);
+            ctx.writeAndFlush(new InvalidVersion(config.magic(), config.serverId()))
+              .addListener(ChannelFutureListener.CLOSE);
             return;
           }
           config.protocolVersion(request1.protocolVersion());
-        } else if (msg instanceof final ConnectionRequest2 request2) {
+        } else if (msg instanceof ConnectionRequest2 request2) {
           request2.magic().verify(config.magic());
           if (!this.mtuFixed) {
             config.mtu(request2.mtu());
@@ -95,7 +99,7 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
         }
         break;
       case CR2: {
-        if (msg instanceof final ConnectionRequest request) {
+        if (msg instanceof ConnectionRequest request) {
           ctx.writeAndFlush(new ServerHandshake((InetSocketAddress) ctx.channel().remoteAddress(), request.timestamp()))
             .addListener(Constants.INTERNAL_WRITE_LISTENER);
           this.state(State.CR3);

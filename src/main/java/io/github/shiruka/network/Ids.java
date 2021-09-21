@@ -18,7 +18,6 @@ import io.github.shiruka.network.packets.Nack;
 import io.github.shiruka.network.packets.NoFreeConnections;
 import io.github.shiruka.network.packets.ServerHandshake;
 import io.github.shiruka.network.packets.UnconnectedPing;
-import io.github.shiruka.network.packets.UnconnectedPingOpenConnections;
 import io.github.shiruka.network.packets.UnconnectedPong;
 
 /**
@@ -125,11 +124,6 @@ public interface Ids {
    * the id of the {@link UnconnectedPing} packet.
    */
   int UNCONNECTED_PING = 1;
-
-  /**
-   * the id of the {@link UnconnectedPingOpenConnections} packet.
-   */
-  int UNCONNECTED_PING_OPEN_CONNECTIONS = 2;
 
   /**
    * the id of the {@link UnconnectedPong} packet.
