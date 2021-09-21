@@ -28,7 +28,7 @@ public final class RawPacketCodec extends MessageToMessageCodec<ByteBuf, Packet>
 
   @Override
   protected void encode(final ChannelHandlerContext ctx, final Packet in, final List<Object> out) {
-    out.add(RakNetConfig.cast(ctx).codec().produceEncoded(in, ctx.alloc()));
+    out.add(RakNetConfig.cast(ctx).codec().produceEncoded(in, ctx.alloc()).buffer());
   }
 
   @Override
