@@ -8,7 +8,9 @@ import io.github.shiruka.network.pipelines.ReliableFrameHandling;
 import io.github.shiruka.network.server.channels.RakNetServerChannel;
 import io.github.shiruka.network.server.pipelines.ConnectionInitializer;
 import io.github.shiruka.network.server.pipelines.ConnectionListener;
+import io.github.shiruka.network.server.pipelines.PingListener;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,6 +24,18 @@ public interface RakNetServer {
    */
   @NotNull
   Class<RakNetServerChannel> CHANNEL = RakNetServerChannel.class;
+
+  /**
+   * casts the context's channel as rak net server channel.
+   *
+   * @param ctx the ctx to cast.
+   *
+   * @return context's channel as rak net server channel.
+   */
+  @NotNull
+  static RakNetServerChannel cast(@NotNull final ChannelHandlerContext ctx) {
+    return (RakNetServerChannel) ctx.channel();
+  }
 
   /**
    * a class that represents default child initializers.
@@ -56,7 +70,9 @@ public interface RakNetServer {
 
     @Override
     protected void initChannel(final Channel channel) {
-      channel.pipeline().addLast(ConnectionListener.NAME, new ConnectionListener());
+      channel.pipeline()
+        .addLast(PingListener.NAME, new PingListener())
+        .addLast(ConnectionListener.NAME, new ConnectionListener());
       channel.eventLoop().execute(() ->
         channel.pipeline().addLast(DatagramConsumer.NAME, DatagramConsumer.INSTANCE));
     }

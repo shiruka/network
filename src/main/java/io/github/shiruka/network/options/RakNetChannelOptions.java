@@ -1,6 +1,7 @@
 package io.github.shiruka.network.options;
 
 import io.github.shiruka.network.BlockedAddress;
+import io.github.shiruka.network.Identifier;
 import io.netty.channel.ChannelOption;
 import io.netty.util.AttributeKey;
 import java.util.Set;
@@ -14,6 +15,11 @@ public interface RakNetChannelOptions {
    * the blocked addresses.
    */
   ChannelOption<Set<BlockedAddress>> BLOCKED_ADDRESSES = ChannelOption.valueOf("RN_BLOCKED_ADDRESSES");
+
+  /**
+   * the client id.
+   */
+  ChannelOption<Long> CLIENT_ID = ChannelOption.valueOf("RN_CLIENT_ID");
 
   /**
    * the magic.
@@ -49,6 +55,11 @@ public interface RakNetChannelOptions {
    * the server id.
    */
   ChannelOption<Long> SERVER_ID = ChannelOption.valueOf("RN_SERVER_ID");
+
+  /**
+   * the server identifier.
+   */
+  ChannelOption<Identifier> SERVER_IDENTIFIER = ChannelOption.valueOf("RN_SERVER_IDENTIFIER");
 
   /**
    * the writable.

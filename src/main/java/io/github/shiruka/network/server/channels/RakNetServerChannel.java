@@ -9,6 +9,7 @@ import io.github.shiruka.network.server.RakNetServer;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.ServerChannel;
 import io.netty.channel.socket.DatagramChannel;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
@@ -16,6 +17,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.PromiseCombiner;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -27,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * a class that represents rak net server channels.
  */
-public final class RakNetServerChannel extends DatagramChannelProxy {
+public final class RakNetServerChannel extends DatagramChannelProxy implements ServerChannel {
 
   /**
    * the child channels(clients).
@@ -59,6 +61,16 @@ public final class RakNetServerChannel extends DatagramChannelProxy {
   public RakNetServerChannel(@NotNull final Class<? extends DatagramChannel> cls) {
     super(cls);
     this.addDefaultPipeline();
+  }
+
+  /**
+   * obtains the children(a.k.a. connections).
+   *
+   * @return children.
+   */
+  @NotNull
+  public Map<SocketAddress, RakNetChildChannel> children() {
+    return Collections.unmodifiableMap(this.children);
   }
 
   /**
@@ -122,6 +134,9 @@ public final class RakNetServerChannel extends DatagramChannelProxy {
         ctx.fireChannelRead(msg);
         return;
       }
+      final var content = datagram.content();
+      final var packetId = content.getUnsignedByte(content.readerIndex());
+      System.out.println("Packet with id '%s' received!".formatted(packetId));
       final var sender = datagram.sender();
       if (this.channel.config().blockedAddress(sender).map(BlockedAddress::shouldUnblock).isPresent()) {
         datagram.release();
@@ -132,7 +147,7 @@ public final class RakNetServerChannel extends DatagramChannelProxy {
         if (child == null && datagram.recipient() != null) {
           ctx.fireChannelRead(datagram.retain());
         } else if (child != null && child.isOpen() && child.config().isAutoRead()) {
-          final var retained = datagram.content().retain();
+          final var retained = content.retain();
           child.eventLoop().execute(() ->
             child.pipeline().fireChannelRead(retained).fireChannelReadComplete());
         }

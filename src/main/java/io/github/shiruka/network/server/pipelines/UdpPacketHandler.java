@@ -51,16 +51,18 @@ public abstract class UdpPacketHandler<T extends Packet> extends SimpleChannelIn
   public final boolean acceptInboundMessage(final Object msg) {
     if (msg instanceof DatagramPacket packet) {
       final var content = packet.content();
-      return content.getUnsignedByte(content.readerIndex()) == this.packetId;
+      final var packetId = content.getUnsignedByte(content.readerIndex());
+      return this.packetId == packetId;
     }
     return false;
   }
 
   @Override
   protected final void channelRead0(final ChannelHandlerContext ctx, final DatagramPacket msg) {
-    final var config = RakNetConfig.cast(ctx);
     //noinspection unchecked
-    final var packet = (T) config.codec().decode(new PacketBuffer(msg.content()));
+    final var packet = (T) RakNetConfig.cast(ctx)
+      .codec()
+      .decode(new PacketBuffer(msg.content()));
     try {
       this.handle(ctx, msg.sender(), packet);
     } finally {
@@ -69,10 +71,9 @@ public abstract class UdpPacketHandler<T extends Packet> extends SimpleChannelIn
   }
 
   @Override
-  public void handlerAdded(final ChannelHandlerContext ctx) {
-    final var config = RakNetConfig.cast(ctx);
-    this.packetId = config.codec().packetIdFor(this.type);
-    Preconditions.checkArgument(this.packetId != -1, "Unknown packet ID for class %s", this.type);
+  public final void handlerAdded(final ChannelHandlerContext ctx) {
+    this.packetId = RakNetConfig.cast(ctx).codec().packetIdFor(this.type);
+    Preconditions.checkArgument(this.packetId != -1, "Unknown packet ID for class %s!", this.type);
   }
 
   /**

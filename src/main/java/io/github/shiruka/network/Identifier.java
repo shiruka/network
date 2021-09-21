@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * an interface to determine rak net server identifiers.
  */
-public interface ServerIdentifier {
+public interface Identifier {
 
   /**
    * the factories.
@@ -22,8 +22,8 @@ public interface ServerIdentifier {
    * @return found server identifier.
    */
   @NotNull
-  static ServerIdentifier create(@NotNull final String text) {
-    return ServerIdentifier.FACTORIES.stream()
+  static Identifier findAndCreate(@NotNull final String text) {
+    return Identifier.FACTORIES.stream()
       .filter(factory -> factory.check(text))
       .map(factory -> factory.create(text))
       .findFirst()
@@ -37,7 +37,19 @@ public interface ServerIdentifier {
    * @param factory the factory to register.
    */
   static void register(@NotNull final Factory factory) {
-    ServerIdentifier.FACTORIES.add(factory);
+    Identifier.FACTORIES.add(factory);
+  }
+
+  /**
+   * creates a simple identifier.
+   *
+   * @param text the text to create.
+   *
+   * @return identifier.
+   */
+  @NotNull
+  static Identifier simple(@NotNull final String text) {
+    return () -> text;
   }
 
   /**
@@ -70,6 +82,6 @@ public interface ServerIdentifier {
      * @return server identifier.
      */
     @NotNull
-    ServerIdentifier create(@NotNull String serverInfo);
+    Identifier create(@NotNull String serverInfo);
   }
 }

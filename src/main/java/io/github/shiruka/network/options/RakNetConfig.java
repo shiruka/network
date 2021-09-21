@@ -2,6 +2,7 @@ package io.github.shiruka.network.options;
 
 import io.github.shiruka.network.BlockedAddress;
 import io.github.shiruka.network.Constants;
+import io.github.shiruka.network.Identifier;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelHandlerContext;
@@ -310,6 +311,24 @@ public interface RakNetConfig extends ChannelConfig {
   RakNetConfig serverId(long serverId);
 
   /**
+   * obtains the server identifier.
+   *
+   * @return server identifier.
+   */
+  @NotNull
+  Identifier serverIdentifier();
+
+  /**
+   * sets the server identifier.
+   *
+   * @param serverIdentifier the server identifier to set.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  RakNetConfig serverIdentifier(@NotNull Identifier serverIdentifier);
+
+  /**
    * updates rtt nanos.
    *
    * @param rtt the rtt to update.
@@ -401,6 +420,13 @@ public interface RakNetConfig extends ChannelConfig {
     private volatile long serverId = Constants.RANDOM.nextLong();
 
     /**
+     * the server identifier.
+     */
+    @NotNull
+    @Getter
+    private volatile Identifier serverIdentifier = Identifier.simple("");
+
+    /**
      * ctor.
      *
      * @param channel the channel.
@@ -452,6 +478,57 @@ public interface RakNetConfig extends ChannelConfig {
         super.getOptions(),
         RakNetChannelOptions.SERVER_ID, RakNetChannelOptions.MTU, RakNetChannelOptions.RTT,
         RakNetChannelOptions.PROTOCOL_VERSION, RakNetChannelOptions.MAGIC, RakNetChannelOptions.RETRY_DELAY_NANOS);
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked"})
+    public <T> T getOption(final ChannelOption<T> option) {
+      if (option == RakNetChannelOptions.SERVER_ID) {
+        return (T) (Long) this.serverId;
+      } else if (option == RakNetChannelOptions.CLIENT_ID) {
+        return (T) (Long) this.clientId;
+      } else if (option == RakNetChannelOptions.MTU) {
+        return (T) (Integer) this.mtu;
+      } else if (option == RakNetChannelOptions.RTT) {
+        return (T) (Long) this.rttNanos();
+      } else if (option == RakNetChannelOptions.PROTOCOL_VERSION) {
+        return (T) (Integer) this.protocolVersion;
+      } else if (option == RakNetChannelOptions.MAGIC) {
+        return (T) this.magic;
+      } else if (option == RakNetChannelOptions.RETRY_DELAY_NANOS) {
+        return (T) (Long) this.retryDelayNanos;
+      } else if (option == RakNetChannelOptions.MAX_CONNECTIONS) {
+        return (T) (Integer) this.maxConnections;
+      } else if (option == RakNetChannelOptions.SERVER_IDENTIFIER) {
+        return (T) this.serverIdentifier;
+      }
+      return super.getOption(option);
+    }
+
+    @Override
+    public <T> boolean setOption(final ChannelOption<T> option, final T value) {
+      if (option == RakNetChannelOptions.SERVER_ID) {
+        this.serverId = (Long) value;
+      } else if (option == RakNetChannelOptions.CLIENT_ID) {
+        this.clientId = (Long) value;
+      } else if (option == RakNetChannelOptions.MTU) {
+        this.mtu = (Integer) value;
+      } else if (option == RakNetChannelOptions.RTT) {
+        this.rttNanos((Long) value);
+      } else if (option == RakNetChannelOptions.PROTOCOL_VERSION) {
+        this.protocolVersion = (Integer) value;
+      } else if (option == RakNetChannelOptions.MAGIC) {
+        this.magic = (RakNetMagic) value;
+      } else if (option == RakNetChannelOptions.RETRY_DELAY_NANOS) {
+        this.retryDelayNanos = (Long) value;
+      } else if (option == RakNetChannelOptions.MAX_CONNECTIONS) {
+        this.maxConnections = (Integer) value;
+      } else if (option == RakNetChannelOptions.SERVER_IDENTIFIER) {
+        this.serverIdentifier = (Identifier) value;
+      } else {
+        return super.setOption(option, value);
+      }
+      return true;
     }
   }
 

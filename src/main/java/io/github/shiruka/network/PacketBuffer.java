@@ -124,7 +124,7 @@ public record PacketBuffer(
    *
    * @return unsigned byte.
    */
-  public short getUnsignedByte(final int length) {
+  public short unsignedByte(final int length) {
     return this.buffer.getUnsignedByte(length);
   }
 

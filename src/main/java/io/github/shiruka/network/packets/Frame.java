@@ -5,7 +5,6 @@ import io.github.shiruka.network.Ids;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.utils.Integers;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.CorruptedFrameException;
@@ -545,12 +544,12 @@ public final class Frame extends AbstractReferenceCounted {
      */
     @NotNull
     public static Data create(@NotNull final ByteBufAllocator alloc, final int packetId,
-                              @NotNull final ByteBuf buffer) {
-      final var out = alloc.compositeDirectBuffer(2);
+                              @NotNull final PacketBuffer buffer) {
+      final var out = new PacketBuffer(alloc.compositeDirectBuffer(2));
       try {
-        out.addComponent(true, alloc.ioBuffer(1, 1).writeByte(packetId));
+        out.addComponent(true, new PacketBuffer(alloc.ioBuffer(1, 1).writeByte(packetId)));
         out.addComponent(true, buffer.retain());
-        return Data.read(new PacketBuffer(out), out.readableBytes(), false);
+        return Data.read(out, out.remaining(), false);
       } finally {
         out.release();
       }
@@ -654,7 +653,7 @@ public final class Frame extends AbstractReferenceCounted {
      */
     public int packetId() {
       assert !this.fragment;
-      return this.data().getUnsignedByte(this.data().readerIndex());
+      return this.data().unsignedByte(this.data().readerIndex());
     }
 
     @NotNull

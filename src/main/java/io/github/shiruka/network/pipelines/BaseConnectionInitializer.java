@@ -38,14 +38,6 @@ public abstract class BaseConnectionInitializer extends SimpleChannelInboundHand
   private final ChannelPromise connectPromise;
 
   /**
-   * the state.
-   */
-  @NotNull
-  @Getter
-  @Setter
-  private State state = State.CR1;
-
-  /**
    * the connect timer.
    */
   @Nullable
@@ -58,22 +50,20 @@ public abstract class BaseConnectionInitializer extends SimpleChannelInboundHand
   private ScheduledFuture<?> sendTimer;
 
   /**
+   * the state.
+   */
+  @NotNull
+  @Getter
+  @Setter
+  private State state = State.CR1;
+
+  /**
    * starts ping.
    *
    * @param ctx the ctx to start.
    */
   protected static void startPing(@NotNull final ChannelHandlerContext ctx) {
     ctx.channel().pipeline().addAfter(BaseConnectionInitializer.NAME, PingProducer.NAME, new PingProducer());
-  }
-
-  /**
-   * obtains the connect timer.
-   *
-   * @return connect timer.
-   */
-  @NotNull
-  public final ScheduledFuture<?> connectTimer() {
-    return Objects.requireNonNull(this.connectTimer, "connect timer");
   }
 
   @Override
@@ -94,32 +84,6 @@ public abstract class BaseConnectionInitializer extends SimpleChannelInboundHand
   public final void handlerRemoved(final ChannelHandlerContext ctx) {
     this.sendTimer().cancel(false);
     this.connectTimer().cancel(false);
-  }
-
-  /**
-   * obtains the send timer.
-   *
-   * @return send timer.
-   */
-  @NotNull
-  public final ScheduledFuture<?> sendTimer() {
-    return Objects.requireNonNull(this.sendTimer, "send timer");
-  }
-
-  /**
-   * does timeout.
-   */
-  protected final void doTimeout() {
-    this.fail(new ConnectTimeoutException());
-  }
-
-  /**
-   * fails.
-   *
-   * @param cause the cause to fail.
-   */
-  protected final void fail(@NotNull final Throwable cause) {
-    this.connectPromise.tryFailure(cause);
   }
 
   /**
@@ -147,6 +111,42 @@ public abstract class BaseConnectionInitializer extends SimpleChannelInboundHand
    * @param ctx the ctx to send.
    */
   protected abstract void sendRequest(@NotNull ChannelHandlerContext ctx);
+
+  /**
+   * obtains the connect timer.
+   *
+   * @return connect timer.
+   */
+  @NotNull
+  private ScheduledFuture<?> connectTimer() {
+    return Objects.requireNonNull(this.connectTimer, "connect timer");
+  }
+
+  /**
+   * does timeout.
+   */
+  private void doTimeout() {
+    this.fail(new ConnectTimeoutException());
+  }
+
+  /**
+   * fails.
+   *
+   * @param cause the cause to fail.
+   */
+  private void fail(@NotNull final Throwable cause) {
+    this.connectPromise.tryFailure(cause);
+  }
+
+  /**
+   * obtains the send timer.
+   *
+   * @return send timer.
+   */
+  @NotNull
+  private ScheduledFuture<?> sendTimer() {
+    return Objects.requireNonNull(this.sendTimer, "send timer");
+  }
 
   /**
    * an enum class that contains connection states.

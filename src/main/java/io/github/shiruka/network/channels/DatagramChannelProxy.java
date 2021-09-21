@@ -42,7 +42,7 @@ public abstract class DatagramChannelProxy implements Channel {
    * the config.
    */
   @Getter
-  private final RakNetConfig config = new Config(this);
+  private final RakNetConfig config;
 
   /**
    * the parent.
@@ -71,6 +71,7 @@ public abstract class DatagramChannelProxy implements Channel {
     this.pipeline()
       .addLast(DatagramChannelProxy.NAME, new ListenerOutboundProxy(this))
       .addLast(new FlushConsolidationHandler(FlushConsolidationHandler.DEFAULT_EXPLICIT_FLUSH_AFTER_FLUSHES, true));
+    this.config = new Config(this);
   }
 
   /**
@@ -326,8 +327,10 @@ public abstract class DatagramChannelProxy implements Channel {
   @NotNull
   private DefaultChannelPipeline newChannelPipeline() {
     return new DefaultChannelPipeline(this) {
+
       @Override
       protected void onUnhandledInboundException(final Throwable cause) {
+        System.out.println("test1");
         if (cause instanceof ClosedChannelException) {
           ReferenceCountUtil.safeRelease(cause);
           return;
@@ -407,6 +410,7 @@ public abstract class DatagramChannelProxy implements Channel {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+      System.out.println("Packet received!");
       this.channel.pipeline().fireChannelRead(msg);
     }
 

@@ -115,13 +115,13 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
   }
 
   @Override
-  protected void removeHandler(final ChannelHandlerContext ctx) {
+  protected void removeHandler(@NotNull final ChannelHandlerContext ctx) {
     ctx.channel().pipeline()
       .replace(BaseConnectionInitializer.NAME, BaseConnectionInitializer.NAME, new RestartConnectionHandler());
   }
 
   @Override
-  public void sendRequest(final ChannelHandlerContext ctx) {
+  public void sendRequest(@NotNull final ChannelHandlerContext ctx) {
     assert ctx.channel().eventLoop().inEventLoop();
     final var config = RakNetConfig.cast(ctx);
     switch (this.state()) {

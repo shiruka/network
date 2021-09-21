@@ -196,16 +196,16 @@ public interface RakNetCodec {
      * @return encode function.
      */
     private static <T extends Packet> BiConsumer<T, PacketBuffer> encodeSimple(final int id) {
-      return (packet, buf) -> {
-        buf.writeByte(id);
-        packet.encode(buf);
+      return (packet, buffer) -> {
+        buffer.writeByte(id);
+        packet.encode(buffer);
       };
     }
 
     @NotNull
     @Override
     public Packet decode(@NotNull final PacketBuffer buffer) {
-      final var packetId = buffer.getUnsignedByte(buffer.remaining());
+      final var packetId = buffer.unsignedByte(buffer.readerIndex());
       final var decoder = this.decoders.get(packetId);
       Preconditions.checkArgument(decoder != null, "Unknown decoder for packet id %", packetId);
       return decoder.apply(buffer);

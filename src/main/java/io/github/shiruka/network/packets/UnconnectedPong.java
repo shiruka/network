@@ -1,9 +1,10 @@
 package io.github.shiruka.network.packets;
 
+import io.github.shiruka.network.Identifier;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
-import io.github.shiruka.network.ServerIdentifier;
 import io.github.shiruka.network.options.RakNetMagic;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,7 @@ public final class UnconnectedPong implements Packet {
    * the server's identifier.
    */
   @Nullable
-  public ServerIdentifier identifier;
+  public Identifier identifier;
 
   /**
    * the magic.
@@ -56,7 +57,7 @@ public final class UnconnectedPong implements Packet {
    * @param serverId the server id.
    * @param timestamp the timestamp
    */
-  public UnconnectedPong(@Nullable final ServerIdentifier identifier, @Nullable final RakNetMagic magic,
+  public UnconnectedPong(@Nullable final Identifier identifier, @Nullable final RakNetMagic magic,
                          final long serverId, final long timestamp) {
     this.identifier = identifier;
     this.magic = magic;
@@ -70,7 +71,7 @@ public final class UnconnectedPong implements Packet {
     this.serverId = buffer.readLong();
     this.magic = RakNetMagic.from(buffer);
     final var serverInfo = buffer.readString();
-    this.identifier = ServerIdentifier.create(serverInfo);
+    this.identifier = Identifier.findAndCreate(serverInfo);
   }
 
   @Override
@@ -78,7 +79,9 @@ public final class UnconnectedPong implements Packet {
     buffer.writeLong(this.timestamp);
     buffer.writeLong(this.serverId);
     this.magic().write(buffer);
-    buffer.writeString(this.identifier().build());
+    final var serverInfo = this.identifier().build().getBytes(StandardCharsets.UTF_8);
+    buffer.writeShort(serverInfo.length);
+    buffer.writeBytes(serverInfo);
   }
 
   /**
@@ -87,7 +90,7 @@ public final class UnconnectedPong implements Packet {
    * @return identifier.
    */
   @NotNull
-  public ServerIdentifier identifier() {
+  public Identifier identifier() {
     return Objects.requireNonNull(this.identifier, "identifier");
   }
 
