@@ -8,14 +8,12 @@ plugins {
 
 group "io.github.shiruka"
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_16
-  targetCompatibility = JavaVersion.VERSION_16
-}
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
-tasks.withType(JavaCompiler) {
-  options.encoding = "UTF-8"
-  options.compilerArgs += ["-Duser.language=en", "-Duser.country=US"]
+compileJava {
+  options.deprecation true
+  options.encoding "UTF-8"
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -24,6 +22,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
+  javadoc.options.encoding = "UTF-8"
   javadoc.options.tags = ["todo"]
   javadoc.options.addBooleanOption("html5", true)
   classifier "javadoc"
@@ -31,12 +30,17 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 checkstyle {
-  configFile = file("checkstyle.xml")
+  configFile = rootProject.file("checkstyle.xml")
   checkstyleTest.enabled = false
 }
 
 test {
   useJUnitPlatform()
+}
+
+artifacts {
+  archives sourcesJar
+  archives javadocJar
 }
 
 repositories {
@@ -48,26 +52,39 @@ repositories {
 }
 
 dependencies {
-  compileOnly "io.netty:netty-all:4.1.68.Final"
-  compileOnly "com.google.guava:guava:30.1.1-jre"
-
   compileOnly "org.jetbrains:annotations:22.0.0"
   annotationProcessor "org.jetbrains:annotations:22.0.0"
 
   compileOnly "org.projectlombok:lombok:1.18.20"
   annotationProcessor "org.projectlombok:lombok:1.18.20"
 
-  testImplementation "org.hamcrest:hamcrest-library:2.2"
-  testImplementation "org.llorllale:cactoos-matchers:0.25"
-  testImplementation "org.junit.jupiter:junit-jupiter:5.8.0"
+  compileOnly "it.unimi.dsi:fastutil:8.5.6"
+  compileOnly "io.netty:netty-all:4.1.68.Final"
+  compileOnly "com.google.guava:guava:30.1.1-jre"
+  compileOnly "it.unimi.dsi:fastutil-core:8.5.6"
+  compileOnly "org.apache.commons:commons-math3:3.6.1"
+  compileOnly "org.apache.logging.log4j:log4j-api:2.14.1"
 
-  testImplementation "org.cactoos:cactoos:0.50"
+  // Test
   testImplementation "org.jetbrains:annotations:22.0.0"
+  testAnnotationProcessor "org.jetbrains:annotations:22.0.0"
+
   testImplementation "org.projectlombok:lombok:1.18.20"
-  testImplementation "com.google.guava:guava:30.1.1-jre"
+  testAnnotationProcessor "org.projectlombok:lombok:1.18.20"
+
+  testImplementation "com.lmax:disruptor:3.4.4"
+  testImplementation "org.apache.logging.log4j:log4j-api:2.14.1"
   testImplementation "org.apache.logging.log4j:log4j-core:2.14.1"
-  testImplementation "org.projectlombok:lombok:1.18.20"
-  testImplementation "org.mockito:mockito-core:3.12.4"
+  testImplementation "org.apache.logging.log4j:log4j-iostreams:2.14.1"
+  testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:2.14.1"
+
+  testImplementation "it.unimi.dsi:fastutil:8.5.6"
+  testImplementation "io.netty:netty-all:4.1.68.Final"
+  testImplementation "it.unimi.dsi:fastutil-core:8.5.6"
+  testImplementation "com.google.guava:guava:30.1.1-jre"
+  testImplementation "org.apache.commons:commons-math3:3.6.1"
+
+  testImplementation "org.junit.jupiter:junit-jupiter:5.8.0"
 }
 
 publishing {
