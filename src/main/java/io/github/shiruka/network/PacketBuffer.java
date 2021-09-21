@@ -2,6 +2,7 @@ package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.AsciiString;
 import java.math.BigInteger;
@@ -62,6 +63,18 @@ public record PacketBuffer(
   }
 
   /**
+   * adds component.
+   *
+   * @param increaseWriterIndex the increase writer index to add.
+   * @param buffer the buffer to add.
+   */
+  public void addComponent(final boolean increaseWriterIndex, @NotNull final PacketBuffer buffer) {
+    if (this.buffer instanceof CompositeByteBuf composite) {
+      composite.addComponent(increaseWriterIndex, buffer.buffer());
+    }
+  }
+
+  /**
    * returns the packet as a byte[].
    *
    * @return the packet as a byte[].
@@ -102,6 +115,17 @@ public record PacketBuffer(
     final var newBuffer = Unpooled.copiedBuffer(data);
     newBuffer.retain(increment);
     return new PacketBuffer(newBuffer);
+  }
+
+  /**
+   * gets the unsigned byte.
+   *
+   * @param length the length
+   *
+   * @return unsigned byte.
+   */
+  public short getUnsignedByte(final int length) {
+    return this.buffer.getUnsignedByte(length);
   }
 
   /**
@@ -314,6 +338,18 @@ public record PacketBuffer(
   }
 
   /**
+   * reads retained slice.
+   *
+   * @param length the length to read.
+   *
+   * @return retained slice buffer.
+   */
+  @NotNull
+  public PacketBuffer readRetainedSlice(final int length) {
+    return new PacketBuffer(this.buffer.readRetainedSlice(length));
+  }
+
+  /**
    * reads a short.
    *
    * @return a short.
@@ -473,6 +509,15 @@ public record PacketBuffer(
   }
 
   /**
+   * gets the readers index.
+   *
+   * @return readers index.
+   */
+  public int readerIndex() {
+    return this.buffer.readerIndex();
+  }
+
+  /**
    * releases the packet's buffer.
    *
    * @return {@code true} if and only if the reference count became 0 and this object has been deallocated, {@code
@@ -497,6 +542,26 @@ public record PacketBuffer(
   }
 
   /**
+   * retains the buffer.
+   *
+   * @return retained packet buffer.
+   */
+  @NotNull
+  public PacketBuffer retain() {
+    return new PacketBuffer(this.buffer.retain());
+  }
+
+  /**
+   * duplicates.
+   *
+   * @return duplicated packet buffer.
+   */
+  @NotNull
+  public PacketBuffer retainedDuplicate() {
+    return new PacketBuffer(this.buffer.retainedDuplicate());
+  }
+
+  /**
    * returns the size of the packet in bytes.
    * <p>
    * this is to be used only for packets that are being written to. To get the
@@ -516,6 +581,15 @@ public record PacketBuffer(
    */
   public void skip(final int length) {
     this.buffer.skipBytes(Math.min(length, this.remaining()));
+  }
+
+  /**
+   * touch to the buffer.
+   *
+   * @param hint the hint to touch.
+   */
+  public void touch(@NotNull final Object hint) {
+    this.buffer.touch(hint);
   }
 
   /**
@@ -658,6 +732,17 @@ public record PacketBuffer(
    */
   public void writeBytes(final byte[] data) {
     this.buffer.writeBytes(data);
+  }
+
+  /**
+   * writes bytes.
+   *
+   * @param data the data to write.
+   * @param readerIndex the reader index to write.
+   * @param readableBytes the readable bytes to write.
+   */
+  public void writeBytes(@NotNull final PacketBuffer data, final int readerIndex, final int readableBytes) {
+    this.buffer.writeBytes(data.buffer(), readerIndex, readableBytes);
   }
 
   /**

@@ -7,7 +7,6 @@ import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.utils.Integers;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.CorruptedFrameException;
 import io.netty.util.AbstractReferenceCounted;
@@ -187,7 +186,7 @@ public final class Frame extends AbstractReferenceCounted {
    * @return frame.
    */
   @NotNull
-  public static Frame read(@NotNull final ByteBuf buffer) {
+  public static Frame read(@NotNull final PacketBuffer buffer) {
     final var out = Frame.createRaw();
     try {
       final var flags = buffer.readUnsignedByte();
@@ -197,13 +196,13 @@ public final class Frame extends AbstractReferenceCounted {
       final var reliability = FramedPacket.Reliability.get(flags >> 5);
       int orderChannel = 0;
       if (reliability.isReliable()) {
-        out.reliableIndex(buffer.readUnsignedMediumLE());
+        out.reliableIndex(buffer.readUnsignedTriadLE());
       }
       if (reliability.isSequenced()) {
-        out.sequenceIndex(buffer.readUnsignedMediumLE());
+        out.sequenceIndex(buffer.readUnsignedTriadLE());
       }
       if (reliability.isOrdered()) {
-        out.orderIndex(buffer.readUnsignedMediumLE());
+        out.orderIndex(buffer.readUnsignedTriadLE());
         orderChannel = buffer.readUnsignedByte();
       }
       if (hasSplit) {
@@ -253,13 +252,13 @@ public final class Frame extends AbstractReferenceCounted {
    * @return completed frame.
    */
   @NotNull
-  public Frame completeFragment(@NotNull final ByteBuf fullData) {
+  public Frame completeFragment(@NotNull final PacketBuffer fullData) {
     assert this.frameData().fragment();
     final var out = Frame.createRaw();
     out.reliableIndex(this.reliableIndex).
       sequenceIndex(this.sequenceIndex)
       .orderIndex(this.orderIndex)
-      .frameData(Data.read(fullData, fullData.readableBytes(), false));
+      .frameData(Data.read(fullData, fullData.remaining(), false));
     out.frameData().orderChannel(this.orderChannel());
     out.frameData().reliability(this.reliability());
     return out;
@@ -282,10 +281,10 @@ public final class Frame extends AbstractReferenceCounted {
     try {
       final var dataSplitSize = splitSize - Frame.HEADER_SIZE;
       final var splitCountTotal =
-        (data.readableBytes() + dataSplitSize - 1) / dataSplitSize;
+        (data.remaining() + dataSplitSize - 1) / dataSplitSize;
       for (var splitIndexIterator = 0; splitIndexIterator < splitCountTotal;
            splitIndexIterator++) {
-        final var length = Math.min(dataSplitSize, data.readableBytes());
+        final var length = Math.min(dataSplitSize, data.remaining());
         final var out = Frame.createRaw();
         out.reliableIndex(reliableIndex)
           .sequenceIndex(this.sequenceIndex)
@@ -334,8 +333,8 @@ public final class Frame extends AbstractReferenceCounted {
    * @param alloc the alloc to produce.
    * @param out the out to produce.
    */
-  public void produce(@NotNull final ByteBufAllocator alloc, @NotNull final CompositeByteBuf out) {
-    final var header = alloc.ioBuffer(Frame.HEADER_SIZE, Frame.HEADER_SIZE);
+  public void produce(@NotNull final ByteBufAllocator alloc, @NotNull final PacketBuffer out) {
+    final var header = new PacketBuffer(alloc.ioBuffer(Frame.HEADER_SIZE, Frame.HEADER_SIZE));
     try {
       this.writeHeader(header);
       out.addComponent(true, header.retain());
@@ -380,7 +379,7 @@ public final class Frame extends AbstractReferenceCounted {
    * @return retained fragment data.
    */
   @NotNull
-  public ByteBuf retainedFragmentData() {
+  public PacketBuffer retainedFragmentData() {
     assert this.frameData().fragment();
     return this.frameData().createData();
   }
@@ -418,7 +417,7 @@ public final class Frame extends AbstractReferenceCounted {
    *
    * @param buffer the buffer to write.
    */
-  public void write(@NotNull final ByteBuf buffer) {
+  public void write(@NotNull final PacketBuffer buffer) {
     this.writeHeader(buffer);
     this.frameData().write(buffer);
   }
@@ -428,18 +427,18 @@ public final class Frame extends AbstractReferenceCounted {
    *
    * @param buffer the buffer to write.
    */
-  public void writeHeader(@NotNull final ByteBuf buffer) {
+  public void writeHeader(@NotNull final PacketBuffer buffer) {
     buffer.writeByte(this.reliability().code() << 5 | (this.hasSplit ? Frame.SPLIT_FLAG : 0));
     buffer.writeShort(this.dataSize() * Byte.SIZE);
     assert !(this.hasSplit && !this.reliability().isReliable());
     if (this.reliability().isReliable()) {
-      buffer.writeMediumLE(this.reliableIndex);
+      buffer.writeTriadLE(this.reliableIndex);
     }
     if (this.reliability().isSequenced()) {
-      buffer.writeMediumLE(this.sequenceIndex);
+      buffer.writeTriadLE(this.sequenceIndex);
     }
     if (this.reliability().isOrdered()) {
-      buffer.writeMediumLE(this.orderIndex);
+      buffer.writeTriadLE(this.orderIndex);
       buffer.writeByte(this.orderChannel());
     }
     if (this.hasSplit) {
@@ -494,7 +493,7 @@ public final class Frame extends AbstractReferenceCounted {
      * the data.
      */
     @Nullable
-    private ByteBuf data;
+    private PacketBuffer data;
 
     /**
      * the fragment.
@@ -515,7 +514,6 @@ public final class Frame extends AbstractReferenceCounted {
      */
     @Nullable
     @Setter
-    @Getter
     private Reliability reliability;
 
     /**
@@ -552,7 +550,7 @@ public final class Frame extends AbstractReferenceCounted {
       try {
         out.addComponent(true, alloc.ioBuffer(1, 1).writeByte(packetId));
         out.addComponent(true, buffer.retain());
-        return Data.read(out, out.readableBytes(), false);
+        return Data.read(new PacketBuffer(out), out.readableBytes(), false);
       } finally {
         out.release();
       }
@@ -568,7 +566,7 @@ public final class Frame extends AbstractReferenceCounted {
      * @return frame data.
      */
     @NotNull
-    public static Data read(@NotNull final ByteBuf buffer, final int length, final boolean fragment) {
+    public static Data read(@NotNull final PacketBuffer buffer, final int length, final boolean fragment) {
       assert length > 0;
       final var packet = Data.createRaw();
       try {
@@ -605,7 +603,7 @@ public final class Frame extends AbstractReferenceCounted {
      * @return data.
      */
     @NotNull
-    public ByteBuf createData() {
+    public PacketBuffer createData() {
       return this.data().retainedDuplicate();
     }
 
@@ -615,7 +613,7 @@ public final class Frame extends AbstractReferenceCounted {
      * @return data.
      */
     @NotNull
-    public ByteBuf data() {
+    public PacketBuffer data() {
       return Objects.requireNonNull(this.data, "data");
     }
 
@@ -627,7 +625,7 @@ public final class Frame extends AbstractReferenceCounted {
      * @return {@code this} for builder chain.
      */
     @NotNull
-    public Data data(@Nullable final ByteBuf data) {
+    public Data data(@Nullable final PacketBuffer data) {
       this.data = data;
       return this;
     }
@@ -638,7 +636,7 @@ public final class Frame extends AbstractReferenceCounted {
      * @return data size.
      */
     public int dataSize() {
-      return this.data().readableBytes();
+      return this.data().remaining();
     }
 
     @Override
@@ -657,6 +655,12 @@ public final class Frame extends AbstractReferenceCounted {
     public int packetId() {
       assert !this.fragment;
       return this.data().getUnsignedByte(this.data().readerIndex());
+    }
+
+    @NotNull
+    @Override
+    public Reliability reliability() {
+      return Objects.requireNonNull(this.reliability, "reliability");
     }
 
     @Override
@@ -698,8 +702,8 @@ public final class Frame extends AbstractReferenceCounted {
      *
      * @param buffer the buffer to write.
      */
-    public void write(final ByteBuf buffer) {
-      buffer.writeBytes(this.data, this.data().readerIndex(), this.data().readableBytes());
+    public void write(@NotNull final PacketBuffer buffer) {
+      buffer.writeBytes(this.data(), this.data().readerIndex(), this.data().remaining());
     }
   }
 
@@ -794,11 +798,11 @@ public final class Frame extends AbstractReferenceCounted {
      * @return frame set.
      */
     @NotNull
-    public static Frame.Set read(@NotNull final ByteBuf buffer) {
+    public static Frame.Set read(@NotNull final PacketBuffer buffer) {
       final var out = Set.create();
       try {
-        buffer.skipBytes(1);
-        out.sequenceId(buffer.readUnsignedMediumLE());
+        buffer.skip(1);
+        out.sequenceId(buffer.readUnsignedTriadLE());
         while (buffer.isReadable()) {
           out.frames().add(Frame.read(buffer));
         }
@@ -873,9 +877,9 @@ public final class Frame extends AbstractReferenceCounted {
      * @return byte buffer.
      */
     @NotNull
-    public ByteBuf produce(@NotNull final ByteBufAllocator alloc) {
-      final var header = alloc.ioBuffer(Set.HEADER_SIZE, Set.HEADER_SIZE);
-      final var out = alloc.compositeDirectBuffer(1 + this.frames.size() * 2);
+    public PacketBuffer produce(@NotNull final ByteBufAllocator alloc) {
+      final var header = new PacketBuffer(alloc.ioBuffer(Set.HEADER_SIZE, Set.HEADER_SIZE));
+      final var out = new PacketBuffer(alloc.compositeDirectBuffer(1 + this.frames.size() * 2));
       try {
         this.writeHeader(header);
         out.addComponent(true, header.retain());
@@ -952,7 +956,7 @@ public final class Frame extends AbstractReferenceCounted {
      *
      * @param buffer the buffer to write.
      */
-    public void write(@NotNull final ByteBuf buffer) {
+    public void write(@NotNull final PacketBuffer buffer) {
       this.writeHeader(buffer);
       this.frames.forEach(frame -> frame.write(buffer));
     }
@@ -962,9 +966,9 @@ public final class Frame extends AbstractReferenceCounted {
      *
      * @param buffer the buffer to write.
      */
-    public void writeHeader(@NotNull final ByteBuf buffer) {
+    public void writeHeader(@NotNull final PacketBuffer buffer) {
       buffer.writeByte(Ids.FRAME_DATA_START);
-      buffer.writeMediumLE(this.sequenceId);
+      buffer.writeTriadLE(this.sequenceId);
     }
   }
 }

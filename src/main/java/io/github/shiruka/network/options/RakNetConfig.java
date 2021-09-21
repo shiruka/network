@@ -63,6 +63,24 @@ public interface RakNetConfig extends ChannelConfig {
   void blockedAddress(@NotNull BlockedAddress address);
 
   /**
+   * obtains the codec.
+   *
+   * @return codec.
+   */
+  @NotNull
+  RakNetCodec codec();
+
+  /**
+   * sets the codec.
+   *
+   * @param codec the codec to set.
+   *
+   * @return {@code this} for the builder chain.
+   */
+  @NotNull
+  RakNetConfig codec(@NotNull RakNetCodec codec);
+
+  /**
    * obtains the magic.
    *
    * @return magic.
@@ -126,6 +144,12 @@ public interface RakNetConfig extends ChannelConfig {
      * the blocked addresses.
      */
     private final Map<InetAddress, BlockedAddress> blockedAddresses = new ConcurrentHashMap<>();
+
+    /**
+     * the codec.
+     */
+    @Getter
+    private volatile RakNetCodec codec = RakNetCodec.simple();
 
     /**
      * the magic.

@@ -2,9 +2,10 @@ package io.github.shiruka.network.server.channels;
 
 import com.google.common.base.Preconditions;
 import io.github.shiruka.network.BlockedAddress;
-import io.github.shiruka.network.Codec;
+import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.channels.DatagramChannelProxy;
 import io.github.shiruka.network.packets.NoFreeConnections;
+import io.github.shiruka.network.server.RakNetServer;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -160,7 +161,7 @@ public final class RakNetServerChannel extends DatagramChannelProxy {
             this.channel.config().magic(), this.channel.config().serverId());
           final var buffer = ctx.alloc().ioBuffer(packet.initialSizeHint());
           try {
-            Codec.encode(packet, buffer);
+            this.channel.config().codec().encode(packet, new PacketBuffer(buffer));
             ctx.writeAndFlush(new DatagramPacket(buffer.retain(), (InetSocketAddress) remoteAddress));
           } finally {
             ReferenceCountUtil.safeRelease(packet);
