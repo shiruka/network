@@ -178,6 +178,7 @@ public interface RakNetCodec {
      *
      * @return decode function.
      */
+    @NotNull
     private static <T extends Packet> Function<PacketBuffer, T> decodeSimple(@NotNull final Supplier<T> supplier) {
       return buf -> {
         final var packet = supplier.get();
@@ -195,6 +196,7 @@ public interface RakNetCodec {
      *
      * @return encode function.
      */
+    @NotNull
     private static <T extends Packet> BiConsumer<T, PacketBuffer> encodeSimple(final int id) {
       return (packet, buffer) -> {
         buffer.writeByte(id);
