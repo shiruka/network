@@ -498,6 +498,23 @@ public record PacketBuffer(
   }
 
   /**
+   * reads a unsigned var int.
+   *
+   * @return a unsigned var int.
+   */
+  public int readUnsignedVarInt() {
+    var value = 0;
+    var i = 0;
+    int data;
+    while (((data = this.readByte()) & 0x80) != 0) {
+      value |= (data & 0x7F) << i;
+      i += 7;
+      Preconditions.checkArgument(i <= 35, "VarInt too big!");
+    }
+    return value | data << i;
+  }
+
+  /**
    * reads a var int.
    *
    * @return a var int.
@@ -1100,22 +1117,5 @@ public record PacketBuffer(
     } catch (final Exception e) {
       throw new IllegalArgumentException(e);
     }
-  }
-
-  /**
-   * reads a unsigned var int.
-   *
-   * @return a unsigned var int.
-   */
-  private int readUnsignedVarInt() {
-    var value = 0;
-    var i = 0;
-    int data;
-    while (((data = this.readByte()) & 0x80) != 0) {
-      value |= (data & 0x7F) << i;
-      i += 7;
-      Preconditions.checkArgument(i <= 35, "VarInt too big!");
-    }
-    return value | data << i;
   }
 }
