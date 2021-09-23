@@ -498,6 +498,24 @@ public record PacketBuffer(
   }
 
   /**
+   * reads a var int.
+   *
+   * @return a var int.
+   */
+  public int readVarInt() {
+    var result = 0;
+    var indent = 0;
+    int data;
+    while (((data = this.readByte()) & 0x80) == 0x80) {
+      Preconditions.checkArgument(indent < 21, "Too many bytes for a VarInt32.");
+      result += (data & 0x7f) << indent;
+      indent += 7;
+    }
+    result += (data & 0x7f) << indent;
+    return result;
+  }
+
+  /**
    * gets the readers index.
    *
    * @return readers index.
@@ -1022,6 +1040,20 @@ public record PacketBuffer(
   }
 
   /**
+   * writes a var int.
+   *
+   * @param data the data to write.
+   */
+  public void writeVarInt(final int data) {
+    var temp = data;
+    while ((temp & 0xFFFFFF80) != 0L) {
+      this.writeByte(temp & 0x7F | 0x80);
+      temp >>>= 7;
+    }
+    this.writeByte(temp & 0x7F);
+  }
+
+  /**
    * writes zero bytes.
    *
    * @param length the length to write.
@@ -1085,37 +1117,5 @@ public record PacketBuffer(
       Preconditions.checkArgument(i <= 35, "VarInt too big!");
     }
     return value | data << i;
-  }
-
-  /**
-   * reads a var int.
-   *
-   * @return a var int.
-   */
-  private int readVarInt() {
-    var result = 0;
-    var indent = 0;
-    int data;
-    while (((data = this.readByte()) & 0x80) == 0x80) {
-      Preconditions.checkArgument(indent < 21, "Too many bytes for a VarInt32.");
-      result += (data & 0x7f) << indent;
-      indent += 7;
-    }
-    result += (data & 0x7f) << indent;
-    return result;
-  }
-
-  /**
-   * writes a var int.
-   *
-   * @param data the data to write.
-   */
-  private void writeVarInt(final int data) {
-    var temp = data;
-    while ((temp & 0xFFFFFF80) != 0L) {
-      this.writeByte(temp & 0x7F | 0x80);
-      temp >>>= 7;
-    }
-    this.writeByte(temp & 0x7F);
   }
 }
