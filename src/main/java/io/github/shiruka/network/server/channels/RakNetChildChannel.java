@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
  * a class that represents rak net child channels.
  */
 @Accessors(fluent = true)
-public final class RakNetChildChannel extends AbstractChannel {
+public class RakNetChildChannel extends AbstractChannel {
 
   /**
    * the metadata.
