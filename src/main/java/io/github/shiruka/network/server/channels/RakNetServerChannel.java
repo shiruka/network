@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * a class that represents rak net server channels.
  */
-public final class RakNetServerChannel extends DatagramChannelProxy implements ServerChannel {
+public class RakNetServerChannel extends DatagramChannelProxy implements ServerChannel {
 
   /**
    * the blocked addresses.
