@@ -135,6 +135,24 @@ public final class RakNetServerChannel extends DatagramChannelProxy implements S
   }
 
   /**
+   * unblocks the address.
+   *
+   * @param address the address to block.
+   */
+  public void unblockAddress(@NotNull final InetSocketAddress address) {
+    this.blockedAddresses.remove(address);
+  }
+
+  /**
+   * unblocks the address.
+   *
+   * @param address the address to unblock.
+   */
+  public void unblockAddress(@NotNull final BlockedAddress address) {
+    this.unblockAddress(address.address());
+  }
+
+  /**
    * adds the default pipeline.
    */
   private void addDefaultPipeline() {
