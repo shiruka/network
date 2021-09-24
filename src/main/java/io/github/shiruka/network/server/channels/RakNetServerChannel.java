@@ -20,6 +20,7 @@ import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,11 @@ import org.jetbrains.annotations.Nullable;
  * a class that represents rak net server channels.
  */
 public final class RakNetServerChannel extends DatagramChannelProxy implements ServerChannel {
+
+  /**
+   * the blocked addresses.
+   */
+  private final Map<InetSocketAddress, BlockedAddress> blockedAddresses = new HashMap<>();
 
   /**
    * the child channels(clients).
@@ -61,6 +67,27 @@ public final class RakNetServerChannel extends DatagramChannelProxy implements S
   public RakNetServerChannel(@NotNull final Class<? extends DatagramChannel> cls) {
     super(cls);
     this.addDefaultPipeline();
+  }
+
+  /**
+   * blocks the address.
+   *
+   * @param address the address to block.
+   */
+  public void blockAddress(@NotNull final BlockedAddress address) {
+    this.blockedAddresses.put(address.address(), address);
+  }
+
+  /**
+   * gets the blocked address.
+   *
+   * @param address the address to get.
+   *
+   * @return blocked address.
+   */
+  @NotNull
+  public Optional<BlockedAddress> blockedAddress(@NotNull final InetSocketAddress address) {
+    return Optional.ofNullable(this.blockedAddresses.get(address));
   }
 
   /**
@@ -136,7 +163,7 @@ public final class RakNetServerChannel extends DatagramChannelProxy implements S
       }
       final var content = datagram.content();
       final var sender = datagram.sender();
-      if (this.channel.config().blockedAddress(sender).map(BlockedAddress::shouldUnblock).isPresent()) {
+      if (this.channel.blockedAddress(sender).map(BlockedAddress::shouldUnblock).isPresent()) {
         datagram.release();
         return;
       }
