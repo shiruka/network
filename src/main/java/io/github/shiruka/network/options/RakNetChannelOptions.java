@@ -1,20 +1,13 @@
 package io.github.shiruka.network.options;
 
-import io.github.shiruka.network.BlockedAddress;
 import io.github.shiruka.network.Identifier;
 import io.netty.channel.ChannelOption;
 import io.netty.util.AttributeKey;
-import java.util.Set;
 
 /**
  * an interface that contains rak net channel options.
  */
 public interface RakNetChannelOptions {
-
-  /**
-   * the blocked addresses.
-   */
-  ChannelOption<Set<BlockedAddress>> BLOCKED_ADDRESSES = ChannelOption.valueOf("RN_BLOCKED_ADDRESSES");
 
   /**
    * the client id.

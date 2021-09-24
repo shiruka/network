@@ -9,10 +9,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.DefaultChannelConfig;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
@@ -61,35 +59,6 @@ public interface RakNetConfig extends ChannelConfig {
   static RakNetConfig simple(@NotNull final Channel channel) {
     return new Impl(channel);
   }
-
-  /**
-   * gets the blocked address.
-   *
-   * @param address the address to block.
-   *
-   * @return blocked address.
-   */
-  @NotNull
-  default Optional<BlockedAddress> blockedAddress(@NotNull final InetSocketAddress address) {
-    return this.blockedAddress(address.getAddress());
-  }
-
-  /**
-   * gets the blocked address.
-   *
-   * @param address the address to block.
-   *
-   * @return blocked address.
-   */
-  @NotNull
-  Optional<BlockedAddress> blockedAddress(@NotNull InetAddress address);
-
-  /**
-   * adds the blocked address.
-   *
-   * @param address the address to add.
-   */
-  void blockedAddress(@NotNull BlockedAddress address);
 
   /**
    * sets the client id.
@@ -344,14 +313,14 @@ public interface RakNetConfig extends ChannelConfig {
   abstract class Base extends DefaultChannelConfig implements RakNetConfig {
 
     /**
-     * the blocked addresses.
-     */
-    private final Map<InetAddress, BlockedAddress> blockedAddresses = new ConcurrentHashMap<>();
-
-    /**
      * the rtt stats.
      */
     private final DescriptiveStatistics rttStats = new DescriptiveStatistics(16);
+
+    /**
+     * the blocked addresses.
+     */
+    private volatile Map<InetAddress, BlockedAddress> blockedAddresses = new ConcurrentHashMap<>();
 
     /**
      * the client id.
@@ -435,17 +404,6 @@ public interface RakNetConfig extends ChannelConfig {
       super(channel);
     }
 
-    @NotNull
-    @Override
-    public final Optional<BlockedAddress> blockedAddress(@NotNull final InetAddress address) {
-      return Optional.ofNullable(this.blockedAddresses.get(address));
-    }
-
-    @Override
-    public final void blockedAddress(@NotNull final BlockedAddress address) {
-      this.blockedAddresses.put(address.address(), address);
-    }
-
     @Override
     public final boolean containsProtocolVersion(final int protocolVersion) {
       return Arrays.stream(this.protocolVersions).anyMatch(version -> version == protocolVersion);
@@ -477,7 +435,8 @@ public interface RakNetConfig extends ChannelConfig {
       return this.getOptions(
         super.getOptions(),
         RakNetChannelOptions.SERVER_ID, RakNetChannelOptions.MTU, RakNetChannelOptions.RTT,
-        RakNetChannelOptions.PROTOCOL_VERSION, RakNetChannelOptions.MAGIC, RakNetChannelOptions.RETRY_DELAY_NANOS);
+        RakNetChannelOptions.PROTOCOL_VERSION, RakNetChannelOptions.MAGIC, RakNetChannelOptions.RETRY_DELAY_NANOS,
+        RakNetChannelOptions.CLIENT_ID, RakNetChannelOptions.MAX_CONNECTIONS, RakNetChannelOptions.SERVER_IDENTIFIER);
     }
 
     @Override

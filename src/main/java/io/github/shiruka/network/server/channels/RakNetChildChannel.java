@@ -128,7 +128,7 @@ public final class RakNetChildChannel extends AbstractChannel {
   }
 
   @Override
-  protected SocketAddress remoteAddress0() {
+  protected InetSocketAddress remoteAddress0() {
     return this.address;
   }
 

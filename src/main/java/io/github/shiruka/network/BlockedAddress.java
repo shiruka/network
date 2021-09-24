@@ -1,7 +1,7 @@
 package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -28,7 +28,7 @@ public final class BlockedAddress {
   @Getter
   @ToString.Include
   @EqualsAndHashCode.Include
-  private final InetAddress address;
+  private final InetSocketAddress address;
 
   /**
    * the blocked time.
@@ -63,7 +63,7 @@ public final class BlockedAddress {
    * @param blockedTime the blocked time.
    * @param expireTime the expire time.
    */
-  public BlockedAddress(@NotNull final InetAddress address, @NotNull final String reason, final long blockedTime,
+  public BlockedAddress(@NotNull final InetSocketAddress address, @NotNull final String reason, final long blockedTime,
                         final long expireTime) {
     Preconditions.checkArgument(expireTime > 0L || expireTime == BlockedAddress.PERMANENT_BLOCK,
       "Block time must be greater than 0 or equal to %s for a permanent block",
@@ -81,7 +81,7 @@ public final class BlockedAddress {
    * @param reason the reason.
    * @param expireTime the expire time.
    */
-  public BlockedAddress(@NotNull final InetAddress address, @NotNull final String reason, final long expireTime) {
+  public BlockedAddress(@NotNull final InetSocketAddress address, @NotNull final String reason, final long expireTime) {
     this(address, reason, System.currentTimeMillis(), expireTime);
   }
 
@@ -91,7 +91,7 @@ public final class BlockedAddress {
    * @param address the address.
    * @param reason the reason.
    */
-  public BlockedAddress(@NotNull final InetAddress address, @NotNull final String reason) {
+  public BlockedAddress(@NotNull final InetSocketAddress address, @NotNull final String reason) {
     this(address, reason, BlockedAddress.PERMANENT_BLOCK);
   }
 
