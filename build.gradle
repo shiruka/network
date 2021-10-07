@@ -55,7 +55,7 @@ dependencies {
   compileOnly "org.jetbrains:annotations:22.0.0"
   annotationProcessor "org.jetbrains:annotations:22.0.0"
 
-  compileOnly "org.projectlombok:lombok:1.18.20"
+  compileOnly "org.projectlombok:lombok:1.18.22"
   annotationProcessor "org.projectlombok:lombok:1.18.20"
 
   compileOnly "it.unimi.dsi:fastutil:8.5.6"
