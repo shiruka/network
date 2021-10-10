@@ -124,14 +124,15 @@ public record PacketBuffer(
    *
    * @param value the value to encode.
    */
-  public void encodeVarLong(long value) {
+  public void encodeVarLong(final long value) {
+    var tempValue = value;
     while (true) {
-      if ((value & ~0x7FL) == 0) {
-        this.buffer.writeByte((int) value);
+      if ((tempValue & ~0x7FL) == 0) {
+        this.buffer.writeByte((int) tempValue);
         return;
       } else {
-        this.buffer.writeByte((byte) ((int) value & 0x7F | 0x80));
-        value >>>= 7;
+        this.buffer.writeByte((byte) ((int) tempValue & 0x7F | 0x80));
+        tempValue >>>= 7;
       }
     }
   }
