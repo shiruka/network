@@ -103,6 +103,41 @@ public record PacketBuffer(
   }
 
   /**
+   * decodes the var long.
+   *
+   * @return var long
+   */
+  public long decodeVarLong() {
+    var result = 0;
+    for (var shift = 0; shift < 64; shift += 7) {
+      final var b = this.buffer.readByte();
+      result |= (b & 0x7FL) << shift;
+      if ((b & 0x80) == 0) {
+        return result;
+      }
+    }
+    throw new ArithmeticException("VarInt was too large!");
+  }
+
+  /**
+   * encodes the value.
+   *
+   * @param value the value to encode.
+   */
+  public void encodeVarLong(final long value) {
+    var tempValue = value;
+    while (true) {
+      if ((tempValue & ~0x7FL) == 0) {
+        this.buffer.writeByte((int) tempValue);
+        return;
+      } else {
+        this.buffer.writeByte((byte) ((int) tempValue & 0x7F | 0x80));
+        tempValue >>>= 7;
+      }
+    }
+  }
+
+  /**
    * flips the packet.
    *
    * @return a new flipped packet.
@@ -498,38 +533,41 @@ public record PacketBuffer(
   }
 
   /**
-   * reads a unsigned var int.
+   * reads the unsigned var int.
    *
-   * @return a unsigned var int.
+   * @return unsigned var int.
    */
   public int readUnsignedVarInt() {
-    var value = 0;
-    var i = 0;
-    int data;
-    while (((data = this.readByte()) & 0x80) != 0) {
-      value |= (data & 0x7F) << i;
-      i += 7;
-      Preconditions.checkArgument(i <= 35, "VarInt too big!");
-    }
-    return value | data << i;
+    return (int) this.decodeVarLong();
   }
 
   /**
-   * reads a var int.
+   * reads the unsigned var long.
    *
-   * @return a var int.
+   * @return unsigned var long.
+   */
+  public long readUnsignedVarLong() {
+    return this.decodeVarLong();
+  }
+
+  /**
+   * reads the var int.
+   *
+   * @return var int.
    */
   public int readVarInt() {
-    var result = 0;
-    var indent = 0;
-    int data;
-    while (((data = this.readByte()) & 0x80) == 0x80) {
-      Preconditions.checkArgument(indent < 21, "Too many bytes for a VarInt32.");
-      result += (data & 0x7f) << indent;
-      indent += 7;
-    }
-    result += (data & 0x7f) << indent;
-    return result;
+    final var decode = (int) this.decodeVarLong();
+    return decode >>> 1 ^ -(decode & 1);
+  }
+
+  /**
+   * reads the var long.
+   *
+   * @return var long.
+   */
+  public long readVarLong() {
+    final var decode = this.decodeVarLong();
+    return decode >>> 1 ^ -(decode & 1);
   }
 
   /**
@@ -1057,17 +1095,39 @@ public record PacketBuffer(
   }
 
   /**
-   * writes a var int.
+   * writes the unsigned var int.
    *
-   * @param data the data to write.
+   * @param value the value to write.
    */
-  public void writeVarInt(final int data) {
-    var temp = data;
-    while ((temp & 0xFFFFFF80) != 0L) {
-      this.writeByte(temp & 0x7F | 0x80);
-      temp >>>= 7;
-    }
-    this.writeByte(temp & 0x7F);
+  public void writeUnsignedVarInt(final int value) {
+    this.encodeVarLong(value & 0xFFFFFFFFL);
+  }
+
+  /**
+   * writes the var unsigned var long.
+   *
+   * @param value the value to write.
+   */
+  public void writeUnsignedVarLong(final long value) {
+    this.encodeVarLong(value);
+  }
+
+  /**
+   * writes the var int.
+   *
+   * @param value the value to write.
+   */
+  public void writeVarInt(final int value) {
+    this.encodeVarLong((value << 1 ^ value >> 31) & 0xFFFFFFFFL);
+  }
+
+  /**
+   * writes the var long.
+   *
+   * @param value the value to write.
+   */
+  public void writeVarLong(final long value) {
+    this.encodeVarLong(value << 1 ^ value >> 63);
   }
 
   /**
