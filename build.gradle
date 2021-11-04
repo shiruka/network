@@ -59,7 +59,7 @@ dependencies {
   annotationProcessor "org.projectlombok:lombok:1.18.20"
 
   compileOnly "it.unimi.dsi:fastutil:8.5.6"
-  compileOnly "io.netty:netty-all:4.1.69.Final"
+  compileOnly "io.netty:netty-all:4.1.70.Final"
   compileOnly "com.google.guava:guava:31.0.1-jre"
   compileOnly "it.unimi.dsi:fastutil-core:8.5.6"
   compileOnly "org.apache.commons:commons-math3:3.6.1"
@@ -79,7 +79,7 @@ dependencies {
   testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:2.14.1"
 
   testImplementation "it.unimi.dsi:fastutil:8.5.6"
-  testImplementation "io.netty:netty-all:4.1.68.Final"
+  testImplementation "io.netty:netty-all:4.1.70.Final"
   testImplementation "it.unimi.dsi:fastutil-core:8.5.6"
   testImplementation "com.google.guava:guava:31.0.1-jre"
   testImplementation "org.apache.commons:commons-math3:3.6.1"
