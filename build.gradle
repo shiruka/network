@@ -1,5 +1,6 @@
 plugins {
   id "java"
+  id "java-library"
   id "checkstyle"
   id "maven-publish"
   id "signing"
@@ -45,44 +46,30 @@ artifacts {
 
 repositories {
   mavenCentral()
-  maven {
-    url "https://jitpack.io"
-  }
+  maven { url "https://jitpack.io" }
+  maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
   mavenLocal()
 }
 
 dependencies {
-  compileOnly "org.jetbrains:annotations:23.0.0"
+  compileOnlyApi "org.jetbrains:annotations:23.0.0"
   annotationProcessor "org.jetbrains:annotations:23.0.0"
 
-  compileOnly "org.projectlombok:lombok:1.18.22"
+  compileOnlyApi "org.projectlombok:lombok:1.18.22"
   annotationProcessor "org.projectlombok:lombok:1.18.22"
 
-  compileOnly "it.unimi.dsi:fastutil:8.5.6"
-  compileOnly "io.netty:netty-all:4.1.72.Final"
-  compileOnly "com.google.guava:guava:31.0.1-jre"
-  compileOnly "it.unimi.dsi:fastutil-core:8.5.6"
-  compileOnly "org.apache.commons:commons-math3:3.6.1"
-  compileOnly "org.apache.logging.log4j:log4j-api:2.17.0"
+  compileOnlyApi "io.github.shiruka:api:3.0.14-SNAPSHOT"
 
-  // Test
-  testImplementation "org.jetbrains:annotations:22.0.0"
-  testAnnotationProcessor "org.jetbrains:annotations:22.0.0"
-
-  testImplementation 'org.projectlombok:lombok:1.18.22'
-  testAnnotationProcessor "org.projectlombok:lombok:1.18.20"
-
-  testImplementation "com.lmax:disruptor:3.4.4"
-  testImplementation "org.apache.logging.log4j:log4j-api:2.16.0"
-  testImplementation "org.apache.logging.log4j:log4j-iostreams:2.17.0"
-  testImplementation "org.apache.logging.log4j:log4j-core:2.17.0"
-  testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:2.17.0"
-
-  testImplementation "it.unimi.dsi:fastutil:8.5.6"
-  testImplementation "io.netty:netty-all:4.1.72.Final"
-  testImplementation "it.unimi.dsi:fastutil-core:8.5.6"
-  testImplementation "com.google.guava:guava:31.0.1-jre"
-  testImplementation "org.apache.commons:commons-math3:3.6.1"
+  compileOnlyApi "com.lmax:disruptor:3.4.4"
+  compileOnlyApi "it.unimi.dsi:fastutil:8.5.6"
+  compileOnlyApi "io.netty:netty-all:4.1.72.Final"
+  compileOnlyApi "it.unimi.dsi:fastutil-core:8.5.6"
+  compileOnlyApi "com.google.guava:guava:31.0.1-jre"
+  compileOnlyApi "org.apache.commons:commons-math3:3.6.1"
+  compileOnlyApi "org.apache.logging.log4j:log4j-api:2.17.0"
+  compileOnlyApi "org.apache.logging.log4j:log4j-core:2.17.0"
+  compileOnlyApi "org.apache.logging.log4j:log4j-iostreams:2.17.0"
+  compileOnlyApi "org.apache.logging.log4j:log4j-slf4j-impl:2.17.0"
 
   testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
 }
