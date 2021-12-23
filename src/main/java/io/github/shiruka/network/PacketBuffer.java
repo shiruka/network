@@ -1,7 +1,14 @@
 package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
+import io.github.shiruka.api.common.vectors.Vector2f;
+import io.github.shiruka.api.common.vectors.Vector3f;
+import io.github.shiruka.api.common.vectors.Vector3i;
+import io.github.shiruka.api.nbt.CompoundTag;
+import io.github.shiruka.api.nbt.Tag;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.AsciiString;
@@ -12,10 +19,15 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,7 +88,7 @@ public class PacketBuffer {
    * @param increaseWriterIndex the increase writer index to add.
    * @param buffer the buffer to add.
    */
-  public void addComponent(final boolean increaseWriterIndex, @NotNull final PacketBuffer buffer) {
+  public final void addComponent(final boolean increaseWriterIndex, @NotNull final PacketBuffer buffer) {
     if (this.buffer instanceof CompositeByteBuf composite) {
       composite.addComponent(increaseWriterIndex, buffer.buffer());
     }
@@ -87,7 +99,7 @@ public class PacketBuffer {
    *
    * @return the packet as a byte[].
    */
-  public byte[] array() {
+  public final byte[] array() {
     Preconditions.checkState(!this.buffer.isDirect(),
       "The buffer is a direct buffer!");
     return Arrays.copyOfRange(this.buffer.array(), 0, this.size());
@@ -96,7 +108,7 @@ public class PacketBuffer {
   /**
    * clears the packet's buffer.
    */
-  public void clear() {
+  public final void clear() {
     this.buffer.clear();
   }
 
@@ -106,7 +118,7 @@ public class PacketBuffer {
    * @return a copy of the packet buffer.
    */
   @NotNull
-  public ByteBuf copy() {
+  public final ByteBuf copy() {
     return this.buffer.copy();
   }
 
@@ -115,7 +127,7 @@ public class PacketBuffer {
    *
    * @return var long
    */
-  public long decodeVarLong() {
+  public final long decodeVarLong() {
     var result = 0;
     for (var shift = 0; shift < 64; shift += 7) {
       final var b = this.buffer.readByte();
@@ -132,7 +144,7 @@ public class PacketBuffer {
    *
    * @param value the value to encode.
    */
-  public void encodeVarLong(final long value) {
+  public final void encodeVarLong(final long value) {
     var tempValue = value;
     while (true) {
       if ((tempValue & ~0x7FL) == 0) {
@@ -151,7 +163,7 @@ public class PacketBuffer {
    * @return a new flipped packet.
    */
   @NotNull
-  public PacketBuffer flip() {
+  public final PacketBuffer flip() {
     final var data = this.buffer.array();
     final var increment = this.buffer.refCnt();
     this.buffer.release(increment);
@@ -165,7 +177,7 @@ public class PacketBuffer {
    *
    * @return {@code true} if the buffer is readable.
    */
-  public boolean isReadable() {
+  public final boolean isReadable() {
     return this.buffer.isReadable();
   }
 
@@ -174,7 +186,7 @@ public class PacketBuffer {
    *
    * @param length the amount of bytes to write.
    */
-  public void pad(final int length) {
+  public final void pad(final int length) {
     for (var index = 0; index < length; index++) {
       this.writeByte(0x00);
     }
@@ -185,7 +197,7 @@ public class PacketBuffer {
    *
    * @param dest the byte[] to read the data into.
    */
-  public void read(final byte[] dest) {
+  public final void read(final byte[] dest) {
     for (var index = 0; index < dest.length; index++) {
       dest[index] = this.readByte();
     }
@@ -198,7 +210,7 @@ public class PacketBuffer {
    *
    * @return the read bytes.
    */
-  public byte[] read(final int length) {
+  public final byte[] read(final int length) {
     final var bytes = new byte[length];
     this.read(bytes);
     return bytes;
@@ -214,7 +226,7 @@ public class PacketBuffer {
    *   unknown version.
    */
   @NotNull
-  public InetSocketAddress readAddress() {
+  public final InetSocketAddress readAddress() {
     final var version = this.readUnsignedByte();
     return switch (version) {
       case Constants.IPV4 -> this.readAddressIPV4();
@@ -225,11 +237,52 @@ public class PacketBuffer {
   }
 
   /**
+   * reads the array.
+   *
+   * @param array the array to read.
+   * @param supplier the supplier to read.
+   * @param <T> type of the array.
+   */
+  public final <T> void readArray(@NotNull final Collection<T> array, @NotNull final Supplier<T> supplier) {
+    final var length = this.readUnsignedInt();
+    IntStream.iterate(0, i -> i < length, i -> i + 1)
+      .mapToObj(i -> supplier.get())
+      .forEach(array::add);
+  }
+
+  /**
+   * reads the array shor le.
+   *
+   * @param array the array to read.
+   * @param supplier the supplier to read.
+   * @param <T> type of the array.
+   */
+  public final <T> void readArrayShortLE(@NotNull final Collection<T> array, final Supplier<T> supplier) {
+    final var length = this.readUnsignedShortLE();
+    IntStream.range(0, length)
+      .mapToObj(i -> supplier.get())
+      .forEach(array::add);
+  }
+
+  /**
+   * reads the block position.
+   *
+   * @return block position.
+   */
+  @NotNull
+  public final Vector3i readBlockPosition() {
+    final var x = this.readVarInt();
+    final var y = this.readUnsignedVarInt();
+    final var z = this.readVarInt();
+    return Vector3i.of(x, y, z);
+  }
+
+  /**
    * reads a boolean, technically a byte.
    *
    * @return a boolean.
    */
-  public boolean readBoolean() {
+  public final boolean readBoolean() {
     return this.buffer.readBoolean();
   }
 
@@ -238,8 +291,44 @@ public class PacketBuffer {
    *
    * @return a byte.
    */
-  public byte readByte() {
+  public final byte readByte() {
     return this.buffer.readByte();
+  }
+
+  /**
+   * reads the byte angle.
+   *
+   * @return byte angle.
+   */
+  public final float readByteAngle() {
+    return this.readByte() * (360f / 256f);
+  }
+
+  /**
+   * reads the byte array.
+   *
+   * @return byte array.
+   */
+  public final byte[] readByteArray() {
+    final var length = this.readUnsignedVarInt();
+    Preconditions.checkArgument(this.buffer().isReadable(length),
+      "Tried to read %s bytes but only has %s readable", length, this.remaining());
+    final var bytes = new byte[length];
+    this.readBytes(bytes);
+    return bytes;
+  }
+
+  /**
+   * reads the byte rotation.
+   *
+   * @return byte rotation.
+   */
+  @NotNull
+  public final Vector3f readByteRotation() {
+    final var pitch = this.readByteAngle();
+    final var yaw = this.readByteAngle();
+    final var roll = this.readByteAngle();
+    return Vector3f.of(pitch, yaw, roll);
   }
 
   /**
@@ -250,7 +339,7 @@ public class PacketBuffer {
    * @return bytes.
    */
   @NotNull
-  public ByteBuf readBytes(final byte[] bytes) {
+  public final ByteBuf readBytes(final byte[] bytes) {
     return this.buffer.readBytes(bytes);
   }
 
@@ -261,7 +350,7 @@ public class PacketBuffer {
    *
    * @return bytes.
    */
-  public byte[] readBytes(final int length) {
+  public final byte[] readBytes(final int length) {
     final var bytes = new byte[length];
     this.readBytes(bytes);
     return bytes;
@@ -272,7 +361,7 @@ public class PacketBuffer {
    *
    * @return a char.
    */
-  public char readChar() {
+  public final char readChar() {
     return (char) this.buffer.readShort();
   }
 
@@ -281,8 +370,21 @@ public class PacketBuffer {
    *
    * @return a little-endian char.
    */
-  public char readCharLE() {
+  public final char readCharLE() {
     return (char) this.buffer.readShortLE();
+  }
+
+  /**
+   * reads the compound tag.
+   *
+   * @return compound tag
+   */
+  @SneakyThrows
+  @NotNull
+  public final CompoundTag readCompoundTag() {
+    try (final var reader = Tag.createNetworkReader(new ByteBufInputStream(this.buffer()))) {
+      return reader.readCompoundTag();
+    }
   }
 
   /**
@@ -290,7 +392,7 @@ public class PacketBuffer {
    *
    * @return a double.
    */
-  public double readDouble() {
+  public final double readDouble() {
     return this.buffer.readDouble();
   }
 
@@ -299,7 +401,7 @@ public class PacketBuffer {
    *
    * @return a little-endian double.
    */
-  public double readDoubleLE() {
+  public final double readDoubleLE() {
     return this.buffer.readDoubleLE();
   }
 
@@ -308,7 +410,7 @@ public class PacketBuffer {
    *
    * @return a float.
    */
-  public float readFloat() {
+  public final float readFloat() {
     return this.buffer.readFloat();
   }
 
@@ -317,7 +419,7 @@ public class PacketBuffer {
    *
    * @return a little-endian float.
    */
-  public float readFloatLE() {
+  public final float readFloatLE() {
     return this.buffer.readFloatLE();
   }
 
@@ -326,7 +428,7 @@ public class PacketBuffer {
    *
    * @return an int.
    */
-  public int readInt() {
+  public final int readInt() {
     return this.buffer.readInt();
   }
 
@@ -335,7 +437,7 @@ public class PacketBuffer {
    *
    * @return a little-endian int.
    */
-  public int readIntLE() {
+  public final int readIntLE() {
     return this.buffer.readIntLE();
   }
 
@@ -345,7 +447,7 @@ public class PacketBuffer {
    * @return ascii string.
    */
   @NotNull
-  public AsciiString readLEAsciiString() {
+  public final AsciiString readLEAsciiString() {
     final var length = this.readIntLE();
     final var bytes = this.readBytes(length);
     return new AsciiString(bytes);
@@ -356,7 +458,7 @@ public class PacketBuffer {
    *
    * @return a long.
    */
-  public long readLong() {
+  public final long readLong() {
     return this.buffer.readLong();
   }
 
@@ -365,7 +467,7 @@ public class PacketBuffer {
    *
    * @return a little-endian long.
    */
-  public long readLongLE() {
+  public final long readLongLE() {
     return this.buffer.readLongLE();
   }
 
@@ -377,7 +479,7 @@ public class PacketBuffer {
    * @return retained slice buffer.
    */
   @NotNull
-  public PacketBuffer readRetainedSlice(final int length) {
+  public final PacketBuffer readRetainedSlice(final int length) {
     return new PacketBuffer(this.buffer.readRetainedSlice(length));
   }
 
@@ -386,7 +488,7 @@ public class PacketBuffer {
    *
    * @return a short.
    */
-  public short readShort() {
+  public final short readShort() {
     return this.buffer.readShort();
   }
 
@@ -395,7 +497,7 @@ public class PacketBuffer {
    *
    * @return a little-endian short.
    */
-  public short readShortLE() {
+  public final short readShortLE() {
     return this.buffer.readShortLE();
   }
 
@@ -405,7 +507,7 @@ public class PacketBuffer {
    * @return slice.
    */
   @NotNull
-  public ByteBuf readSlice() {
+  public final ByteBuf readSlice() {
     return this.buffer.readSlice(this.readUnsignedVarInt());
   }
 
@@ -415,7 +517,7 @@ public class PacketBuffer {
    * @return a string.
    */
   @NotNull
-  public String readString() {
+  public final String readString() {
     final var length = this.readVarInt();
     final var bytes = this.readBytes(length);
     return new String(bytes, StandardCharsets.UTF_8);
@@ -426,7 +528,7 @@ public class PacketBuffer {
    *
    * @return a triad.
    */
-  public int readTriad() {
+  public final int readTriad() {
     return this.buffer.readMedium();
   }
 
@@ -435,7 +537,7 @@ public class PacketBuffer {
    *
    * @return a little-endian triad.
    */
-  public int readTriadLE() {
+  public final int readTriadLE() {
     return this.buffer.readMediumLE();
   }
 
@@ -445,7 +547,7 @@ public class PacketBuffer {
    * @return a UUID.
    */
   @NotNull
-  public UUID readUUID() {
+  public final UUID readUUID() {
     final var most = this.readLong();
     final var least = this.readLong();
     return new UUID(most, least);
@@ -456,7 +558,7 @@ public class PacketBuffer {
    *
    * @return an unsigned byte.
    */
-  public short readUnsignedByte() {
+  public final short readUnsignedByte() {
     return (short) (this.readByte() & 0xFF);
   }
 
@@ -465,7 +567,7 @@ public class PacketBuffer {
    *
    * @return an unsigned int.
    */
-  public long readUnsignedInt() {
+  public final long readUnsignedInt() {
     return this.readInt() & 0xFFFFFFFFL;
   }
 
@@ -474,7 +576,7 @@ public class PacketBuffer {
    *
    * @return an unsigned little-endian int.
    */
-  public long readUnsignedIntLE() {
+  public final long readUnsignedIntLE() {
     return this.readIntLE() & 0xFFFFFFFFL;
   }
 
@@ -484,7 +586,7 @@ public class PacketBuffer {
    * @return an unsigned long.
    */
   @NotNull
-  public BigInteger readUnsignedLong() {
+  public final BigInteger readUnsignedLong() {
     final var bytes = this.read(Long.BYTES);
     return new BigInteger(bytes);
   }
@@ -495,7 +597,7 @@ public class PacketBuffer {
    * @return an unsigned little-endian long.
    */
   @NotNull
-  public BigInteger readUnsignedLongLE() {
+  public final BigInteger readUnsignedLongLE() {
     final var reversed = this.read(Long.BYTES);
     final var bytes = new byte[reversed.length];
     for (var index = 0; index < bytes.length; index++) {
@@ -509,7 +611,7 @@ public class PacketBuffer {
    *
    * @return an unsigned short.
    */
-  public int readUnsignedShort() {
+  public final int readUnsignedShort() {
     return this.readShort() & 0xFFFF;
   }
 
@@ -518,7 +620,7 @@ public class PacketBuffer {
    *
    * @return an unsigned little-endian short.
    */
-  public int readUnsignedShortLE() {
+  public final int readUnsignedShortLE() {
     return this.readShortLE() & 0xFFFF;
   }
 
@@ -527,7 +629,7 @@ public class PacketBuffer {
    *
    * @return an unsigned triad.
    */
-  public int readUnsignedTriad() {
+  public final int readUnsignedTriad() {
     return this.readTriad() & 0xFFFFFF;
   }
 
@@ -536,7 +638,7 @@ public class PacketBuffer {
    *
    * @return an unsigned little-endian triad.
    */
-  public int readUnsignedTriadLE() {
+  public final int readUnsignedTriadLE() {
     return this.buffer.readUnsignedMediumLE();
   }
 
@@ -545,7 +647,7 @@ public class PacketBuffer {
    *
    * @return unsigned var int.
    */
-  public int readUnsignedVarInt() {
+  public final int readUnsignedVarInt() {
     return (int) this.decodeVarLong();
   }
 
@@ -554,7 +656,7 @@ public class PacketBuffer {
    *
    * @return unsigned var long.
    */
-  public long readUnsignedVarLong() {
+  public final long readUnsignedVarLong() {
     return this.decodeVarLong();
   }
 
@@ -563,7 +665,7 @@ public class PacketBuffer {
    *
    * @return var int.
    */
-  public int readVarInt() {
+  public final int readVarInt() {
     final var decode = (int) this.decodeVarLong();
     return decode >>> 1 ^ -(decode & 1);
   }
@@ -573,9 +675,47 @@ public class PacketBuffer {
    *
    * @return var long.
    */
-  public long readVarLong() {
+  public final long readVarLong() {
     final var decode = this.decodeVarLong();
     return decode >>> 1 ^ -(decode & 1);
+  }
+
+  /**
+   * reads the vector 2f.
+   *
+   * @return vector 2f.
+   */
+  @NotNull
+  public final Vector2f readVector2f() {
+    final var x = this.readFloatLE();
+    final var y = this.readFloatLE();
+    return Vector2f.of(x, y);
+  }
+
+  /**
+   * reads vector 3f.
+   *
+   * @return vector 3f.
+   */
+  @NotNull
+  public final Vector3f readVector3f() {
+    final var x = this.readFloatLE();
+    final var y = this.readFloatLE();
+    final var z = this.readFloatLE();
+    return Vector3f.of(x, y, z);
+  }
+
+  /**
+   * reads the vector 3i.
+   *
+   * @return vector 3i.
+   */
+  @NotNull
+  public final Vector3i readVector3i() {
+    final var x = this.readVarInt();
+    final var y = this.readUnsignedVarInt();
+    final var z = this.readVarInt();
+    return Vector3i.of(x, y, z);
   }
 
   /**
@@ -583,7 +723,7 @@ public class PacketBuffer {
    *
    * @return readers index.
    */
-  public int readerIndex() {
+  public final int readerIndex() {
     return this.buffer.readerIndex();
   }
 
@@ -593,7 +733,7 @@ public class PacketBuffer {
    * @return {@code true} if and only if the reference count became 0 and this object has been deallocated, {@code
    *   false} otherwise.
    */
-  public boolean release() {
+  public final boolean release() {
     return this.buffer.release();
   }
 
@@ -607,7 +747,7 @@ public class PacketBuffer {
    *
    * @return how many readable byte>s are left in the packet's buffer.
    */
-  public int remaining() {
+  public final int remaining() {
     return this.buffer.readableBytes();
   }
 
@@ -617,7 +757,7 @@ public class PacketBuffer {
    * @return retained packet buffer.
    */
   @NotNull
-  public PacketBuffer retain() {
+  public final PacketBuffer retain() {
     return new PacketBuffer(this.buffer.retain());
   }
 
@@ -627,7 +767,7 @@ public class PacketBuffer {
    * @return duplicated packet buffer.
    */
   @NotNull
-  public PacketBuffer retainedDuplicate() {
+  public final PacketBuffer retainedDuplicate() {
     return new PacketBuffer(this.buffer.retainedDuplicate());
   }
 
@@ -640,7 +780,7 @@ public class PacketBuffer {
    *
    * @return the size of the packet in bytes.
    */
-  public int size() {
+  public final int size() {
     return this.buffer.writerIndex();
   }
 
@@ -649,7 +789,7 @@ public class PacketBuffer {
    *
    * @param length the amount of bytes to skip.
    */
-  public void skip(final int length) {
+  public final void skip(final int length) {
     this.buffer.skipBytes(Math.min(length, this.remaining()));
   }
 
@@ -658,7 +798,7 @@ public class PacketBuffer {
    *
    * @param hint the hint to touch.
    */
-  public void touch(@NotNull final Object hint) {
+  public final void touch(@NotNull final Object hint) {
     this.buffer.touch(hint);
   }
 
@@ -669,7 +809,7 @@ public class PacketBuffer {
    *
    * @return unsigned byte.
    */
-  public short unsignedByte(final int length) {
+  public final short unsignedByte(final int length) {
     return this.buffer.getUnsignedByte(length);
   }
 
@@ -678,7 +818,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void write(final byte... data) {
+  public final void write(final byte... data) {
     for (final var datum : data) {
       this.writeByte(datum);
     }
@@ -692,7 +832,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void write(final int... data) {
+  public final void write(final int... data) {
     final var bytes = new byte[data.length];
     for (var index = 0; index < data.length; index++) {
       bytes[index] = (byte) data[index];
@@ -707,7 +847,7 @@ public class PacketBuffer {
    *   global IPv6 address, or the length of the address is not either {@link Constants#IPV4_ADDRESS_LENGTH} or
    *   {@link Constants#IPV6_ADDRESS_LENGTH} bytes.
    */
-  public void writeAddress() {
+  public final void writeAddress() {
     this.writeAddress(Constants.NULL_ADDRESS);
   }
 
@@ -720,7 +860,7 @@ public class PacketBuffer {
    *   global IPv6 address, or the length of the address is not either {@link Constants#IPV4_ADDRESS_LENGTH} or
    *   {@link Constants#IPV6_ADDRESS_LENGTH} bytes.
    */
-  public void writeAddress(@NotNull final InetSocketAddress address) {
+  public final void writeAddress(@NotNull final InetSocketAddress address) {
     Objects.requireNonNull(address.getAddress(), "address");
     switch (PacketBuffer.getAddressVersion(address)) {
       case Constants.IPV4 -> this.writeAddressIPV4(address);
@@ -739,7 +879,7 @@ public class PacketBuffer {
    * @throws IllegalArgumentException if the port is not in between 0-65535 or
    *   if no IP address for the host could not be found, or if a scope_id was specified for a global IPv6 address.
    */
-  public void writeAddress(@NotNull final InetAddress host, final int port) {
+  public final void writeAddress(@NotNull final InetAddress host, final int port) {
     Preconditions.checkArgument(port >= 0x0000 && port <= 0xFFFF, "Port must be in between 0-65535");
     this.writeAddress(new InetSocketAddress(host, port));
   }
@@ -754,7 +894,7 @@ public class PacketBuffer {
    * @throws UnknownHostException if no IP address for the host could not be found, or if a scope_id was specified for
    *   a global IPv6 address.
    */
-  public void writeAddress(@NotNull final String host, final int port) throws IllegalArgumentException,
+  public final void writeAddress(@NotNull final String host, final int port) throws IllegalArgumentException,
     UnknownHostException {
     Preconditions.checkArgument(port >= 0x0000 && port <= 0xFFFF, "Port must be in between 0-65535");
     this.writeAddress(InetAddress.getByName(host), port);
@@ -765,7 +905,7 @@ public class PacketBuffer {
    *
    * @param address the address.
    */
-  public void writeAddressIPV4(@NotNull final InetSocketAddress address) {
+  public final void writeAddressIPV4(@NotNull final InetSocketAddress address) {
     final var ipAddress = address.getAddress().getAddress();
     this.writeByte(Constants.IPV4);
     PacketBuffer.flip(ipAddress);
@@ -778,7 +918,7 @@ public class PacketBuffer {
    *
    * @param address the address.
    */
-  public void writeAddressIPV6(@NotNull final InetSocketAddress address) {
+  public final void writeAddressIPV6(@NotNull final InetSocketAddress address) {
     final var ipv6Address = (Inet6Address) address.getAddress();
     this.writeByte(Constants.IPV6);
     this.writeShortLE(Constants.AF_INET6);
@@ -789,11 +929,58 @@ public class PacketBuffer {
   }
 
   /**
+   * writes the array.
+   *
+   * @param array the array to write.
+   * @param consumer the consumer to write.
+   * @param <T> type of the array.
+   */
+  public final <T> void writeArray(@NotNull final Collection<T> array, @NotNull final Consumer<T> consumer) {
+    this.writeUnsignedInt(array.size());
+    array.forEach(consumer);
+  }
+
+  /**
+   * writes the array.
+   *
+   * @param array the array to write.
+   * @param consumer the consumer to write.
+   * @param <T> type of the array.
+   */
+  public final <T> void writeArray(@NotNull final T[] array, @NotNull final Consumer<T> consumer) {
+    this.writeUnsignedInt(array.length);
+    Arrays.stream(array).forEach(consumer);
+  }
+
+  /**
+   * writes the array short le.
+   *
+   * @param array the array to write.
+   * @param consumer the consumer to write.
+   * @param <T> type of the array.
+   */
+  public final <T> void writeArrayShortLE(@NotNull final Collection<T> array, @NotNull final Consumer<T> consumer) {
+    this.writeShortLE(array.size());
+    array.forEach(consumer);
+  }
+
+  /**
+   * writes the block position.
+   *
+   * @param blockPosition the block position to write.
+   */
+  public final void writeBlockPosition(@NotNull final Vector3i blockPosition) {
+    this.writeVarInt(blockPosition.x());
+    this.writeUnsignedVarInt(blockPosition.y());
+    this.writeVarInt(blockPosition.z());
+  }
+
+  /**
    * writes a boolean to the packet.
    *
    * @param data the data to write.
    */
-  public void writeBoolean(final boolean data) {
+  public final void writeBoolean(final boolean data) {
     this.buffer.writeBoolean(data);
   }
 
@@ -802,8 +989,38 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeByte(final int data) {
+  public final void writeByte(final int data) {
     this.buffer.writeByte((byte) data);
+  }
+
+  /**
+   * writes the byte angle.
+   *
+   * @param angle the angle to write.
+   */
+  public final void writeByteAngle(final float angle) {
+    this.writeByte((byte) (angle / (360f / 256f)));
+  }
+
+  /**
+   * writes byte array.
+   *
+   * @param bytes the bytes to write.
+   */
+  public final void writeByteArray(final byte[] bytes) {
+    this.writeUnsignedVarInt(bytes.length);
+    this.writeBytes(bytes);
+  }
+
+  /**
+   * writes the byte rotation.
+   *
+   * @param rotation the rotation to write.
+   */
+  public final void writeByteRotation(@NotNull final Vector3f rotation) {
+    this.writeByteAngle(rotation.x());
+    this.writeByteAngle(rotation.y());
+    this.writeByteAngle(rotation.z());
   }
 
   /**
@@ -811,7 +1028,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeBytes(final byte[] data) {
+  public final void writeBytes(final byte[] data) {
     this.buffer.writeBytes(data);
   }
 
@@ -822,8 +1039,20 @@ public class PacketBuffer {
    * @param readerIndex the reader index to write.
    * @param readableBytes the readable bytes to write.
    */
-  public void writeBytes(@NotNull final PacketBuffer data, final int readerIndex, final int readableBytes) {
+  public final void writeBytes(@NotNull final PacketBuffer data, final int readerIndex, final int readableBytes) {
     this.buffer.writeBytes(data.buffer(), readerIndex, readableBytes);
+  }
+
+  /**
+   * writes the compound tag.
+   *
+   * @param tag the tag to write.
+   */
+  @SneakyThrows
+  public final void writeCompoundTag(@NotNull final CompoundTag tag) {
+    try (final var writer = Tag.createNetworkWriter(new ByteBufOutputStream(this.buffer()))) {
+      writer.writeCompoundTag(tag);
+    }
   }
 
   /**
@@ -831,7 +1060,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeDouble(final double data) {
+  public final void writeDouble(final double data) {
     this.buffer.writeDouble(data);
   }
 
@@ -840,7 +1069,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeDoubleLE(final double data) {
+  public final void writeDoubleLE(final double data) {
     this.buffer.writeDoubleLE(data);
   }
 
@@ -849,7 +1078,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeFloat(final double data) {
+  public final void writeFloat(final double data) {
     this.buffer.writeFloat((float) data);
   }
 
@@ -858,7 +1087,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeFloatLE(final double data) {
+  public final void writeFloatLE(final double data) {
     this.buffer.writeFloatLE((float) data);
   }
 
@@ -867,7 +1096,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeInt(final int data) {
+  public final void writeInt(final int data) {
     this.buffer.writeInt(data);
   }
 
@@ -876,7 +1105,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeIntLE(final int data) {
+  public final void writeIntLE(final int data) {
     this.buffer.writeIntLE(data);
   }
 
@@ -885,7 +1114,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeLEAsciiString(@NotNull final AsciiString data) {
+  public final void writeLEAsciiString(@NotNull final AsciiString data) {
     this.writeIntLE(data.length());
     this.writeBytes(data.array());
   }
@@ -895,7 +1124,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeLong(final long data) {
+  public final void writeLong(final long data) {
     this.buffer.writeLong(data);
   }
 
@@ -904,7 +1133,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeLongLE(final long data) {
+  public final void writeLongLE(final long data) {
     this.buffer.writeLongLE(data);
   }
 
@@ -913,7 +1142,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeShort(final int data) {
+  public final void writeShort(final int data) {
     this.buffer.writeShort(data);
   }
 
@@ -922,7 +1151,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeShortLE(final int data) {
+  public final void writeShortLE(final int data) {
     this.buffer.writeShortLE(data);
   }
 
@@ -931,7 +1160,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeString(@NotNull final String data) {
+  public final void writeString(@NotNull final String data) {
     this.writeVarInt(data.length());
     this.writeBytes(data.getBytes(StandardCharsets.UTF_8));
   }
@@ -941,7 +1170,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeTriad(final int data) {
+  public final void writeTriad(final int data) {
     this.buffer.writeMedium(data);
   }
 
@@ -950,7 +1179,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeTriadLE(final int data) {
+  public final void writeTriadLE(final int data) {
     this.buffer.writeMediumLE(data);
   }
 
@@ -959,7 +1188,7 @@ public class PacketBuffer {
    *
    * @param data the data to write.
    */
-  public void writeUUID(@NotNull final UUID data) {
+  public final void writeUUID(@NotNull final UUID data) {
     this.writeLong(data.getMostSignificantBits());
     this.writeLong(data.getLeastSignificantBits());
   }
@@ -971,7 +1200,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not within the range of 0-255.
    */
-  public void writeUnsignedByte(final int data) throws IllegalArgumentException {
+  public final void writeUnsignedByte(final int data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x00 && data <= 0xFF, "Value must be in between 0-255");
     this.writeByte((byte) data & 0xFF);
   }
@@ -983,7 +1212,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-4294967295
    */
-  public void writeUnsignedInt(final long data) throws IllegalArgumentException {
+  public final void writeUnsignedInt(final long data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x00000000 && data <= 0xFFFFFFFFL, "Value must be in between 0-4294967295");
     this.writeInt((int) data);
   }
@@ -995,7 +1224,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-4294967295.
    */
-  public void writeUnsignedIntLE(final long data) throws IllegalArgumentException {
+  public final void writeUnsignedIntLE(final long data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x00000000 && data <= 0xFFFFFFFFL, "Value must be in between 0-4294967295");
     this.buffer.writeIntLE((int) data);
   }
@@ -1007,7 +1236,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is bigger than {@link Long#BYTES} bytes  or is negative.
    */
-  public void writeUnsignedLong(@NotNull final BigInteger data) throws IllegalArgumentException {
+  public final void writeUnsignedLong(@NotNull final BigInteger data) throws IllegalArgumentException {
     final var bytes = data.toByteArray();
     Preconditions.checkArgument(bytes.length <= Long.BYTES, "Value is too big to fit into a long");
     Preconditions.checkArgument(data.longValue() >= 0, "Value cannot be negative");
@@ -1023,7 +1252,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is less than 0.
    */
-  public void writeUnsignedLong(final long data) throws IllegalArgumentException {
+  public final void writeUnsignedLong(final long data) throws IllegalArgumentException {
     this.writeUnsignedLong(new BigInteger(Long.toString(data)));
   }
 
@@ -1034,7 +1263,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if the size of the data is bigger than {@link Long#BYTES} bytes or is negative.
    */
-  public void writeUnsignedLongLE(@NotNull final BigInteger data) throws IllegalArgumentException {
+  public final void writeUnsignedLongLE(@NotNull final BigInteger data) throws IllegalArgumentException {
     final var bytes = data.toByteArray();
     Preconditions.checkArgument(bytes.length <= Long.BYTES, "Value is too big to fit into a long");
     Preconditions.checkArgument(data.longValue() >= 0, "Value cannot be negative");
@@ -1050,7 +1279,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is less than 0.
    */
-  public void writeUnsignedLongLE(final long data) throws IllegalArgumentException {
+  public final void writeUnsignedLongLE(final long data) throws IllegalArgumentException {
     this.writeUnsignedLongLE(new BigInteger(Long.toString(data)));
   }
 
@@ -1061,7 +1290,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not within the range of  0-65535.
    */
-  public void writeUnsignedShort(final int data) throws IllegalArgumentException {
+  public final void writeUnsignedShort(final int data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x0000 && data <= 0xFFFF, "Value must be in between 0-65535");
     this.writeShort((short) data & 0xFFFF);
   }
@@ -1073,7 +1302,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-65535.
    */
-  public void writeUnsignedShortLE(final int data) throws IllegalArgumentException {
+  public final void writeUnsignedShortLE(final int data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x0000 && data <= 0xFFFF, "Value must be in between 0-65535");
     this.writeShortLE((short) data & 0xFFFF);
   }
@@ -1085,7 +1314,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-16777215.
    */
-  public void writeUnsignedTriad(final int data) throws IllegalArgumentException {
+  public final void writeUnsignedTriad(final int data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x000000 && data <= 0xFFFFFF, "Value must be in between 0-16777215");
     this.writeTriad(data & 0xFFFFFF);
   }
@@ -1097,7 +1326,7 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-16777215.
    */
-  public void writeUnsignedTriadLE(final int data) throws IllegalArgumentException {
+  public final void writeUnsignedTriadLE(final int data) throws IllegalArgumentException {
     Preconditions.checkArgument(data >= 0x000000 && data <= 0xFFFFFF, "Value must be in between 0-16777215");
     this.writeTriadLE(data & 0xFFFFFF);
   }
@@ -1107,7 +1336,7 @@ public class PacketBuffer {
    *
    * @param value the value to write.
    */
-  public void writeUnsignedVarInt(final int value) {
+  public final void writeUnsignedVarInt(final int value) {
     this.encodeVarLong(value & 0xFFFFFFFFL);
   }
 
@@ -1116,7 +1345,7 @@ public class PacketBuffer {
    *
    * @param value the value to write.
    */
-  public void writeUnsignedVarLong(final long value) {
+  public final void writeUnsignedVarLong(final long value) {
     this.encodeVarLong(value);
   }
 
@@ -1125,8 +1354,8 @@ public class PacketBuffer {
    *
    * @param value the value to write.
    */
-  public void writeVarInt(final int value) {
-    this.encodeVarLong((value << 1 ^ value >> 31) & 0xFFFFFFFFL);
+  public final void writeVarInt(final int value) {
+    this.encodeVarLong(((long) value << 1 ^ value >> 31) & 0xFFFFFFFFL);
   }
 
   /**
@@ -1134,8 +1363,40 @@ public class PacketBuffer {
    *
    * @param value the value to write.
    */
-  public void writeVarLong(final long value) {
+  public final void writeVarLong(final long value) {
     this.encodeVarLong(value << 1 ^ value >> 63);
+  }
+
+  /**
+   * writes the vector 2f.
+   *
+   * @param vector the vector to write.
+   */
+  public final void writeVector2f(@NotNull final Vector2f vector) {
+    this.writeFloatLE(vector.x());
+    this.writeFloatLE(vector.y());
+  }
+
+  /**
+   * writes the vector 3f.
+   *
+   * @param vector the vector to write.
+   */
+  public final void writeVector3f(@NotNull final Vector3f vector) {
+    this.writeFloatLE(vector.x());
+    this.writeFloatLE(vector.y());
+    this.writeFloatLE(vector.z());
+  }
+
+  /**
+   * writes the vector 31.
+   *
+   * @param vector the vector to write.
+   */
+  public final void writeVector3i(@NotNull final Vector3i vector) {
+    this.writeVarInt(vector.x());
+    this.writeUnsignedVarInt(vector.y());
+    this.writeVarInt(vector.z());
   }
 
   /**
@@ -1143,7 +1404,7 @@ public class PacketBuffer {
    *
    * @param length the length to write.
    */
-  public void writeZero(final int length) {
+  public final void writeZero(final int length) {
     this.buffer.writeZero(length);
   }
 
