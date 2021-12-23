@@ -12,6 +12,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import java.net.InetSocketAddress;
 import java.util.StringJoiner;
+import org.jetbrains.annotations.NotNull;
 
 final class NetworkTest {
 
@@ -35,7 +36,7 @@ final class NetworkTest {
         .option(RakNetChannelOptions.SERVER_IDENTIFIER, Identifier.simple(serverInfo))
         .childHandler(new ChannelInitializer<>() {
           @Override
-          protected void initChannel(final Channel ch) {
+          protected void initChannel(@NotNull final Channel ch) {
             ch.pipeline().addLast(UserDataCodec.NAME, new UserDataCodec(0xFE));
             ch.pipeline().addLast(new SimpleChannelInboundHandler<ByteBuf>() {
               @Override
