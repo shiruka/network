@@ -53,10 +53,10 @@ repositories {
 
 dependencies {
   compileOnly "org.jetbrains:annotations:23.0.0"
-  annotationProcessor "org.jetbrains:annotations:22.0.0"
+  annotationProcessor "org.jetbrains:annotations:23.0.0"
 
   compileOnly "org.projectlombok:lombok:1.18.22"
-  annotationProcessor "org.projectlombok:lombok:1.18.20"
+  annotationProcessor "org.projectlombok:lombok:1.18.22"
 
   compileOnly "it.unimi.dsi:fastutil:8.5.6"
   compileOnly "io.netty:netty-all:4.1.72.Final"
@@ -69,7 +69,7 @@ dependencies {
   testImplementation "org.jetbrains:annotations:22.0.0"
   testAnnotationProcessor "org.jetbrains:annotations:22.0.0"
 
-  testImplementation "org.projectlombok:lombok:1.18.20"
+  testImplementation 'org.projectlombok:lombok:1.18.22'
   testAnnotationProcessor "org.projectlombok:lombok:1.18.20"
 
   testImplementation "com.lmax:disruptor:3.4.4"
