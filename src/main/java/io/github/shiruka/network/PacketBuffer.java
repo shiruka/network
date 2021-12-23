@@ -14,16 +14,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * a record class that contains helper methods to encode and decode buffers.
- *
- * @param buffer the buffer.
+ * a class that contains helper methods to encode and decode buffers.
  */
-public record PacketBuffer(
-  @NotNull ByteBuf buffer
-) {
+@RequiredArgsConstructor
+@Accessors(fluent = true)
+public class PacketBuffer {
+
+  /**
+   * the buffer.
+   */
+  @Getter
+  @NotNull
+  private final ByteBuf buffer;
 
   /**
    * flips the bytes.
