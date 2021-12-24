@@ -774,6 +774,16 @@ public class PacketBuffer {
   }
 
   /**
+   * sets short le.
+   *
+   * @param index the index to set.
+   * @param value the value to set.
+   */
+  public final void setShortLE(final int index, final int value) {
+    this.buffer.setShortLE(index, value);
+  }
+
+  /**
    * returns the size of the packet in bytes.
    * <p>
    * this is to be used only for packets that are being written to. To get the
