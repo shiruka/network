@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -240,13 +240,14 @@ public class PacketBuffer {
    * reads the array.
    *
    * @param array the array to read.
-   * @param supplier the supplier to read.
+   * @param faction the faction to read.
    * @param <T> type of the array.
    */
-  public final <T> void readArray(@NotNull final Collection<T> array, @NotNull final Supplier<T> supplier) {
+  public final <T> void readArray(@NotNull final Collection<T> array,
+                                  @NotNull final Function<PacketBuffer, T> faction) {
     final var length = this.readUnsignedInt();
     IntStream.iterate(0, i -> i < length, i -> i + 1)
-      .mapToObj(i -> supplier.get())
+      .mapToObj(i -> faction.apply(this))
       .forEach(array::add);
   }
 
@@ -254,13 +255,14 @@ public class PacketBuffer {
    * reads the array shor le.
    *
    * @param array the array to read.
-   * @param supplier the supplier to read.
+   * @param faction the faction to read.
    * @param <T> type of the array.
    */
-  public final <T> void readArrayShortLE(@NotNull final Collection<T> array, final Supplier<T> supplier) {
+  public final <T> void readArrayShortLE(@NotNull final Collection<T> array,
+                                         @NotNull final Function<PacketBuffer, T> faction) {
     final var length = this.readUnsignedShortLE();
     IntStream.range(0, length)
-      .mapToObj(i -> supplier.get())
+      .mapToObj(i -> faction.apply(this))
       .forEach(array::add);
   }
 
@@ -935,9 +937,12 @@ public class PacketBuffer {
    * @param consumer the consumer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArray(@NotNull final Collection<T> array, @NotNull final Consumer<T> consumer) {
+  public final <T> void writeArray(@NotNull final Collection<T> array,
+                                   @NotNull final BiConsumer<PacketBuffer, T> consumer) {
     this.writeUnsignedInt(array.size());
-    array.forEach(consumer);
+    for (final var element : array) {
+      consumer.accept(this, element);
+    }
   }
 
   /**
@@ -947,9 +952,11 @@ public class PacketBuffer {
    * @param consumer the consumer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArray(@NotNull final T[] array, @NotNull final Consumer<T> consumer) {
+  public final <T> void writeArray(@NotNull final T[] array, @NotNull final BiConsumer<PacketBuffer, T> consumer) {
     this.writeUnsignedInt(array.length);
-    Arrays.stream(array).forEach(consumer);
+    for (final var element : array) {
+      consumer.accept(this, element);
+    }
   }
 
   /**
@@ -959,9 +966,12 @@ public class PacketBuffer {
    * @param consumer the consumer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArrayShortLE(@NotNull final Collection<T> array, @NotNull final Consumer<T> consumer) {
+  public final <T> void writeArrayShortLE(@NotNull final Collection<T> array,
+                                          @NotNull final BiConsumer<PacketBuffer, T> consumer) {
     this.writeShortLE(array.size());
-    array.forEach(consumer);
+    for (final var element : array) {
+      consumer.accept(this, element);
+    }
   }
 
   /**
