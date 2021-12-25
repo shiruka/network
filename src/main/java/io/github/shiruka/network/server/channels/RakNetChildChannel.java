@@ -168,7 +168,7 @@ public class RakNetChildChannel extends AbstractChannel {
     });
     this.pipeline().addLast(new ChannelInitializer<RakNetChildChannel>() {
       @Override
-      protected void initChannel(final RakNetChildChannel ch) {
+      protected void initChannel(@NotNull final RakNetChildChannel ch) {
         RakNetChildChannel.this.pipeline().replace(ConnectionInitializer.NAME, ConnectionInitializer.NAME,
           new ConnectionInitializer(RakNetChildChannel.this.connectPromise));
       }

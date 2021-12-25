@@ -74,7 +74,7 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
   private int resendGauge;
 
   @Override
-  public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+  public void channelRead(@NotNull final ChannelHandlerContext ctx, @NotNull final Object msg) {
     try {
       if (msg instanceof Ack ack) {
         this.readAck(ctx, ack);
