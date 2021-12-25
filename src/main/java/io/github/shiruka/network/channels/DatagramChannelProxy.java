@@ -82,7 +82,7 @@ public abstract class DatagramChannelProxy implements Channel {
   protected DatagramChannelProxy(@NotNull final Class<? extends DatagramChannel> cls) {
     this(() -> {
       try {
-        return cls.getConstructor().newInstance();
+        return cls.getDeclaredConstructor().newInstance();
       } catch (final Exception e) {
         throw new IllegalArgumentException("Failed to create instance", e);
       }
