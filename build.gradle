@@ -68,7 +68,7 @@ dependencies {
   compileOnlyApi "org.apache.commons:commons-math3:3.6.1"
   compileOnlyApi "org.apache.logging.log4j:log4j-api:2.17.0"
   compileOnlyApi "org.apache.logging.log4j:log4j-core:2.17.0"
-  compileOnlyApi "org.apache.logging.log4j:log4j-iostreams:2.17.0"
+  compileOnlyApi "org.apache.logging.log4j:log4j-iostreams:2.17.1"
   compileOnlyApi "org.apache.logging.log4j:log4j-slf4j-impl:2.17.0"
 
   testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
