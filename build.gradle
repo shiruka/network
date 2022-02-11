@@ -61,7 +61,7 @@ dependencies {
   compileOnlyApi "io.github.shiruka:api:3.0.14-SNAPSHOT"
 
   compileOnlyApi "com.lmax:disruptor:3.4.4"
-  compileOnlyApi "it.unimi.dsi:fastutil:8.5.7"
+  compileOnlyApi "it.unimi.dsi:fastutil:8.5.8"
   compileOnlyApi "io.netty:netty-all:4.1.74.Final"
   compileOnlyApi "it.unimi.dsi:fastutil-core:8.5.7"
   compileOnlyApi "com.google.guava:guava:31.0.1-jre"
