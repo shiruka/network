@@ -59,6 +59,7 @@ dependencies {
   annotationProcessor "org.projectlombok:lombok:${lombok}"
 
   compileOnlyApi "io.github.shiruka:api:${api}"
+  compileOnlyApi "org.apache.commons:commons-math3:${commonsmath3}"
 
   testAnnotationProcessor "org.projectlombok:lombok:${lombok}"
   testAnnotationProcessor "org.jetbrains:annotations:${annotations}"
