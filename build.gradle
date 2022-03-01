@@ -52,26 +52,32 @@ repositories {
 }
 
 dependencies {
-  compileOnlyApi "org.jetbrains:annotations:23.0.0"
-  annotationProcessor "org.jetbrains:annotations:23.0.0"
+  compileOnlyApi "org.jetbrains:annotations:${annotations}"
+  annotationProcessor "org.jetbrains:annotations:${annotations}"
 
-  compileOnlyApi "org.projectlombok:lombok:1.18.22"
-  annotationProcessor "org.projectlombok:lombok:1.18.22"
+  compileOnlyApi "org.projectlombok:lombok:${lombok}"
+  annotationProcessor "org.projectlombok:lombok:${lombok}"
 
-  compileOnlyApi "io.github.shiruka:api:3.0.14-SNAPSHOT"
+  compileOnlyApi "io.github.shiruka:api:${api}"
+  compileOnlyApi "io.netty:netty-all:${nettyall}"
+  compileOnlyApi "com.google.guava:guava:${guava}"
+  compileOnlyApi "com.google.inject:guice:${guice}"
+  compileOnlyApi "it.unimi.dsi:fastutil:${fastutil}"
+  compileOnlyApi "it.unimi.dsi:fastutil-core:${fastutil}"
+  compileOnlyApi "tr.com.infumia:InfumiaShared:${infumia}"
+  compileOnlyApi "org.reflections:reflections:${reflections}"
+  compileOnlyApi "org.apache.logging.log4j:log4j-api:${log4j}"
+  compileOnlyApi "com.nimbusds:nimbus-jose-jwt:${nimbusjosejwt}"
+  compileOnlyApi "org.apache.commons:commons-lang3:${commonslang3}"
+  compileOnlyApi "org.apache.commons:commons-math3:${commonsmath3}"
+  compileOnlyApi "org.apache.logging.log4j:log4j-iostreams:${log4j}"
+  compileOnlyApi "org.apache.logging.log4j:log4j-slf4j-impl:${log4j}"
+  compileOnlyApi "com.fasterxml.jackson.core:jackson-databind:${jacksondatabind}"
+  compileOnlyApi "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksondatabind}"
 
-  compileOnlyApi "com.lmax:disruptor:3.4.4"
-  compileOnlyApi "it.unimi.dsi:fastutil:8.5.8"
-  compileOnlyApi "io.netty:netty-all:4.1.74.Final"
-  compileOnlyApi "it.unimi.dsi:fastutil-core:8.5.8"
-  compileOnlyApi "com.google.guava:guava:31.1-jre"
-  compileOnlyApi "org.apache.commons:commons-math3:3.6.1"
-  compileOnlyApi "org.apache.logging.log4j:log4j-api:2.17.2"
-  compileOnlyApi "org.apache.logging.log4j:log4j-core:2.17.2"
-  compileOnlyApi "org.apache.logging.log4j:log4j-iostreams:2.17.1"
-  compileOnlyApi "org.apache.logging.log4j:log4j-slf4j-impl:2.17.2"
-
-  testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
+  testAnnotationProcessor "org.projectlombok:lombok:${lombok}"
+  testAnnotationProcessor "org.jetbrains:annotations:${annotations}"
+  testImplementation "org.junit.jupiter:junit-jupiter:${junitjupiter}"
 }
 
 publishing {
