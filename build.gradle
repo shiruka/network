@@ -1,37 +1,37 @@
 plugins {
-  id "java"
-  id "java-library"
-  id "checkstyle"
-  id "maven-publish"
-  id "signing"
-  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+  id 'java'
+  id 'java-library'
+  id 'checkstyle'
+  id 'maven-publish'
+  id 'signing'
+  id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 }
 
-group "io.github.shiruka"
+group 'io.github.shiruka'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 compileJava {
   options.deprecation true
-  options.encoding "UTF-8"
+  options.encoding 'UTF-8'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier "sources"
+  classifier 'sources'
   from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-  javadoc.options.encoding = "UTF-8"
-  javadoc.options.tags = ["todo"]
-  javadoc.options.addBooleanOption("html5", true)
-  classifier "javadoc"
+  javadoc.options.encoding = 'UTF-8'
+  javadoc.options.tags = ['todo']
+  javadoc.options.addBooleanOption('html5', true)
+  classifier 'javadoc'
   from javadoc.destinationDir
 }
 
 checkstyle {
-  configFile = rootProject.file("checkstyle.xml")
+  configFile = rootProject.file('checkstyle.xml')
   checkstyleTest.enabled = false
 }
 
@@ -46,8 +46,8 @@ artifacts {
 
 repositories {
   mavenCentral()
-  maven { url "https://jitpack.io" }
-  maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+  maven { url 'https://jitpack.io' }
+  maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
   mavenLocal()
 }
 
@@ -76,26 +76,26 @@ publishing {
       artifact tasks.sourcesJar
       artifact tasks.javadocJar
       pom {
-        name = "Shiru ka Network"
-        description = "A network library to handle RakNet packets."
-        url = "https://shiruka.github.io/"
+        name = 'Shiru ka Network'
+        description = 'A network library to handle RakNet packets.'
+        url = 'https://shiruka.github.io/'
         licenses {
           license {
-            name = "MIT License"
-            url = "https://mit-license.org/license.txt"
+            name = 'MIT License'
+            url = 'https://mit-license.org/license.txt'
           }
         }
         developers {
           developer {
-            id = "portlek"
-            name = "Hasan Demirtaş"
-            email = "utsukushihito@outlook.com"
+            id = 'portlek'
+            name = 'Hasan Demirtaş'
+            email = 'utsukushihito@outlook.com'
           }
         }
         scm {
-          connection = "scm:git:git://github.com/shiruka/network.git"
-          developerConnection = "scm:git:ssh://github.com/shiruka/network.git"
-          url = "https://github.com/shiruka/network"
+          connection = 'scm:git:git://github.com/shiruka/network.git'
+          developerConnection = 'scm:git:ssh://github.com/shiruka/network.git'
+          url = 'https://github.com/shiruka/network'
         }
       }
     }
