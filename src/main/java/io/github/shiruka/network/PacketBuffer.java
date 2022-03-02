@@ -12,6 +12,8 @@ import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.util.AsciiString;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import java.math.BigInteger;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -22,9 +24,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.stream.IntStream;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -237,46 +238,59 @@ public class PacketBuffer {
   }
 
   /**
-   * reads the array.
+   * reads the string array.
    *
-   * @param array the array to read.
-   * @param faction the faction to read.
-   * @param <T> type of the array.
+   * @param lengthSupplier the length supplier to read.
+   * @param valueSupplier the value supplier to read.
+   * @param <T> type of the array element.
+   *
+   * @return string list.
    */
-  public final <T> void readArray(@NotNull final Collection<T> array,
-                                  @NotNull final Function<PacketBuffer, T> faction) {
-    final var length = this.readUnsignedInt();
-    IntStream.iterate(0, i -> i < length, i -> i + 1)
-      .mapToObj(i -> faction.apply(this))
-      .forEach(array::add);
+  @NotNull
+  public final <T> ObjectList<T> readArray(@NotNull final Supplier<Number> lengthSupplier,
+                                           @NotNull final Supplier<T> valueSupplier) {
+    final var list = new ObjectArrayList<T>();
+    final var length = lengthSupplier.get().longValue();
+    for (var index = 0; index < length; index++) {
+      list.add(valueSupplier.get());
+    }
+    return list;
   }
 
   /**
    * reads the array shor le.
    *
-   * @param array the array to read.
-   * @param faction the faction to read.
+   * @param valueSupplier the value supplier to read.
    * @param <T> type of the array.
+   *
+   * @return array list.
    */
-  public final <T> void readArrayShortLE(@NotNull final Collection<T> array,
-                                         @NotNull final Function<PacketBuffer, T> faction) {
-    final var length = this.readUnsignedShortLE();
-    IntStream.range(0, length)
-      .mapToObj(i -> faction.apply(this))
-      .forEach(array::add);
+  @NotNull
+  public final <T> ObjectList<T> readArrayShortLE(@NotNull final Supplier<T> valueSupplier) {
+    return this.readArray(this::readUnsignedShortLE, valueSupplier);
   }
 
   /**
-   * reads the block position.
+   * reads the string array.
    *
-   * @return block position.
+   * @param valueSupplier the value supplier to read.
+   * @param <T> type of the array.
+   *
+   * @return array list.
    */
   @NotNull
-  public final Vector3i readBlockPosition() {
-    final var x = this.readVarInt();
-    final var y = this.readUnsignedVarInt();
-    final var z = this.readVarInt();
-    return Vector3i.of(x, y, z);
+  public final <T> ObjectList<T> readArrayUnsignedInt(@NotNull final Supplier<T> valueSupplier) {
+    return this.readArray(this::readUnsignedInt, valueSupplier);
+  }
+
+  /**
+   * reads the string array.
+   *
+   * @return string list.
+   */
+  @NotNull
+  public final ObjectList<String> readArrayUnsignedIntWithString() {
+    return this.readArrayUnsignedInt(this::readString);
   }
 
   /**
@@ -944,14 +958,15 @@ public class PacketBuffer {
    * writes the array.
    *
    * @param array the array to write.
-   * @param consumer the consumer to write.
+   * @param lengthWriter the length writer to write.
+   * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArray(@NotNull final Collection<T> array,
-                                   @NotNull final BiConsumer<PacketBuffer, T> consumer) {
-    this.writeUnsignedInt(array.size());
-    for (final var element : array) {
-      consumer.accept(this, element);
+  public final <T> void writeArray(@NotNull final Collection<T> array, @NotNull final Consumer<Number> lengthWriter,
+                                   @NotNull final Consumer<T> valueWriter) {
+    lengthWriter.accept(array.size());
+    for (final var t : array) {
+      valueWriter.accept(t);
     }
   }
 
@@ -959,40 +974,50 @@ public class PacketBuffer {
    * writes the array.
    *
    * @param array the array to write.
-   * @param consumer the consumer to write.
+   * @param lengthWriter the length writer to write.
+   * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArray(@NotNull final T[] array, @NotNull final BiConsumer<PacketBuffer, T> consumer) {
-    this.writeUnsignedInt(array.length);
-    for (final var element : array) {
-      consumer.accept(this, element);
+  public final <T> void writeArray(@NotNull final T[] array, @NotNull final Consumer<Number> lengthWriter,
+                                   @NotNull final Consumer<T> valueWriter) {
+    lengthWriter.accept(array.length);
+    for (final var t : array) {
+      valueWriter.accept(t);
     }
   }
 
   /**
-   * writes the array short le.
+   * writes the array.
    *
    * @param array the array to write.
-   * @param consumer the consumer to write.
+   * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArrayShortLE(@NotNull final Collection<T> array,
-                                          @NotNull final BiConsumer<PacketBuffer, T> consumer) {
-    this.writeShortLE(array.size());
-    for (final var element : array) {
-      consumer.accept(this, element);
-    }
+  public final <T> void writeArrayShortLE(@NotNull final Collection<T> array, @NotNull final Consumer<T> valueWriter) {
+    this.writeArray(array, i -> this.writeShortLE(i.intValue()), valueWriter);
   }
 
   /**
-   * writes the block position.
+   * writes the array.
    *
-   * @param blockPosition the block position to write.
+   * @param array the array to write.
+   * @param valueWriter the value writer to write.
+   * @param <T> type of the array.
    */
-  public final void writeBlockPosition(@NotNull final Vector3i blockPosition) {
-    this.writeVarInt(blockPosition.x());
-    this.writeUnsignedVarInt(blockPosition.y());
-    this.writeVarInt(blockPosition.z());
+  public final <T> void writeArrayUnsignedInt(@NotNull final T[] array, @NotNull final Consumer<T> valueWriter) {
+    this.writeArray(array, i -> this.writeUnsignedInt(i.longValue()), valueWriter);
+  }
+
+  /**
+   * writes the array.
+   *
+   * @param array the array to write.
+   * @param valueWriter the value writer to write.
+   * @param <T> type of the array.
+   */
+  public final <T> void writeArrayUnsignedInt(@NotNull final Collection<T> array,
+                                              @NotNull final Consumer<T> valueWriter) {
+    this.writeArray(array, i -> this.writeUnsignedInt(i.longValue()), valueWriter);
   }
 
   /**
@@ -1233,7 +1258,7 @@ public class PacketBuffer {
    * @throws IllegalArgumentException if data is not in between 0-4294967295
    */
   public final void writeUnsignedInt(final long data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0x00000000 && data <= 0xFFFFFFFFL, "Value must be in between 0-4294967295");
+    Preconditions.checkArgument(data >= 0 && data <= 4294967295L, "Value must be in between 0-4294967295");
     this.writeInt((int) data);
   }
 
