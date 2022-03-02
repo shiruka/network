@@ -240,6 +240,10 @@ public class PacketBuffer {
   /**
    * reads the string array.
    *
+   * @param lengthSupplier the length supplier to read.
+   * @param valueSupplier the value supplier to read.
+   * @param <T> type of the array element.
+   *
    * @return string list.
    */
   @NotNull
