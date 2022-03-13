@@ -19,6 +19,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1089,6 +1090,18 @@ public class PacketBuffer {
   }
 
   /**
+   * writes char sequence.
+   *
+   * @param sequence the sequence to write.
+   * @param charset the charset to write.
+   *
+   * @return the written number of bytes.
+   */
+  public final int writeCharSequence(@NotNull final CharSequence sequence, @NotNull final Charset charset) {
+    return this.buffer.writeCharSequence(sequence, charset);
+  }
+
+  /**
    * writes the compound tag.
    *
    * @param tag the tag to write.
@@ -1451,6 +1464,19 @@ public class PacketBuffer {
    */
   public final void writeZero(final int length) {
     this.buffer.writeZero(length);
+  }
+
+  /**
+   * reads the char sequence.
+   *
+   * @param length the length to read.
+   * @param charset the charset to read.
+   *
+   * @return the sequence.
+   */
+  @NotNull
+  public CharSequence readCharSequence(final int length, final Charset charset) {
+    return this.buffer.readCharSequence(length, charset);
   }
 
   /**
