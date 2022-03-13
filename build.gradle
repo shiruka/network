@@ -118,6 +118,9 @@ publishing {
 }
 
 signing {
+  if (((String) property('dev')).equalsIgnoreCase('true')) {
+    return
+  }
   useGpgCmd()
   sign publishing.publications.mavenJava
 }
