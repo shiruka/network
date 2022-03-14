@@ -232,7 +232,6 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
           final var child = this.channel.newChild((InetSocketAddress) remoteAddress);
           child.closeFuture().addListener(v ->
             this.channel.eventLoop().execute(() -> this.channel.children.remove(remoteAddress, child)));
-          child.config().serverId(this.channel.config().serverId());
           this.channel.pipeline().fireChannelRead(child).fireChannelReadComplete();
           this.channel.children.put(remoteAddress, child);
         }

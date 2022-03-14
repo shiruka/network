@@ -11,6 +11,7 @@ import io.github.shiruka.network.server.pipelines.ConnectionListener;
 import io.github.shiruka.network.server.pipelines.PingListener;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,7 +55,7 @@ public interface RakNetServer {
         .addLast(RawPacketCodec.NAME, RawPacketCodec.INSTANCE)
         .addLast(ReliableFrameHandling.INSTANCE)
         .addLast(PacketHandling.INSTANCE)
-        .addLast(ConnectionInitializer.NAME, new ConnectionInitializer(channel.newPromise()));
+        .addLast(ConnectionInitializer.NAME, new ChannelInboundHandlerAdapter());
     }
   }
 
