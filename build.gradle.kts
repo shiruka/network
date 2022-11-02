@@ -25,7 +25,6 @@ repositories {
 dependencies {
   compileOnlyApi(libs.api)
   compileOnlyApi(libs.commonsmath)
-  compileOnlyApi(libs.netty)
 
   compileOnly(libs.lombok)
   compileOnly(libs.annotations)
