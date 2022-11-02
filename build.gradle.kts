@@ -23,10 +23,8 @@ repositories {
 }
 
 dependencies {
-  compileOnlyApi(libs.nbt)
   compileOnlyApi(libs.api)
   compileOnlyApi(libs.commonsmath)
-  compileOnlyApi(libs.jwt)
   compileOnlyApi(libs.netty)
 
   compileOnly(libs.lombok)
