@@ -4,7 +4,6 @@ annotations = { module = "org.jetbrains:annotations", version = "23.0.0" }
 commonsmath = { module = "org.apache.commons:commons-math3", version = "3.6.1" }
 api = { module = "io.github.shiruka:api", version = "3.0.16" }
 jwt = { module = "com.nimbusds:nimbus-jose-jwt", version = "9.25.6" }
-netty = { module = "io.netty:netty-all", version = "4.1.84.Final" }
 
 [plugins]
 spotless = { id = "com.diffplug.spotless", version = "6.11.0" }
