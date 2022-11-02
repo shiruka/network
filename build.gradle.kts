@@ -26,9 +26,6 @@ dependencies {
   compileOnlyApi(libs.api)
   compileOnlyApi(libs.commonsmath)
 
-  compileOnly(libs.lombok)
-  compileOnly(libs.annotations)
-
   annotationProcessor(libs.lombok)
   annotationProcessor(libs.annotations)
 
