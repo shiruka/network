@@ -38,8 +38,7 @@ public final class UnconnectedPingOpenConnections implements Packet {
   /**
    * ctor.
    */
-  public UnconnectedPingOpenConnections() {
-  }
+  public UnconnectedPingOpenConnections() {}
 
   /**
    * ctor.
@@ -48,7 +47,11 @@ public final class UnconnectedPingOpenConnections implements Packet {
    * @param clientId the client id.
    * @param timestamp the timestamp.
    */
-  public UnconnectedPingOpenConnections(@Nullable final RakNetMagic magic, final long clientId, final long timestamp) {
+  public UnconnectedPingOpenConnections(
+    @Nullable final RakNetMagic magic,
+    final long clientId,
+    final long timestamp
+  ) {
     this.magic = magic;
     this.clientId = clientId;
     this.timestamp = timestamp;

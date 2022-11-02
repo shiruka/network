@@ -38,8 +38,7 @@ public final class InvalidVersion implements Packet {
   /**
    * ctor.
    */
-  public InvalidVersion() {
-  }
+  public InvalidVersion() {}
 
   /**
    * ctor.
@@ -48,7 +47,11 @@ public final class InvalidVersion implements Packet {
    * @param version the version.
    * @param serverId the server id.
    */
-  public InvalidVersion(@NotNull final RakNetMagic magic, final int version, final long serverId) {
+  public InvalidVersion(
+    @NotNull final RakNetMagic magic,
+    final int version,
+    final long serverId
+  ) {
     this.magic = magic;
     this.version = version;
     this.serverId = serverId;

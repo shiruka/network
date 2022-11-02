@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
  * an interface to determine framed packets.
  */
 public interface FramedPacket extends Packet {
-
   /**
    * obtains the order channel.
    *
@@ -122,7 +121,12 @@ public interface FramedPacket extends Packet {
      * @param isSequenced the is sequenced.
      * @param isAckd the is ackd.
      */
-    Reliability(final boolean isReliable, final boolean isOrdered, final boolean isSequenced, final boolean isAckd) {
+    Reliability(
+      final boolean isReliable,
+      final boolean isOrdered,
+      final boolean isSequenced,
+      final boolean isAckd
+    ) {
       this.isReliable = isReliable;
       this.isOrdered = isOrdered;
       this.isSequenced = isSequenced;
@@ -138,7 +142,10 @@ public interface FramedPacket extends Packet {
      */
     @NotNull
     public static Reliability get(final int code) {
-      Preconditions.checkArgument(code >= 0 && code < Reliability.CACHE.length, "Invalid code!");
+      Preconditions.checkArgument(
+        code >= 0 && code < Reliability.CACHE.length,
+        "Invalid code!"
+      );
       return Reliability.CACHE[code];
     }
 
@@ -165,7 +172,9 @@ public interface FramedPacket extends Packet {
         case UNRELIABLE -> Reliability.RELIABLE;
         case UNRELIABLE_SEQUENCED -> Reliability.RELIABLE_SEQUENCED;
         case UNRELIABLE_ACK -> Reliability.RELIABLE_ACK;
-        default -> throw new IllegalArgumentException("No reliable form of " + this);
+        default -> throw new IllegalArgumentException(
+          "No reliable form of " + this
+        );
       };
     }
   }

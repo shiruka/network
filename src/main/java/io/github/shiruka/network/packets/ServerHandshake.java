@@ -48,8 +48,11 @@ public final class ServerHandshake extends FramedPacket.Base {
    * @param timestamp the timestamp.
    * @param nExtraAddresses the n extra address.
    */
-  public ServerHandshake(@NotNull final InetSocketAddress clientAddress, final long timestamp,
-                         final int nExtraAddresses) {
+  public ServerHandshake(
+    @NotNull final InetSocketAddress clientAddress,
+    final long timestamp,
+    final int nExtraAddresses
+  ) {
     super(Reliability.RELIABLE);
     this.clientAddress = clientAddress;
     this.timestamp = timestamp;
@@ -62,7 +65,10 @@ public final class ServerHandshake extends FramedPacket.Base {
    * @param clientAddress the client address.
    * @param timestamp the timestamp.
    */
-  public ServerHandshake(@NotNull final InetSocketAddress clientAddress, final long timestamp) {
+  public ServerHandshake(
+    @NotNull final InetSocketAddress clientAddress,
+    final long timestamp
+  ) {
     this(clientAddress, timestamp, 20);
   }
 
@@ -80,7 +86,11 @@ public final class ServerHandshake extends FramedPacket.Base {
   public void decode(@NotNull final PacketBuffer buffer) {
     this.clientAddress = buffer.readAddress();
     buffer.readShort();
-    for (this.nExtraAddresses = 0; buffer.remaining() > 16; this.nExtraAddresses++) {
+    for (
+      this.nExtraAddresses = 0;
+      buffer.remaining() > 16;
+      this.nExtraAddresses++
+    ) {
       buffer.readAddress();
     }
     this.timestamp = buffer.readLong();

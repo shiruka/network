@@ -10,7 +10,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * a class that represents ping handler pipelines.
  */
 @ChannelHandler.Sharable
-public final class PingHandler extends SimpleChannelInboundHandler<ConnectedPing> {
+public final class PingHandler
+  extends SimpleChannelInboundHandler<ConnectedPing> {
 
   /**
    * the instance.
@@ -23,7 +24,10 @@ public final class PingHandler extends SimpleChannelInboundHandler<ConnectedPing
   public static final String NAME = "rn-ping";
 
   @Override
-  protected void channelRead0(final ChannelHandlerContext ctx, final ConnectedPing ping) {
+  protected void channelRead0(
+    final ChannelHandlerContext ctx,
+    final ConnectedPing ping
+  ) {
     ctx.write(new ConnectedPong(ping.timestamp(), ping.reliability()));
   }
 }

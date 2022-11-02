@@ -16,10 +16,8 @@ public final class ClientDisconnect extends FramedPacket.Base {
   }
 
   @Override
-  public void decode(@NotNull final PacketBuffer buffer) {
-  }
+  public void decode(@NotNull final PacketBuffer buffer) {}
 
   @Override
-  public void encode(@NotNull final PacketBuffer buffer) {
-  }
+  public void encode(@NotNull final PacketBuffer buffer) {}
 }

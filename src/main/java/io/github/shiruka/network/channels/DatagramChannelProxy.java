@@ -63,14 +63,21 @@ public abstract class DatagramChannelProxy implements Channel {
    *
    * @param supplier the supplier.
    */
-  protected DatagramChannelProxy(@NotNull final Supplier<? extends DatagramChannel> supplier) {
+  protected DatagramChannelProxy(
+    @NotNull final Supplier<? extends DatagramChannel> supplier
+  ) {
     this.parent = supplier.get();
     this.pipeline = this.newChannelPipeline();
     this.parent.pipeline()
       .addLast(DatagramChannelProxy.NAME, new ListenerInboundProxy(this));
     this.pipeline()
       .addLast(DatagramChannelProxy.NAME, new ListenerOutboundProxy(this))
-      .addLast(new FlushConsolidationHandler(FlushConsolidationHandler.DEFAULT_EXPLICIT_FLUSH_AFTER_FLUSHES, true));
+      .addLast(
+        new FlushConsolidationHandler(
+          FlushConsolidationHandler.DEFAULT_EXPLICIT_FLUSH_AFTER_FLUSHES,
+          true
+        )
+      );
     this.config = new Config(this);
   }
 
@@ -79,7 +86,9 @@ public abstract class DatagramChannelProxy implements Channel {
    *
    * @param cls the cls.
    */
-  protected DatagramChannelProxy(@NotNull final Class<? extends DatagramChannel> cls) {
+  protected DatagramChannelProxy(
+    @NotNull final Class<? extends DatagramChannel> cls
+  ) {
     this(() -> {
       try {
         return cls.getDeclaredConstructor().newInstance();
@@ -110,7 +119,10 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   @Override
-  public final ChannelFuture connect(final SocketAddress remoteAddress, final SocketAddress localAddress) {
+  public final ChannelFuture connect(
+    final SocketAddress remoteAddress,
+    final SocketAddress localAddress
+  ) {
     return this.pipeline.connect(remoteAddress, localAddress);
   }
 
@@ -130,18 +142,27 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   @Override
-  public final ChannelFuture bind(final SocketAddress localAddress, final ChannelPromise promise) {
+  public final ChannelFuture bind(
+    final SocketAddress localAddress,
+    final ChannelPromise promise
+  ) {
     return this.pipeline.bind(localAddress, promise);
   }
 
   @Override
-  public final ChannelFuture connect(final SocketAddress remoteAddress, final ChannelPromise promise) {
+  public final ChannelFuture connect(
+    final SocketAddress remoteAddress,
+    final ChannelPromise promise
+  ) {
     return this.pipeline.connect(remoteAddress, promise);
   }
 
   @Override
-  public final ChannelFuture connect(final SocketAddress remoteAddress, final SocketAddress localAddress,
-                                     final ChannelPromise promise) {
+  public final ChannelFuture connect(
+    final SocketAddress remoteAddress,
+    final SocketAddress localAddress,
+    final ChannelPromise promise
+  ) {
     return this.pipeline.connect(remoteAddress, localAddress, promise);
   }
 
@@ -166,12 +187,18 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   @Override
-  public final ChannelFuture write(final Object msg, final ChannelPromise promise) {
+  public final ChannelFuture write(
+    final Object msg,
+    final ChannelPromise promise
+  ) {
     return this.pipeline.write(msg, promise);
   }
 
   @Override
-  public final ChannelFuture writeAndFlush(final Object msg, final ChannelPromise promise) {
+  public final ChannelFuture writeAndFlush(
+    final Object msg,
+    final ChannelPromise promise
+  ) {
     return this.pipeline.writeAndFlush(msg, promise);
   }
 
@@ -298,7 +325,9 @@ public abstract class DatagramChannelProxy implements Channel {
    *
    * @return wrapped promise.
    */
-  protected final ChannelPromise wrapPromise(@NotNull final ChannelPromise promise) {
+  protected final ChannelPromise wrapPromise(
+    @NotNull final ChannelPromise promise
+  ) {
     final var out = this.parent.newPromise();
     out.addListener(res -> {
       if (res.isSuccess()) {
@@ -327,7 +356,6 @@ public abstract class DatagramChannelProxy implements Channel {
   @NotNull
   private DefaultChannelPipeline newChannelPipeline() {
     return new DefaultChannelPipeline(this) {
-
       @Override
       protected void onUnhandledInboundException(final Throwable cause) {
         if (cause instanceof ClosedChannelException) {
@@ -364,8 +392,10 @@ public abstract class DatagramChannelProxy implements Channel {
 
     @Override
     public <T> boolean setOption(final ChannelOption<T> option, final T value) {
-      return super.setOption(option, value) ||
-        this.channel().parent().config().setOption(option, value);
+      return (
+        super.setOption(option, value) ||
+        this.channel().parent().config().setOption(option, value)
+      );
     }
 
     /**
@@ -384,10 +414,8 @@ public abstract class DatagramChannelProxy implements Channel {
    *
    * @param channel the channel.
    */
-  private record ListenerInboundProxy(
-    @NotNull DatagramChannelProxy channel
-  ) implements ChannelInboundHandler {
-
+  private record ListenerInboundProxy(@NotNull DatagramChannelProxy channel)
+    implements ChannelInboundHandler {
     @Override
     public void channelRegistered(final ChannelHandlerContext ctx) {
       this.channel.pipeline().fireChannelRegistered();
@@ -399,8 +427,7 @@ public abstract class DatagramChannelProxy implements Channel {
     }
 
     @Override
-    public void channelActive(final ChannelHandlerContext ctx) {
-    }
+    public void channelActive(final ChannelHandlerContext ctx) {}
 
     @Override
     public void channelInactive(final ChannelHandlerContext ctx) {
@@ -418,8 +445,10 @@ public abstract class DatagramChannelProxy implements Channel {
     }
 
     @Override
-    public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
-    }
+    public void userEventTriggered(
+      final ChannelHandlerContext ctx,
+      final Object evt
+    ) {}
 
     @Override
     public void channelWritabilityChanged(final ChannelHandlerContext ctx) {
@@ -427,7 +456,10 @@ public abstract class DatagramChannelProxy implements Channel {
     }
 
     @Override
-    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+    public void exceptionCaught(
+      final ChannelHandlerContext ctx,
+      final Throwable cause
+    ) {
       if (!(cause instanceof ClosedChannelException)) {
         this.channel.pipeline().fireExceptionCaught(cause);
       }
@@ -439,8 +471,7 @@ public abstract class DatagramChannelProxy implements Channel {
     }
 
     @Override
-    public void handlerRemoved(final ChannelHandlerContext ctx) {
-    }
+    public void handlerRemoved(final ChannelHandlerContext ctx) {}
   }
 
   /**
@@ -448,42 +479,66 @@ public abstract class DatagramChannelProxy implements Channel {
    *
    * @param channel the channel.
    */
-  private record ListenerOutboundProxy(
-    @NotNull DatagramChannelProxy channel
-  ) implements ChannelOutboundHandler {
-
+  private record ListenerOutboundProxy(@NotNull DatagramChannelProxy channel)
+    implements ChannelOutboundHandler {
     @Override
-    public void bind(final ChannelHandlerContext ctx, final SocketAddress localAddress, final ChannelPromise promise) {
-      this.channel.parent().bind(localAddress, this.channel.wrapPromise(promise));
+    public void bind(
+      final ChannelHandlerContext ctx,
+      final SocketAddress localAddress,
+      final ChannelPromise promise
+    ) {
+      this.channel.parent()
+        .bind(localAddress, this.channel.wrapPromise(promise));
     }
 
     @Override
-    public void connect(final ChannelHandlerContext ctx, final SocketAddress remoteAddress,
-                        final SocketAddress localAddress, final ChannelPromise promise) {
-      this.channel.parent().connect(remoteAddress, localAddress, this.channel.wrapPromise(promise));
+    public void connect(
+      final ChannelHandlerContext ctx,
+      final SocketAddress remoteAddress,
+      final SocketAddress localAddress,
+      final ChannelPromise promise
+    ) {
+      this.channel.parent()
+        .connect(
+          remoteAddress,
+          localAddress,
+          this.channel.wrapPromise(promise)
+        );
     }
 
     @Override
-    public void disconnect(final ChannelHandlerContext ctx, final ChannelPromise promise) {
+    public void disconnect(
+      final ChannelHandlerContext ctx,
+      final ChannelPromise promise
+    ) {
       this.channel.parent().disconnect(this.channel.wrapPromise(promise));
     }
 
     @Override
-    public void close(final ChannelHandlerContext ctx, final ChannelPromise promise) {
+    public void close(
+      final ChannelHandlerContext ctx,
+      final ChannelPromise promise
+    ) {
       this.channel.gracefulClose(promise);
     }
 
     @Override
-    public void deregister(final ChannelHandlerContext ctx, final ChannelPromise promise) {
+    public void deregister(
+      final ChannelHandlerContext ctx,
+      final ChannelPromise promise
+    ) {
       this.channel.parent().deregister(this.channel.wrapPromise(promise));
     }
 
     @Override
-    public void read(final ChannelHandlerContext ctx) {
-    }
+    public void read(final ChannelHandlerContext ctx) {}
 
     @Override
-    public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) {
+    public void write(
+      final ChannelHandlerContext ctx,
+      final Object msg,
+      final ChannelPromise promise
+    ) {
       this.channel.parent().write(msg, this.channel.wrapPromise(promise));
     }
 
@@ -498,11 +553,13 @@ public abstract class DatagramChannelProxy implements Channel {
     }
 
     @Override
-    public void handlerRemoved(final ChannelHandlerContext ctx) {
-    }
+    public void handlerRemoved(final ChannelHandlerContext ctx) {}
 
     @Override
-    public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+    public void exceptionCaught(
+      final ChannelHandlerContext ctx,
+      final Throwable cause
+    ) {
       if (!(cause instanceof PortUnreachableException)) {
         ctx.fireExceptionCaught(cause);
       }

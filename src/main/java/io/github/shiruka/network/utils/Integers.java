@@ -10,8 +10,7 @@ public final class Integers {
   /**
    * ctor.
    */
-  private Integers() {
-  }
+  private Integers() {}
 
   /**
    * a class that represents b2 math operations.
@@ -26,8 +25,7 @@ public final class Integers {
     /**
      * ctor.
      */
-    private B2() {
-    }
+    private B2() {}
 
     /**
      * plus.
@@ -65,8 +63,7 @@ public final class Integers {
     /**
      * ctor.
      */
-    private B3() {
-    }
+    private B3() {}
 
     /**
      * minus wrap.

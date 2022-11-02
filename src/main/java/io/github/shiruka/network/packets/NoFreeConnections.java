@@ -30,8 +30,7 @@ public final class NoFreeConnections implements Packet {
   /**
    * ctor.
    */
-  public NoFreeConnections() {
-  }
+  public NoFreeConnections() {}
 
   /**
    * ctor.
@@ -39,7 +38,10 @@ public final class NoFreeConnections implements Packet {
    * @param magic the magic.
    * @param serverId the server id.
    */
-  public NoFreeConnections(@NotNull final RakNetMagic magic, final long serverId) {
+  public NoFreeConnections(
+    @NotNull final RakNetMagic magic,
+    final long serverId
+  ) {
     this.magic = magic;
     this.serverId = serverId;
   }

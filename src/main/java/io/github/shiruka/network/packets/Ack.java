@@ -11,8 +11,7 @@ public final class Ack extends Reliability {
   /**
    * ctor.
    */
-  public Ack() {
-  }
+  public Ack() {}
 
   /**
    * ctor.

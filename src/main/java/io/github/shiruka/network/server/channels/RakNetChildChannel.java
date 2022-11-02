@@ -65,7 +65,10 @@ public class RakNetChildChannel extends AbstractChannel {
    * @param parent the parent.
    * @param address the address.
    */
-  public RakNetChildChannel(@NotNull final RakNetServerChannel parent, @NotNull final InetSocketAddress address) {
+  public RakNetChildChannel(
+    @NotNull final RakNetServerChannel parent,
+    @NotNull final InetSocketAddress address
+  ) {
     super(parent);
     this.address = address;
     this.config = RakNetConfig.simple(this);
@@ -77,7 +80,11 @@ public class RakNetChildChannel extends AbstractChannel {
 
   @Override
   public boolean isActive() {
-    return this.isOpen() && this.parent().isActive() && this.connectPromise.isSuccess();
+    return (
+      this.isOpen() &&
+      this.parent().isActive() &&
+      this.connectPromise.isSuccess()
+    );
   }
 
   @Override
@@ -110,8 +117,11 @@ public class RakNetChildChannel extends AbstractChannel {
   protected AbstractChannel.AbstractUnsafe newUnsafe() {
     return new AbstractChannel.AbstractUnsafe() {
       @Override
-      public void connect(final SocketAddress remoteAddress, final SocketAddress localAddress,
-                          final ChannelPromise promise) {
+      public void connect(
+        final SocketAddress remoteAddress,
+        final SocketAddress localAddress,
+        final ChannelPromise promise
+      ) {
         throw new UnsupportedOperationException();
       }
     };
@@ -148,8 +158,7 @@ public class RakNetChildChannel extends AbstractChannel {
   }
 
   @Override
-  protected void doBeginRead() {
-  }
+  protected void doBeginRead() {}
 
   @Override
   protected void doWrite(final ChannelOutboundBuffer in) {
@@ -162,24 +171,34 @@ public class RakNetChildChannel extends AbstractChannel {
   private void addDefaultPipeline() {
     this.pipeline().addLast(RakNetServer.DefaultChildInitializer.INSTANCE);
     this.connectPromise.addListener(future -> {
-      if (!future.isSuccess()) {
-        RakNetChildChannel.this.close();
-      }
-    });
-    this.pipeline().addLast(new ChannelInitializer<RakNetChildChannel>() {
-      @Override
-      protected void initChannel(@NotNull final RakNetChildChannel ch) {
-        RakNetChildChannel.this.pipeline().replace(ConnectionInitializer.NAME, ConnectionInitializer.NAME,
-          new ConnectionInitializer(RakNetChildChannel.this.connectPromise));
-      }
-    });
+        if (!future.isSuccess()) {
+          RakNetChildChannel.this.close();
+        }
+      });
+    this.pipeline()
+      .addLast(
+        new ChannelInitializer<RakNetChildChannel>() {
+          @Override
+          protected void initChannel(@NotNull final RakNetChildChannel ch) {
+            RakNetChildChannel.this.pipeline()
+              .replace(
+                ConnectionInitializer.NAME,
+                ConnectionInitializer.NAME,
+                new ConnectionInitializer(
+                  RakNetChildChannel.this.connectPromise
+                )
+              );
+          }
+        }
+      );
   }
 
   /**
    * a class that represents write handlers.
    */
   @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-  private static final class WriteHandler extends ChannelOutboundHandlerAdapter {
+  private static final class WriteHandler
+    extends ChannelOutboundHandlerAdapter {
 
     /**
      * the channel.
@@ -193,15 +212,19 @@ public class RakNetChildChannel extends AbstractChannel {
     private boolean needsFlush = false;
 
     @Override
-    public void read(final ChannelHandlerContext ctx) {
-    }
+    public void read(final ChannelHandlerContext ctx) {}
 
     @Override
-    public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) {
+    public void write(
+      final ChannelHandlerContext ctx,
+      final Object msg,
+      final ChannelPromise promise
+    ) {
       if (msg instanceof ByteBuf) {
         this.needsFlush = true;
         promise.trySuccess();
-        this.channel.parent().write(new DatagramPacket((ByteBuf) msg, this.channel.address))
+        this.channel.parent()
+          .write(new DatagramPacket((ByteBuf) msg, this.channel.address))
           .addListener(Constants.INTERNAL_WRITE_LISTENER);
       } else {
         ctx.write(msg, promise);

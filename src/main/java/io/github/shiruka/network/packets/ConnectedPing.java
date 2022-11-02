@@ -22,8 +22,7 @@ public final class ConnectedPing extends FramedPacket.Base {
   /**
    * ctor.
    */
-  public ConnectedPing() {
-  }
+  public ConnectedPing() {}
 
   /**
    * ctor.

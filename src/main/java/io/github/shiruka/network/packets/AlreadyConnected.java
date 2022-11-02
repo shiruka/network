@@ -35,7 +35,10 @@ public final class AlreadyConnected implements Packet {
    * @param magic the magic.
    * @param serverId the server id.
    */
-  public AlreadyConnected(@Nullable final RakNetMagic magic, final long serverId) {
+  public AlreadyConnected(
+    @Nullable final RakNetMagic magic,
+    final long serverId
+  ) {
     this.magic = magic;
     this.serverId = serverId;
   }
@@ -43,8 +46,7 @@ public final class AlreadyConnected implements Packet {
   /**
    * ctor.
    */
-  public AlreadyConnected() {
-  }
+  public AlreadyConnected() {}
 
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {

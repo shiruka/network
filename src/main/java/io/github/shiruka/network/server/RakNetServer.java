@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
  * an interface to determine rak net servers.
  */
 public interface RakNetServer {
-
   /**
    * the rak net server channel.
    */
@@ -50,12 +49,16 @@ public interface RakNetServer {
 
     @Override
     protected void initChannel(final Channel channel) {
-      channel.pipeline()
+      channel
+        .pipeline()
         .addLast(FlushTickHandler.NAME, new FlushTickHandler())
         .addLast(RawPacketCodec.NAME, RawPacketCodec.INSTANCE)
         .addLast(ReliableFrameHandling.INSTANCE)
         .addLast(PacketHandling.INSTANCE)
-        .addLast(ConnectionInitializer.NAME, new ChannelInboundHandlerAdapter());
+        .addLast(
+          ConnectionInitializer.NAME,
+          new ChannelInboundHandlerAdapter()
+        );
     }
   }
 
@@ -71,11 +74,17 @@ public interface RakNetServer {
 
     @Override
     protected void initChannel(final Channel channel) {
-      channel.pipeline()
+      channel
+        .pipeline()
         .addLast(PingListener.NAME, new PingListener())
         .addLast(ConnectionListener.NAME, new ConnectionListener());
-      channel.eventLoop().execute(() ->
-        channel.pipeline().addLast(DatagramConsumer.NAME, DatagramConsumer.INSTANCE));
+      channel
+        .eventLoop()
+        .execute(() ->
+          channel
+            .pipeline()
+            .addLast(DatagramConsumer.NAME, DatagramConsumer.INSTANCE)
+        );
     }
   }
 }

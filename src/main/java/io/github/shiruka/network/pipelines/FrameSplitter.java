@@ -28,11 +28,21 @@ public final class FrameSplitter extends MessageToMessageEncoder<Frame> {
   private int nextSplitId = 0;
 
   @Override
-  protected void encode(final ChannelHandlerContext ctx, final Frame packet, final List<Object> out) {
+  protected void encode(
+    final ChannelHandlerContext ctx,
+    final Frame packet,
+    final List<Object> out
+  ) {
     final var config = RakNetConfig.cast(ctx);
-    final var maxSize = config.mtu() - 2 * (Frame.Set.HEADER_SIZE + Frame.HEADER_SIZE);
+    final var maxSize =
+      config.mtu() - 2 * (Frame.Set.HEADER_SIZE + Frame.HEADER_SIZE);
     if (packet.roughPacketSize() > maxSize) {
-      final var splits = packet.fragment(this.nextSplitID(), maxSize, this.nextReliableId, out);
+      final var splits = packet.fragment(
+        this.nextSplitID(),
+        maxSize,
+        this.nextReliableId,
+        out
+      );
       this.nextReliableId = Integers.B3.plus(this.nextReliableId, splits);
     } else {
       if (packet.reliability().isReliable()) {

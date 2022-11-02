@@ -29,14 +29,26 @@ public final class FrameOrderOut extends MessageToMessageEncoder<FramedPacket> {
   private final int[] nextSequenceIndex = new int[8];
 
   @Override
-  protected void encode(final ChannelHandlerContext ctx, final FramedPacket packet, final List<Object> out) {
+  protected void encode(
+    final ChannelHandlerContext ctx,
+    final FramedPacket packet,
+    final List<Object> out
+  ) {
     final var config = RakNetConfig.cast(ctx);
     final var data = config.codec().encode(packet, ctx.alloc());
     try {
       if (data.reliability().isOrdered()) {
         final var channel = data.orderChannel();
-        final var sequenceIndex = data.reliability().isSequenced() ? this.getNextSequenceIndex(channel) : 0;
-        out.add(Frame.createOrdered(data, this.getNextOrderIndex(channel), sequenceIndex));
+        final var sequenceIndex = data.reliability().isSequenced()
+          ? this.getNextSequenceIndex(channel)
+          : 0;
+        out.add(
+          Frame.createOrdered(
+            data,
+            this.getNextOrderIndex(channel),
+            sequenceIndex
+          )
+        );
       } else {
         out.add(Frame.create(data));
       }
@@ -47,13 +59,15 @@ public final class FrameOrderOut extends MessageToMessageEncoder<FramedPacket> {
 
   private int getNextOrderIndex(final int channel) {
     final var orderIndex = this.nextOrderIndex[channel];
-    this.nextOrderIndex[channel] = Integers.B3.plus(this.nextOrderIndex[channel], 1);
+    this.nextOrderIndex[channel] =
+      Integers.B3.plus(this.nextOrderIndex[channel], 1);
     return orderIndex;
   }
 
   private int getNextSequenceIndex(final int channel) {
     final var sequenceIndex = this.nextSequenceIndex[channel];
-    this.nextSequenceIndex[channel] = Integers.B3.plus(this.nextSequenceIndex[channel], 1);
+    this.nextSequenceIndex[channel] =
+      Integers.B3.plus(this.nextSequenceIndex[channel], 1);
     return sequenceIndex;
   }
 }

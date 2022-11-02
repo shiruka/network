@@ -12,7 +12,8 @@ import java.util.List;
  * a class that represents framed packet codec pipelines.
  */
 @ChannelHandler.Sharable
-public final class FramedPacketCodec extends MessageToMessageCodec<Frame.Data, FramedPacket> {
+public final class FramedPacketCodec
+  extends MessageToMessageCodec<Frame.Data, FramedPacket> {
 
   /**
    * the instance.
@@ -25,12 +26,20 @@ public final class FramedPacketCodec extends MessageToMessageCodec<Frame.Data, F
   public static final String NAME = "rn-framed-codec";
 
   @Override
-  protected void encode(final ChannelHandlerContext ctx, final FramedPacket in, final List<Object> out) {
+  protected void encode(
+    final ChannelHandlerContext ctx,
+    final FramedPacket in,
+    final List<Object> out
+  ) {
     out.add(RakNetConfig.cast(ctx).codec().encode(in, ctx.alloc()));
   }
 
   @Override
-  protected void decode(final ChannelHandlerContext ctx, final Frame.Data in, final List<Object> out) {
+  protected void decode(
+    final ChannelHandlerContext ctx,
+    final Frame.Data in,
+    final List<Object> out
+  ) {
     out.add(RakNetConfig.cast(ctx).codec().decode(in));
   }
 }

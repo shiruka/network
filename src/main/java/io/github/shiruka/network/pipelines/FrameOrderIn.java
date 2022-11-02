@@ -39,7 +39,11 @@ public final class FrameOrderIn extends MessageToMessageDecoder<Frame> {
   }
 
   @Override
-  protected void decode(final ChannelHandlerContext ctx, final Frame frame, final List<Object> out) {
+  protected void decode(
+    final ChannelHandlerContext ctx,
+    final Frame frame,
+    final List<Object> out
+  ) {
     if (frame.reliability().isSequenced()) {
       frame.touch("Sequenced");
       this.channels[frame.orderChannel()].decodeSequenced(frame, out);
@@ -81,7 +85,10 @@ public final class FrameOrderIn extends MessageToMessageDecoder<Frame> {
     }
 
     private void decodeOrdered(final Frame frame, final List<Object> list) {
-      final var indexDiff = Integers.B3.minusWrap(frame.orderIndex(), this.lastOrderIndex);
+      final var indexDiff = Integers.B3.minusWrap(
+        frame.orderIndex(),
+        this.lastOrderIndex
+      );
       if (indexDiff > Constants.MAX_PACKET_LOSS) {
         throw new DecoderException("Too big packet loss: ordered difference");
       }
@@ -96,14 +103,20 @@ public final class FrameOrderIn extends MessageToMessageDecoder<Frame> {
         this.queue.put(frame.orderIndex(), frame.retainedFrameData());
       }
       if (this.queue.size() > Constants.MAX_PACKET_LOSS) {
-        throw new DecoderException("Too big packet loss: missed ordered packets");
+        throw new DecoderException(
+          "Too big packet loss: missed ordered packets"
+        );
       }
     }
 
     private void decodeSequenced(final Frame frame, final List<Object> list) {
-      if (Integers.B3.minusWrap(frame.sequenceIndex(), this.lastSequenceIndex) > 0) {
+      if (
+        Integers.B3.minusWrap(frame.sequenceIndex(), this.lastSequenceIndex) > 0
+      ) {
         this.lastSequenceIndex = frame.sequenceIndex();
-        while (Integers.B3.minusWrap(frame.orderIndex(), this.lastOrderIndex) > 1) {
+        while (
+          Integers.B3.minusWrap(frame.orderIndex(), this.lastOrderIndex) > 1
+        ) {
           ReferenceCountUtil.release(this.queue.remove(this.lastOrderIndex));
           this.lastOrderIndex = Integers.B3.plus(this.lastOrderIndex, 1);
         }

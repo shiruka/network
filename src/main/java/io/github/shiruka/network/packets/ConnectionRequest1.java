@@ -39,8 +39,7 @@ public final class ConnectionRequest1 implements Packet {
   /**
    * ctor.
    */
-  public ConnectionRequest1() {
-  }
+  public ConnectionRequest1() {}
 
   /**
    * ctor.
@@ -49,7 +48,11 @@ public final class ConnectionRequest1 implements Packet {
    * @param protocolVersion the protocol version.
    * @param mtu the mtu.
    */
-  public ConnectionRequest1(@NotNull final RakNetMagic magic, final int protocolVersion, final int mtu) {
+  public ConnectionRequest1(
+    @NotNull final RakNetMagic magic,
+    final int protocolVersion,
+    final int mtu
+  ) {
     this.magic = magic;
     this.protocolVersion = protocolVersion;
     this.mtu = mtu;
@@ -61,7 +64,10 @@ public final class ConnectionRequest1 implements Packet {
     this.magic = RakNetMagic.from(buffer);
     this.protocolVersion = buffer.readByte();
     buffer.skip(buffer.remaining());
-    Preconditions.checkArgument(this.mtu >= 128, "ConnectionRequest1 MTU is too small!");
+    Preconditions.checkArgument(
+      this.mtu >= 128,
+      "ConnectionRequest1 MTU is too small!"
+    );
     if (this.mtu > 8192) {
       this.mtu = 8192;
     }

@@ -23,7 +23,8 @@ import org.jetbrains.annotations.Nullable;
  */
 @Accessors(fluent = true)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class BaseConnectionInitializer extends SimpleChannelInboundHandler<Packet> {
+public abstract class BaseConnectionInitializer
+  extends SimpleChannelInboundHandler<Packet> {
 
   /**
    * the name.
@@ -63,20 +64,47 @@ public abstract class BaseConnectionInitializer extends SimpleChannelInboundHand
    * @param ctx the ctx to start.
    */
   protected static void startPing(@NotNull final ChannelHandlerContext ctx) {
-    ctx.channel().pipeline().addAfter(BaseConnectionInitializer.NAME, PingProducer.NAME, new PingProducer());
+    ctx
+      .channel()
+      .pipeline()
+      .addAfter(
+        BaseConnectionInitializer.NAME,
+        PingProducer.NAME,
+        new PingProducer()
+      );
   }
 
   @Override
-  public final void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
-    ctx.writeAndFlush(new ConnectionFailed(RakNetConfig.cast(ctx).magic())).addListener(v -> this.fail(cause));
+  public final void exceptionCaught(
+    final ChannelHandlerContext ctx,
+    final Throwable cause
+  ) {
+    ctx
+      .writeAndFlush(new ConnectionFailed(RakNetConfig.cast(ctx).magic()))
+      .addListener(v -> this.fail(cause));
   }
 
   @Override
   public final void handlerAdded(final ChannelHandlerContext ctx) {
-    this.sendTimer = ctx.channel().eventLoop().scheduleAtFixedRate(() -> this.sendRequest(ctx),
-      0, 200, TimeUnit.MILLISECONDS);
-    this.connectTimer = ctx.channel().eventLoop().schedule(this::doTimeout,
-      ctx.channel().config().getConnectTimeoutMillis(), TimeUnit.MILLISECONDS);
+    this.sendTimer =
+      ctx
+        .channel()
+        .eventLoop()
+        .scheduleAtFixedRate(
+          () -> this.sendRequest(ctx),
+          0,
+          200,
+          TimeUnit.MILLISECONDS
+        );
+    this.connectTimer =
+      ctx
+        .channel()
+        .eventLoop()
+        .schedule(
+          this::doTimeout,
+          ctx.channel().config().getConnectTimeoutMillis(),
+          TimeUnit.MILLISECONDS
+        );
     this.sendRequest(ctx);
   }
 

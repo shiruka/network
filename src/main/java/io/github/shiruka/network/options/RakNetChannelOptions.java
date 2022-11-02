@@ -8,7 +8,6 @@ import io.netty.util.AttributeKey;
  * an interface that contains rak net channel options.
  */
 public interface RakNetChannelOptions {
-
   /**
    * the client id.
    */
@@ -22,7 +21,9 @@ public interface RakNetChannelOptions {
   /**
    * the max connections.
    */
-  ChannelOption<Integer> MAX_CONNECTIONS = ChannelOption.valueOf("RN_MAX_CONNECTIONS");
+  ChannelOption<Integer> MAX_CONNECTIONS = ChannelOption.valueOf(
+    "RN_MAX_CONNECTIONS"
+  );
 
   /**
    * the mtu.
@@ -32,12 +33,16 @@ public interface RakNetChannelOptions {
   /**
    * the protocol version.
    */
-  ChannelOption<Integer> PROTOCOL_VERSION = ChannelOption.valueOf("RN_PROTOCOL_VERSION");
+  ChannelOption<Integer> PROTOCOL_VERSION = ChannelOption.valueOf(
+    "RN_PROTOCOL_VERSION"
+  );
 
   /**
    * the retry delay nanos.
    */
-  ChannelOption<Long> RETRY_DELAY_NANOS = ChannelOption.valueOf("RN_RETRY_DELAY_NANOS");
+  ChannelOption<Long> RETRY_DELAY_NANOS = ChannelOption.valueOf(
+    "RN_RETRY_DELAY_NANOS"
+  );
 
   /**
    * the rtt.
@@ -52,7 +57,9 @@ public interface RakNetChannelOptions {
   /**
    * the server identifier.
    */
-  ChannelOption<Identifier> SERVER_IDENTIFIER = ChannelOption.valueOf("RN_SERVER_IDENTIFIER");
+  ChannelOption<Identifier> SERVER_IDENTIFIER = ChannelOption.valueOf(
+    "RN_SERVER_IDENTIFIER"
+  );
 
   /**
    * the writable.

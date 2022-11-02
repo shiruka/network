@@ -45,8 +45,7 @@ public final class ConnectionRequest2 implements Packet.Client {
   /**
    * ctor.
    */
-  public ConnectionRequest2() {
-  }
+  public ConnectionRequest2() {}
 
   /**
    * ctor.
@@ -56,8 +55,12 @@ public final class ConnectionRequest2 implements Packet.Client {
    * @param magic the magic.
    * @param mtu the mtu.
    */
-  public ConnectionRequest2(@NotNull final InetSocketAddress address, final long clientId,
-                            @NotNull final RakNetMagic magic, final int mtu) {
+  public ConnectionRequest2(
+    @NotNull final InetSocketAddress address,
+    final long clientId,
+    @NotNull final RakNetMagic magic,
+    final int mtu
+  ) {
     this.address = address;
     this.clientId = clientId;
     this.magic = magic;

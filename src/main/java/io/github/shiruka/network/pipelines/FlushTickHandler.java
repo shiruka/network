@@ -25,7 +25,10 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
   /**
    * the tick resolution.
    */
-  private static final long TICK_RESOLUTION = TimeUnit.NANOSECONDS.convert(5, TimeUnit.MILLISECONDS);
+  private static final long TICK_RESOLUTION = TimeUnit.NANOSECONDS.convert(
+    5,
+    TimeUnit.MILLISECONDS
+  );
 
   /**
    * the flush task.
@@ -48,7 +51,9 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
    * @param channel the channel to check.
    */
   public static void checkFlushTick(@NotNull final Channel channel) {
-    channel.pipeline().fireUserEventTriggered(FlushTickHandler.FLUSH_CHECK_SIGNAL);
+    channel
+      .pipeline()
+      .fireUserEventTriggered(FlushTickHandler.FLUSH_CHECK_SIGNAL);
   }
 
   @Override
@@ -58,7 +63,10 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
   }
 
   @Override
-  public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
+  public void userEventTriggered(
+    final ChannelHandlerContext ctx,
+    final Object evt
+  ) {
     if (evt == FlushTickHandler.FLUSH_CHECK_SIGNAL) {
       this.maybeFlush(ctx.channel());
     } else {
@@ -85,10 +93,16 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
   @Override
   public void handlerAdded(final ChannelHandlerContext ctx) {
     assert this.flushTask == null;
-    this.flushTask = ctx.channel().eventLoop().scheduleAtFixedRate(
-      () -> FlushTickHandler.checkFlushTick(ctx.channel()),
-      0, 50, TimeUnit.MILLISECONDS
-    );
+    this.flushTask =
+      ctx
+        .channel()
+        .eventLoop()
+        .scheduleAtFixedRate(
+          () -> FlushTickHandler.checkFlushTick(ctx.channel()),
+          0,
+          50,
+          TimeUnit.MILLISECONDS
+        );
   }
 
   @Override
@@ -108,7 +122,9 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
     this.lastTickAccum = curTime;
     if (this.tickAccum >= FlushTickHandler.TICK_RESOLUTION) {
       channel.flush();
-      final var nFlushes = (int) (this.tickAccum / FlushTickHandler.TICK_RESOLUTION);
+      final var nFlushes = (int) (
+        this.tickAccum / FlushTickHandler.TICK_RESOLUTION
+      );
       if (nFlushes > 0) {
         this.tickAccum -= nFlushes * FlushTickHandler.TICK_RESOLUTION;
         channel.pipeline().fireUserEventTriggered(new MissedFlushes(nFlushes));
@@ -121,9 +137,5 @@ public final class FlushTickHandler extends ChannelDuplexHandler {
    *
    * @param flushes the flushes.
    */
-  public record MissedFlushes(
-    int flushes
-  ) {
-
-  }
+  public record MissedFlushes(int flushes) {}
 }

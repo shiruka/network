@@ -11,8 +11,7 @@ public final class Nack extends Reliability {
   /**
    * ctor.
    */
-  public Nack() {
-  }
+  public Nack() {}
 
   /**
    * ctor.

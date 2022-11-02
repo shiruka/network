@@ -41,7 +41,6 @@ import org.jetbrains.annotations.NotNull;
  * an interface that represents packet codecs.
  */
 public interface RakNetCodec {
-
   /**
    * obtains the simple codec.
    *
@@ -81,7 +80,10 @@ public interface RakNetCodec {
    * @return frame data.
    */
   @NotNull
-  Frame.Data encode(@NotNull FramedPacket packet, @NotNull ByteBufAllocator allocator);
+  Frame.Data encode(
+    @NotNull FramedPacket packet,
+    @NotNull ByteBufAllocator allocator
+  );
 
   /**
    * encodes the packet.
@@ -109,7 +111,10 @@ public interface RakNetCodec {
    * @return produce encoded packet.
    */
   @NotNull
-  PacketBuffer produceEncoded(@NotNull Packet packet, @NotNull ByteBufAllocator allocator);
+  PacketBuffer produceEncoded(
+    @NotNull Packet packet,
+    @NotNull ByteBufAllocator allocator
+  );
 
   /**
    * a simple implementation of {@link RakNetCodec}.
@@ -145,25 +150,102 @@ public interface RakNetCodec {
      * ctor.
      */
     private Impl() {
-      this.register(Ids.CONNECTED_PING, ConnectedPing.class, ConnectedPing::new);
-      this.register(Ids.UNCONNECTED_PING, UnconnectedPing.class, UnconnectedPing::new);
-      this.register(Ids.CONNECTED_PONG, ConnectedPong.class, ConnectedPong::new);
-      this.register(Ids.CONNECTION_REQUEST_1, ConnectionRequest1.class, ConnectionRequest1::new);
-      this.register(Ids.CONNECTION_REPLY_1, ConnectionReply1.class, ConnectionReply1::new);
-      this.register(Ids.CONNECTION_REQUEST_2, ConnectionRequest2.class, ConnectionRequest2::new);
-      this.register(Ids.CONNECTION_REPLY_2, ConnectionReply2.class, ConnectionReply2::new);
-      this.register(Ids.CONNECTION_REQUEST, ConnectionRequest.class, ConnectionRequest::new);
-      this.register(Ids.SERVER_HANDSHAKE, ServerHandshake.class, ServerHandshake::new);
-      this.register(Ids.CONNECTION_FAILED, ConnectionFailed.class, ConnectionFailed::new);
-      this.register(Ids.ALREADY_CONNECTED, AlreadyConnected.class, AlreadyConnected::new);
-      this.register(Ids.CLIENT_HANDSHAKE, ClientHandshake.class, ClientHandshake::new);
-      this.register(Ids.NO_FREE_CONNECTIONS, NoFreeConnections.class, NoFreeConnections::new);
-      this.register(Ids.CLIENT_DISCONNECT, ClientDisconnect.class, ClientDisconnect::new);
-      this.register(Ids.CONNECTION_BANNED, ConnectionBanned.class, ConnectionBanned::new);
-      this.register(Ids.INVALID_VERSION, InvalidVersion.class, InvalidVersion::new);
-      this.register(Ids.UNCONNECTED_PONG, UnconnectedPong.class, UnconnectedPong::new);
-      for (var index = Ids.FRAME_DATA_START; index <= Ids.FRAME_DATA_END; index++) {
-        this.register(index, Frame.Set.class, Frame.Set::read, Frame.Set::write);
+      this.register(
+          Ids.CONNECTED_PING,
+          ConnectedPing.class,
+          ConnectedPing::new
+        );
+      this.register(
+          Ids.UNCONNECTED_PING,
+          UnconnectedPing.class,
+          UnconnectedPing::new
+        );
+      this.register(
+          Ids.CONNECTED_PONG,
+          ConnectedPong.class,
+          ConnectedPong::new
+        );
+      this.register(
+          Ids.CONNECTION_REQUEST_1,
+          ConnectionRequest1.class,
+          ConnectionRequest1::new
+        );
+      this.register(
+          Ids.CONNECTION_REPLY_1,
+          ConnectionReply1.class,
+          ConnectionReply1::new
+        );
+      this.register(
+          Ids.CONNECTION_REQUEST_2,
+          ConnectionRequest2.class,
+          ConnectionRequest2::new
+        );
+      this.register(
+          Ids.CONNECTION_REPLY_2,
+          ConnectionReply2.class,
+          ConnectionReply2::new
+        );
+      this.register(
+          Ids.CONNECTION_REQUEST,
+          ConnectionRequest.class,
+          ConnectionRequest::new
+        );
+      this.register(
+          Ids.SERVER_HANDSHAKE,
+          ServerHandshake.class,
+          ServerHandshake::new
+        );
+      this.register(
+          Ids.CONNECTION_FAILED,
+          ConnectionFailed.class,
+          ConnectionFailed::new
+        );
+      this.register(
+          Ids.ALREADY_CONNECTED,
+          AlreadyConnected.class,
+          AlreadyConnected::new
+        );
+      this.register(
+          Ids.CLIENT_HANDSHAKE,
+          ClientHandshake.class,
+          ClientHandshake::new
+        );
+      this.register(
+          Ids.NO_FREE_CONNECTIONS,
+          NoFreeConnections.class,
+          NoFreeConnections::new
+        );
+      this.register(
+          Ids.CLIENT_DISCONNECT,
+          ClientDisconnect.class,
+          ClientDisconnect::new
+        );
+      this.register(
+          Ids.CONNECTION_BANNED,
+          ConnectionBanned.class,
+          ConnectionBanned::new
+        );
+      this.register(
+          Ids.INVALID_VERSION,
+          InvalidVersion.class,
+          InvalidVersion::new
+        );
+      this.register(
+          Ids.UNCONNECTED_PONG,
+          UnconnectedPong.class,
+          UnconnectedPong::new
+        );
+      for (
+        var index = Ids.FRAME_DATA_START;
+        index <= Ids.FRAME_DATA_END;
+        index++
+      ) {
+        this.register(
+            index,
+            Frame.Set.class,
+            Frame.Set::read,
+            Frame.Set::write
+          );
       }
       this.register(Ids.NACK, Nack.class, Nack::new);
       this.register(Ids.ACK, Ack.class, Ack::new);
@@ -179,7 +261,9 @@ public interface RakNetCodec {
      * @return decode function.
      */
     @NotNull
-    private static <T extends Packet> Function<PacketBuffer, T> decodeSimple(@NotNull final Supplier<T> supplier) {
+    private static <T extends Packet> Function<PacketBuffer, T> decodeSimple(
+      @NotNull final Supplier<T> supplier
+    ) {
       return buf -> {
         final var packet = supplier.get();
         buf.skip(1);
@@ -197,7 +281,9 @@ public interface RakNetCodec {
      * @return encode function.
      */
     @NotNull
-    private static <T extends Packet> BiConsumer<T, PacketBuffer> encodeSimple(final int id) {
+    private static <T extends Packet> BiConsumer<T, PacketBuffer> encodeSimple(
+      final int id
+    ) {
       return (packet, buffer) -> {
         buffer.writeByte(id);
         packet.encode(buffer);
@@ -209,7 +295,11 @@ public interface RakNetCodec {
     public Packet decode(@NotNull final PacketBuffer buffer) {
       final var packetId = buffer.unsignedByte(buffer.readerIndex());
       final var decoder = this.decoders.get(packetId);
-      Preconditions.checkArgument(decoder != null, "Unknown decoder for packet id %", packetId);
+      Preconditions.checkArgument(
+        decoder != null,
+        "Unknown decoder for packet id %",
+        packetId
+      );
       return decoder.apply(buffer);
     }
 
@@ -223,8 +313,9 @@ public interface RakNetCodec {
       }
       final var buffer = data.createData();
       try {
-        return ((FramedPacket) decoder.apply(buffer))
-          .reliability(data.reliability())
+        return ((FramedPacket) decoder.apply(buffer)).reliability(
+            data.reliability()
+          )
           .orderChannel(data.orderChannel());
       } finally {
         buffer.release();
@@ -233,14 +324,20 @@ public interface RakNetCodec {
 
     @Override
     @NotNull
-    public Frame.Data encode(@NotNull final FramedPacket packet, @NotNull final ByteBufAllocator allocator) {
+    public Frame.Data encode(
+      @NotNull final FramedPacket packet,
+      @NotNull final ByteBufAllocator allocator
+    ) {
       if (packet instanceof Frame.Data data) {
         return data.retain();
       }
-      final var out = new PacketBuffer(allocator.ioBuffer(packet.initialSizeHint()));
+      final var out = new PacketBuffer(
+        allocator.ioBuffer(packet.initialSizeHint())
+      );
       try {
         this.encode(packet, out);
-        return Frame.Data.read(out, out.remaining(), false)
+        return Frame.Data
+          .read(out, out.remaining(), false)
           .reliability(packet.reliability())
           .orderChannel(packet.orderChannel());
       } finally {
@@ -249,12 +346,20 @@ public interface RakNetCodec {
     }
 
     @Override
-    public void encode(@NotNull final Packet packet, @NotNull final PacketBuffer buffer) {
-      Preconditions.checkArgument(this.idFromClass.containsKey(packet.getClass()),
-        "Unknown encoder for %s!", packet.getClass());
+    public void encode(
+      @NotNull final Packet packet,
+      @NotNull final PacketBuffer buffer
+    ) {
+      Preconditions.checkArgument(
+        this.idFromClass.containsKey(packet.getClass()),
+        "Unknown encoder for %s!",
+        packet.getClass()
+      );
       final var packetId = this.packetIdFor(packet.getClass());
       //noinspection unchecked
-      final var encoder = (BiConsumer<Packet, PacketBuffer>) this.encoders.get(packetId);
+      final var encoder = (BiConsumer<Packet, PacketBuffer>) this.encoders.get(
+          packetId
+        );
       encoder.accept(packet, buffer);
     }
 
@@ -265,11 +370,16 @@ public interface RakNetCodec {
 
     @NotNull
     @Override
-    public PacketBuffer produceEncoded(@NotNull final Packet packet, @NotNull final ByteBufAllocator allocator) {
+    public PacketBuffer produceEncoded(
+      @NotNull final Packet packet,
+      @NotNull final ByteBufAllocator allocator
+    ) {
       if (packet instanceof Frame.Set set && set.roughSize() >= 128) {
         return set.produce(allocator);
       }
-      final var buffer = new PacketBuffer(allocator.ioBuffer(packet.initialSizeHint()));
+      final var buffer = new PacketBuffer(
+        allocator.ioBuffer(packet.initialSizeHint())
+      );
       try {
         this.encode(packet, buffer);
         return buffer.retain();
@@ -286,9 +396,17 @@ public interface RakNetCodec {
      * @param supplier the supplier to register.
      * @param <T> type of the packet class.
      */
-    private <T extends Packet> void register(final int id, @NotNull final Class<T> cls,
-                                             @NotNull final Supplier<T> supplier) {
-      this.register(id, cls, Impl.decodeSimple(supplier), Impl.encodeSimple(id));
+    private <T extends Packet> void register(
+      final int id,
+      @NotNull final Class<T> cls,
+      @NotNull final Supplier<T> supplier
+    ) {
+      this.register(
+          id,
+          cls,
+          Impl.decodeSimple(supplier),
+          Impl.encodeSimple(id)
+        );
     }
 
     /**
@@ -300,9 +418,12 @@ public interface RakNetCodec {
      * @param encoder the encoder to register.
      * @param <T> type of the packet class.
      */
-    private <T extends Packet> void register(final int id, @NotNull final Class<? extends Packet> cls,
-                                             @NotNull final Function<PacketBuffer, T> decoder,
-                                             @NotNull final BiConsumer<T, PacketBuffer> encoder) {
+    private <T extends Packet> void register(
+      final int id,
+      @NotNull final Class<? extends Packet> cls,
+      @NotNull final Function<PacketBuffer, T> decoder,
+      @NotNull final BiConsumer<T, PacketBuffer> encoder
+    ) {
       this.idFromClass.put(cls, id);
       this.decoders.put(id, decoder);
       this.encoders.put(id, encoder);

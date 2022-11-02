@@ -15,7 +15,8 @@ public final class ReliableFrameHandling extends ChannelInitializer<Channel> {
 
   @Override
   protected void initChannel(final Channel channel) {
-    channel.pipeline()
+    channel
+      .pipeline()
       .addLast(ReliabilityHandler.NAME, new ReliabilityHandler())
       .addLast(FrameJoiner.NAME, new FrameJoiner())
       .addLast(FrameSplitter.NAME, new FrameSplitter())
