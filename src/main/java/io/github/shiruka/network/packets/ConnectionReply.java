@@ -44,8 +44,7 @@ public abstract class ConnectionReply implements Packet {
   /**
    * ctor.
    */
-  protected ConnectionReply() {
-  }
+  protected ConnectionReply() {}
 
   /**
    * ctor.
@@ -54,7 +53,11 @@ public abstract class ConnectionReply implements Packet {
    * @param mtu the mtu.
    * @param serverId the server id.
    */
-  protected ConnectionReply(@NotNull final RakNetMagic magic, final int mtu, final long serverId) {
+  protected ConnectionReply(
+    @NotNull final RakNetMagic magic,
+    final int mtu,
+    final long serverId
+  ) {
     this.magic = magic;
     this.mtu = mtu;
     this.serverId = serverId;

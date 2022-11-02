@@ -32,8 +32,7 @@ public final class ConnectionBanned implements Packet {
   /**
    * ctor.
    */
-  public ConnectionBanned() {
-  }
+  public ConnectionBanned() {}
 
   /**
    * ctor.
@@ -41,7 +40,10 @@ public final class ConnectionBanned implements Packet {
    * @param magic the magic.
    * @param serverId the server id.
    */
-  public ConnectionBanned(@NotNull final RakNetMagic magic, final long serverId) {
+  public ConnectionBanned(
+    @NotNull final RakNetMagic magic,
+    final long serverId
+  ) {
     this.magic = magic;
     this.serverId = serverId;
   }

@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
  * an interface to determine rak net magic numbers.
  */
 public interface RakNetMagic {
-
   /**
    * creates a simple rak net magic.
    *
@@ -32,7 +31,7 @@ public interface RakNetMagic {
    * @return magic.
    */
   @NotNull
-  static RakNetMagic from(final byte @NotNull [] magic) {
+  static RakNetMagic from(final byte@NotNull[] magic) {
     return new Impl(magic);
   }
 
@@ -72,17 +71,28 @@ public interface RakNetMagic {
    *
    * @param magic the magic.
    */
-  record Impl(
-    byte @NotNull [] magic
-  ) implements RakNetMagic {
-
+  record Impl(byte@NotNull[] magic) implements RakNetMagic {
     /**
      * the magic.
      */
-    private static final byte[] DEFAULT = new byte[]{
-      (byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0xfe, (byte) 0xfe,
-      (byte) 0xfe, (byte) 0xfe, (byte) 0xfd, (byte) 0xfd, (byte) 0xfd, (byte) 0xfd,
-      (byte) 0x12, (byte) 0x34, (byte) 0x56, (byte) 0x78};
+    private static final byte[] DEFAULT = new byte[] {
+      (byte) 0x00,
+      (byte) 0xff,
+      (byte) 0xff,
+      (byte) 0x00,
+      (byte) 0xfe,
+      (byte) 0xfe,
+      (byte) 0xfe,
+      (byte) 0xfe,
+      (byte) 0xfd,
+      (byte) 0xfd,
+      (byte) 0xfd,
+      (byte) 0xfd,
+      (byte) 0x12,
+      (byte) 0x34,
+      (byte) 0x56,
+      (byte) 0x78,
+    };
 
     /**
      * the instance.
@@ -92,7 +102,10 @@ public interface RakNetMagic {
     @Override
     public void read(@NotNull final PacketBuffer buffer) {
       for (final var data : this.magic) {
-        Preconditions.checkArgument(buffer.readByte() == data, "Incorrect RakNet magic value");
+        Preconditions.checkArgument(
+          buffer.readByte() == data,
+          "Incorrect RakNet magic value"
+        );
       }
     }
 

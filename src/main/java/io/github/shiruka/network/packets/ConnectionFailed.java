@@ -30,8 +30,7 @@ public final class ConnectionFailed implements Packet {
   /**
    * ctor.
    */
-  public ConnectionFailed() {
-  }
+  public ConnectionFailed() {}
 
   /**
    * ctor.

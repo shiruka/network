@@ -25,10 +25,16 @@ public final class PingProducer implements ChannelHandler {
 
   @Override
   public void handlerAdded(final ChannelHandlerContext ctx) {
-    this.pingTask = ctx.channel().eventLoop().scheduleAtFixedRate(
-      () -> ctx.writeAndFlush(new ConnectedPing()),
-      0, 200, TimeUnit.MILLISECONDS
-    );
+    this.pingTask =
+      ctx
+        .channel()
+        .eventLoop()
+        .scheduleAtFixedRate(
+          () -> ctx.writeAndFlush(new ConnectedPing()),
+          0,
+          200,
+          TimeUnit.MILLISECONDS
+        );
   }
 
   @Override
@@ -40,7 +46,10 @@ public final class PingProducer implements ChannelHandler {
   }
 
   @Override
-  public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) {
+  public void exceptionCaught(
+    final ChannelHandlerContext ctx,
+    final Throwable cause
+  ) {
     ctx.fireExceptionCaught(cause);
   }
 }

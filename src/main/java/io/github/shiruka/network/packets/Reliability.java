@@ -19,13 +19,12 @@ public abstract class Reliability implements Packet {
   /**
    * the entries.
    */
-  private Entry @Nullable [] entries;
+  private Entry@Nullable[] entries;
 
   /**
    * ctor.
    */
-  protected Reliability() {
-  }
+  protected Reliability() {}
 
   /**
    * ctor.
@@ -93,7 +92,7 @@ public abstract class Reliability implements Packet {
    * @return entries.
    */
   @NotNull
-  public final Entry @NotNull [] entries() {
+  public final Entry@NotNull[] entries() {
     return Objects.requireNonNull(this.entries, "entries");
   }
 

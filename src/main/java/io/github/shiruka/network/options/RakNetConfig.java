@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
  * an interface to determine configurations for rak net.
  */
 public interface RakNetConfig extends ChannelConfig {
-
   /**
    * casts the context's config as rak net config.
    *
@@ -315,7 +314,9 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the rtt stats.
      */
-    private final DescriptiveStatistics rttStats = new DescriptiveStatistics(16);
+    private final DescriptiveStatistics rttStats = new DescriptiveStatistics(
+      16
+    );
 
     /**
      * the blocked addresses.
@@ -375,12 +376,15 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the protocol versions.
      */
-    private volatile int[] protocolVersions = new int[]{9, 10};
+    private volatile int[] protocolVersions = new int[] { 9, 10 };
 
     /**
      * the retry delay nanos.
      */
-    private volatile long retryDelayNanos = TimeUnit.NANOSECONDS.convert(15, TimeUnit.MILLISECONDS);
+    private volatile long retryDelayNanos = TimeUnit.NANOSECONDS.convert(
+      15,
+      TimeUnit.MILLISECONDS
+    );
 
     /**
      * the server id.
@@ -406,7 +410,9 @@ public interface RakNetConfig extends ChannelConfig {
 
     @Override
     public final boolean containsProtocolVersion(final int protocolVersion) {
-      return Arrays.stream(this.protocolVersions).anyMatch(version -> version == protocolVersion);
+      return Arrays
+        .stream(this.protocolVersions)
+        .anyMatch(version -> version == protocolVersion);
     }
 
     @Override
@@ -433,14 +439,21 @@ public interface RakNetConfig extends ChannelConfig {
     @Override
     public final Map<ChannelOption<?>, Object> getOptions() {
       return this.getOptions(
-        super.getOptions(),
-        RakNetChannelOptions.SERVER_ID, RakNetChannelOptions.MTU, RakNetChannelOptions.RTT,
-        RakNetChannelOptions.PROTOCOL_VERSION, RakNetChannelOptions.MAGIC, RakNetChannelOptions.RETRY_DELAY_NANOS,
-        RakNetChannelOptions.CLIENT_ID, RakNetChannelOptions.MAX_CONNECTIONS, RakNetChannelOptions.SERVER_IDENTIFIER);
+          super.getOptions(),
+          RakNetChannelOptions.SERVER_ID,
+          RakNetChannelOptions.MTU,
+          RakNetChannelOptions.RTT,
+          RakNetChannelOptions.PROTOCOL_VERSION,
+          RakNetChannelOptions.MAGIC,
+          RakNetChannelOptions.RETRY_DELAY_NANOS,
+          RakNetChannelOptions.CLIENT_ID,
+          RakNetChannelOptions.MAX_CONNECTIONS,
+          RakNetChannelOptions.SERVER_IDENTIFIER
+        );
     }
 
     @Override
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({ "unchecked" })
     public <T> T getOption(final ChannelOption<T> option) {
       if (option == RakNetChannelOptions.SERVER_ID) {
         return (T) (Long) this.serverId;

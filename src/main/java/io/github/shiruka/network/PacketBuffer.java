@@ -1,11 +1,11 @@
 package io.github.shiruka.network;
 
 import com.google.common.base.Preconditions;
-import io.github.shiruka.api.common.vectors.Vector2f;
-import io.github.shiruka.api.common.vectors.Vector3f;
-import io.github.shiruka.api.common.vectors.Vector3i;
-import io.github.shiruka.api.nbt.CompoundTag;
-import io.github.shiruka.api.nbt.Tag;
+import io.github.shiruka.api.base.Vector2f;
+import io.github.shiruka.api.base.Vector3f;
+import io.github.shiruka.api.base.Vector3i;
+import io.github.shiruka.nbt.CompoundTag;
+import io.github.shiruka.nbt.Tag;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
@@ -80,7 +80,9 @@ public class PacketBuffer {
    *
    * @return the version of the IP address, -1 if the version is unknown.
    */
-  private static int getAddressVersion(@NotNull final InetSocketAddress address) {
+  private static int getAddressVersion(
+    @NotNull final InetSocketAddress address
+  ) {
     return PacketBuffer.getAddressVersion(address.getAddress());
   }
 
@@ -90,7 +92,10 @@ public class PacketBuffer {
    * @param increaseWriterIndex the increase writer index to add.
    * @param buffer the buffer to add.
    */
-  public final void addComponent(final boolean increaseWriterIndex, @NotNull final PacketBuffer buffer) {
+  public final void addComponent(
+    final boolean increaseWriterIndex,
+    @NotNull final PacketBuffer buffer
+  ) {
     if (this.buffer instanceof CompositeByteBuf composite) {
       composite.addComponent(increaseWriterIndex, buffer.buffer());
     }
@@ -102,8 +107,10 @@ public class PacketBuffer {
    * @return the packet as a byte[].
    */
   public final byte[] array() {
-    Preconditions.checkState(!this.buffer.isDirect(),
-      "The buffer is a direct buffer!");
+    Preconditions.checkState(
+      !this.buffer.isDirect(),
+      "The buffer is a direct buffer!"
+    );
     return Arrays.copyOfRange(this.buffer.array(), 0, this.size());
   }
 
@@ -233,8 +240,9 @@ public class PacketBuffer {
     return switch (version) {
       case Constants.IPV4 -> this.readAddressIPV4();
       case Constants.IPV6 -> this.readAddressIPV6();
-      default -> throw new IllegalArgumentException("Unknown protocol IPv%s"
-        .formatted(version));
+      default -> throw new IllegalArgumentException(
+        "Unknown protocol IPv%s".formatted(version)
+      );
     };
   }
 
@@ -248,8 +256,10 @@ public class PacketBuffer {
    * @return string list.
    */
   @NotNull
-  public final <T> ObjectList<T> readArray(@NotNull final Supplier<Number> lengthSupplier,
-                                           @NotNull final Supplier<T> valueSupplier) {
+  public final <T> ObjectList<T> readArray(
+    @NotNull final Supplier<Number> lengthSupplier,
+    @NotNull final Supplier<T> valueSupplier
+  ) {
     final var list = new ObjectArrayList<T>();
     final var length = lengthSupplier.get().longValue();
     for (var index = 0; index < length; index++) {
@@ -267,7 +277,9 @@ public class PacketBuffer {
    * @return array list.
    */
   @NotNull
-  public final <T> ObjectList<T> readArrayShortLE(@NotNull final Supplier<T> valueSupplier) {
+  public final <T> ObjectList<T> readArrayShortLE(
+    @NotNull final Supplier<T> valueSupplier
+  ) {
     return this.readArray(this::readUnsignedShortLE, valueSupplier);
   }
 
@@ -280,7 +292,9 @@ public class PacketBuffer {
    * @return array list.
    */
   @NotNull
-  public final <T> ObjectList<T> readArrayUnsignedInt(@NotNull final Supplier<T> valueSupplier) {
+  public final <T> ObjectList<T> readArrayUnsignedInt(
+    @NotNull final Supplier<T> valueSupplier
+  ) {
     return this.readArray(this::readUnsignedInt, valueSupplier);
   }
 
@@ -328,8 +342,12 @@ public class PacketBuffer {
    */
   public final byte[] readByteArray() {
     final var length = this.readUnsignedVarInt();
-    Preconditions.checkArgument(this.buffer().isReadable(length),
-      "Tried to read %s bytes but only has %s readable", length, this.remaining());
+    Preconditions.checkArgument(
+      this.buffer().isReadable(length),
+      "Tried to read %s bytes but only has %s readable",
+      length,
+      this.remaining()
+    );
     final var bytes = new byte[length];
     this.readBytes(bytes);
     return bytes;
@@ -399,7 +417,11 @@ public class PacketBuffer {
   @SneakyThrows
   @NotNull
   public final CompoundTag readCompoundTag() {
-    try (final var reader = Tag.createNetworkReader(new ByteBufInputStream(this.buffer()))) {
+    try (
+      final var reader = Tag.createNetworkReader(
+        new ByteBufInputStream(this.buffer())
+      )
+    ) {
       return reader.readCompoundTag();
     }
   }
@@ -892,8 +914,11 @@ public class PacketBuffer {
     switch (PacketBuffer.getAddressVersion(address)) {
       case Constants.IPV4 -> this.writeAddressIPV4(address);
       case Constants.IPV6 -> this.writeAddressIPV6(address);
-      default -> throw new IllegalArgumentException("Unknown protocol for address with length of %d bytes"
-        .formatted(address.getAddress().getAddress().length));
+      default -> throw new IllegalArgumentException(
+        "Unknown protocol for address with length of %d bytes".formatted(
+            address.getAddress().getAddress().length
+          )
+      );
     }
   }
 
@@ -906,8 +931,14 @@ public class PacketBuffer {
    * @throws IllegalArgumentException if the port is not in between 0-65535 or
    *   if no IP address for the host could not be found, or if a scope_id was specified for a global IPv6 address.
    */
-  public final void writeAddress(@NotNull final InetAddress host, final int port) {
-    Preconditions.checkArgument(port >= 0x0000 && port <= 0xFFFF, "Port must be in between 0-65535");
+  public final void writeAddress(
+    @NotNull final InetAddress host,
+    final int port
+  ) {
+    Preconditions.checkArgument(
+      port >= 0x0000 && port <= 0xFFFF,
+      "Port must be in between 0-65535"
+    );
     this.writeAddress(new InetSocketAddress(host, port));
   }
 
@@ -921,9 +952,12 @@ public class PacketBuffer {
    * @throws UnknownHostException if no IP address for the host could not be found, or if a scope_id was specified for
    *   a global IPv6 address.
    */
-  public final void writeAddress(@NotNull final String host, final int port) throws IllegalArgumentException,
-    UnknownHostException {
-    Preconditions.checkArgument(port >= 0x0000 && port <= 0xFFFF, "Port must be in between 0-65535");
+  public final void writeAddress(@NotNull final String host, final int port)
+    throws IllegalArgumentException, UnknownHostException {
+    Preconditions.checkArgument(
+      port >= 0x0000 && port <= 0xFFFF,
+      "Port must be in between 0-65535"
+    );
     this.writeAddress(InetAddress.getByName(host), port);
   }
 
@@ -963,8 +997,11 @@ public class PacketBuffer {
    * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArray(@NotNull final Collection<T> array, @NotNull final Consumer<Number> lengthWriter,
-                                   @NotNull final Consumer<T> valueWriter) {
+  public final <T> void writeArray(
+    @NotNull final Collection<T> array,
+    @NotNull final Consumer<Number> lengthWriter,
+    @NotNull final Consumer<T> valueWriter
+  ) {
     lengthWriter.accept(array.size());
     for (final var t : array) {
       valueWriter.accept(t);
@@ -979,8 +1016,11 @@ public class PacketBuffer {
    * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArray(@NotNull final T[] array, @NotNull final Consumer<Number> lengthWriter,
-                                   @NotNull final Consumer<T> valueWriter) {
+  public final <T> void writeArray(
+    @NotNull final T[] array,
+    @NotNull final Consumer<Number> lengthWriter,
+    @NotNull final Consumer<T> valueWriter
+  ) {
     lengthWriter.accept(array.length);
     for (final var t : array) {
       valueWriter.accept(t);
@@ -994,7 +1034,10 @@ public class PacketBuffer {
    * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArrayShortLE(@NotNull final Collection<T> array, @NotNull final Consumer<T> valueWriter) {
+  public final <T> void writeArrayShortLE(
+    @NotNull final Collection<T> array,
+    @NotNull final Consumer<T> valueWriter
+  ) {
     this.writeArray(array, i -> this.writeShortLE(i.intValue()), valueWriter);
   }
 
@@ -1005,8 +1048,15 @@ public class PacketBuffer {
    * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArrayUnsignedInt(@NotNull final T[] array, @NotNull final Consumer<T> valueWriter) {
-    this.writeArray(array, i -> this.writeUnsignedInt(i.longValue()), valueWriter);
+  public final <T> void writeArrayUnsignedInt(
+    @NotNull final T[] array,
+    @NotNull final Consumer<T> valueWriter
+  ) {
+    this.writeArray(
+        array,
+        i -> this.writeUnsignedInt(i.longValue()),
+        valueWriter
+      );
   }
 
   /**
@@ -1016,9 +1066,15 @@ public class PacketBuffer {
    * @param valueWriter the value writer to write.
    * @param <T> type of the array.
    */
-  public final <T> void writeArrayUnsignedInt(@NotNull final Collection<T> array,
-                                              @NotNull final Consumer<T> valueWriter) {
-    this.writeArray(array, i -> this.writeUnsignedInt(i.longValue()), valueWriter);
+  public final <T> void writeArrayUnsignedInt(
+    @NotNull final Collection<T> array,
+    @NotNull final Consumer<T> valueWriter
+  ) {
+    this.writeArray(
+        array,
+        i -> this.writeUnsignedInt(i.longValue()),
+        valueWriter
+      );
   }
 
   /**
@@ -1085,7 +1141,11 @@ public class PacketBuffer {
    * @param readerIndex the reader index to write.
    * @param readableBytes the readable bytes to write.
    */
-  public final void writeBytes(@NotNull final PacketBuffer data, final int readerIndex, final int readableBytes) {
+  public final void writeBytes(
+    @NotNull final PacketBuffer data,
+    final int readerIndex,
+    final int readableBytes
+  ) {
     this.buffer.writeBytes(data.buffer(), readerIndex, readableBytes);
   }
 
@@ -1097,7 +1157,10 @@ public class PacketBuffer {
    *
    * @return the written number of bytes.
    */
-  public final int writeCharSequence(@NotNull final CharSequence sequence, @NotNull final Charset charset) {
+  public final int writeCharSequence(
+    @NotNull final CharSequence sequence,
+    @NotNull final Charset charset
+  ) {
     return this.buffer.writeCharSequence(sequence, charset);
   }
 
@@ -1108,7 +1171,11 @@ public class PacketBuffer {
    */
   @SneakyThrows
   public final void writeCompoundTag(@NotNull final CompoundTag tag) {
-    try (final var writer = Tag.createNetworkWriter(new ByteBufOutputStream(this.buffer()))) {
+    try (
+      final var writer = Tag.createNetworkWriter(
+        new ByteBufOutputStream(this.buffer())
+      )
+    ) {
       writer.writeCompoundTag(tag);
     }
   }
@@ -1258,8 +1325,12 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not within the range of 0-255.
    */
-  public final void writeUnsignedByte(final int data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0x00 && data <= 0xFF, "Value must be in between 0-255");
+  public final void writeUnsignedByte(final int data)
+    throws IllegalArgumentException {
+    Preconditions.checkArgument(
+      data >= 0x00 && data <= 0xFF,
+      "Value must be in between 0-255"
+    );
     this.writeByte((byte) data & 0xFF);
   }
 
@@ -1270,8 +1341,12 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-4294967295
    */
-  public final void writeUnsignedInt(final long data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0 && data <= 4294967295L, "Value must be in between 0-4294967295");
+  public final void writeUnsignedInt(final long data)
+    throws IllegalArgumentException {
+    Preconditions.checkArgument(
+      data >= 0 && data <= 4294967295L,
+      "Value must be in between 0-4294967295"
+    );
     this.writeInt((int) data);
   }
 
@@ -1282,8 +1357,12 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-4294967295.
    */
-  public final void writeUnsignedIntLE(final long data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0x00000000 && data <= 0xFFFFFFFFL, "Value must be in between 0-4294967295");
+  public final void writeUnsignedIntLE(final long data)
+    throws IllegalArgumentException {
+    Preconditions.checkArgument(
+      data >= 0x00000000 && data <= 0xFFFFFFFFL,
+      "Value must be in between 0-4294967295"
+    );
     this.buffer.writeIntLE((int) data);
   }
 
@@ -1294,10 +1373,17 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is bigger than {@link Long#BYTES} bytes  or is negative.
    */
-  public final void writeUnsignedLong(@NotNull final BigInteger data) throws IllegalArgumentException {
+  public final void writeUnsignedLong(@NotNull final BigInteger data)
+    throws IllegalArgumentException {
     final var bytes = data.toByteArray();
-    Preconditions.checkArgument(bytes.length <= Long.BYTES, "Value is too big to fit into a long");
-    Preconditions.checkArgument(data.longValue() >= 0, "Value cannot be negative");
+    Preconditions.checkArgument(
+      bytes.length <= Long.BYTES,
+      "Value is too big to fit into a long"
+    );
+    Preconditions.checkArgument(
+      data.longValue() >= 0,
+      "Value cannot be negative"
+    );
     for (var index = 0; index < Long.BYTES; index++) {
       this.writeByte(index < bytes.length ? bytes[index] : 0x00);
     }
@@ -1310,7 +1396,8 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is less than 0.
    */
-  public final void writeUnsignedLong(final long data) throws IllegalArgumentException {
+  public final void writeUnsignedLong(final long data)
+    throws IllegalArgumentException {
     this.writeUnsignedLong(new BigInteger(Long.toString(data)));
   }
 
@@ -1321,10 +1408,17 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if the size of the data is bigger than {@link Long#BYTES} bytes or is negative.
    */
-  public final void writeUnsignedLongLE(@NotNull final BigInteger data) throws IllegalArgumentException {
+  public final void writeUnsignedLongLE(@NotNull final BigInteger data)
+    throws IllegalArgumentException {
     final var bytes = data.toByteArray();
-    Preconditions.checkArgument(bytes.length <= Long.BYTES, "Value is too big to fit into a long");
-    Preconditions.checkArgument(data.longValue() >= 0, "Value cannot be negative");
+    Preconditions.checkArgument(
+      bytes.length <= Long.BYTES,
+      "Value is too big to fit into a long"
+    );
+    Preconditions.checkArgument(
+      data.longValue() >= 0,
+      "Value cannot be negative"
+    );
     for (var index = Long.BYTES - 1; index >= 0; index--) {
       this.writeByte(index < bytes.length ? bytes[index] : 0x00);
     }
@@ -1337,7 +1431,8 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is less than 0.
    */
-  public final void writeUnsignedLongLE(final long data) throws IllegalArgumentException {
+  public final void writeUnsignedLongLE(final long data)
+    throws IllegalArgumentException {
     this.writeUnsignedLongLE(new BigInteger(Long.toString(data)));
   }
 
@@ -1348,8 +1443,12 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not within the range of  0-65535.
    */
-  public final void writeUnsignedShort(final int data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0x0000 && data <= 0xFFFF, "Value must be in between 0-65535");
+  public final void writeUnsignedShort(final int data)
+    throws IllegalArgumentException {
+    Preconditions.checkArgument(
+      data >= 0x0000 && data <= 0xFFFF,
+      "Value must be in between 0-65535"
+    );
     this.writeShort((short) data & 0xFFFF);
   }
 
@@ -1360,8 +1459,12 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-65535.
    */
-  public final void writeUnsignedShortLE(final int data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0x0000 && data <= 0xFFFF, "Value must be in between 0-65535");
+  public final void writeUnsignedShortLE(final int data)
+    throws IllegalArgumentException {
+    Preconditions.checkArgument(
+      data >= 0x0000 && data <= 0xFFFF,
+      "Value must be in between 0-65535"
+    );
     this.writeShortLE((short) data & 0xFFFF);
   }
 
@@ -1372,8 +1475,12 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-16777215.
    */
-  public final void writeUnsignedTriad(final int data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0x000000 && data <= 0xFFFFFF, "Value must be in between 0-16777215");
+  public final void writeUnsignedTriad(final int data)
+    throws IllegalArgumentException {
+    Preconditions.checkArgument(
+      data >= 0x000000 && data <= 0xFFFFFF,
+      "Value must be in between 0-16777215"
+    );
     this.writeTriad(data & 0xFFFFFF);
   }
 
@@ -1384,8 +1491,12 @@ public class PacketBuffer {
    *
    * @throws IllegalArgumentException if data is not in between 0-16777215.
    */
-  public final void writeUnsignedTriadLE(final int data) throws IllegalArgumentException {
-    Preconditions.checkArgument(data >= 0x000000 && data <= 0xFFFFFF, "Value must be in between 0-16777215");
+  public final void writeUnsignedTriadLE(final int data)
+    throws IllegalArgumentException {
+    Preconditions.checkArgument(
+      data >= 0x000000 && data <= 0xFFFFFF,
+      "Value must be in between 0-16777215"
+    );
     this.writeTriadLE(data & 0xFFFFFF);
   }
 
@@ -1475,7 +1586,10 @@ public class PacketBuffer {
    * @return the sequence.
    */
   @NotNull
-  public CharSequence readCharSequence(final int length, final Charset charset) {
+  public CharSequence readCharSequence(
+    final int length,
+    final Charset charset
+  ) {
     return this.buffer.readCharSequence(length, charset);
   }
 
@@ -1513,7 +1627,10 @@ public class PacketBuffer {
     final var address = this.readBytes(Constants.IPV6_ADDRESS_LENGTH);
     final var scopeId = this.readInt();
     try {
-      return new InetSocketAddress(Inet6Address.getByAddress(null, address, scopeId), port);
+      return new InetSocketAddress(
+        Inet6Address.getByAddress(null, address, scopeId),
+        port
+      );
     } catch (final Exception e) {
       throw new IllegalArgumentException(e);
     }

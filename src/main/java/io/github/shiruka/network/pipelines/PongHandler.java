@@ -10,7 +10,8 @@ import io.netty.channel.SimpleChannelInboundHandler;
  * a class that represents pong handler pipelines.
  */
 @ChannelHandler.Sharable
-public final class PongHandler extends SimpleChannelInboundHandler<ConnectedPong> {
+public final class PongHandler
+  extends SimpleChannelInboundHandler<ConnectedPong> {
 
   /**
    * the instance.
@@ -23,7 +24,10 @@ public final class PongHandler extends SimpleChannelInboundHandler<ConnectedPong
   public static final String NAME = "rn-pong";
 
   @Override
-  protected void channelRead0(final ChannelHandlerContext ctx, final ConnectedPong pong) {
+  protected void channelRead0(
+    final ChannelHandlerContext ctx,
+    final ConnectedPong pong
+  ) {
     if (!pong.reliability().isReliable()) {
       final var config = RakNetConfig.cast(ctx);
       config.updateRTTNanos(pong.rtt());

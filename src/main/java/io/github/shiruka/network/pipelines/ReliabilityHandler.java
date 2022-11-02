@@ -41,7 +41,9 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
   /**
    * the frame queue.
    */
-  private final ObjectSortedSet<Frame> frameQueue = new ObjectRBTreeSet<>(Frame.COMPARATOR);
+  private final ObjectSortedSet<Frame> frameQueue = new ObjectRBTreeSet<>(
+    Frame.COMPARATOR
+  );
 
   /**
    * the nack set.
@@ -74,7 +76,10 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
   private int resendGauge;
 
   @Override
-  public void channelRead(@NotNull final ChannelHandlerContext ctx, @NotNull final Object msg) {
+  public void channelRead(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Object msg
+  ) {
     try {
       if (msg instanceof Ack ack) {
         this.readAck(ctx, ack);
@@ -91,7 +96,10 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
   }
 
   @Override
-  public void userEventTriggered(final ChannelHandlerContext ctx, final Object evt) {
+  public void userEventTriggered(
+    final ChannelHandlerContext ctx,
+    final Object evt
+  ) {
     if (evt instanceof FlushTickHandler.MissedFlushes missedFlushes) {
       this.updateBurstTokens(ctx, missedFlushes.flushes());
     }
@@ -109,7 +117,11 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
   }
 
   @Override
-  public void write(final ChannelHandlerContext ctx, final Object msg, final ChannelPromise promise) {
+  public void write(
+    final ChannelHandlerContext ctx,
+    final Object msg,
+    final ChannelPromise promise
+  ) {
     if (msg instanceof Frame frame) {
       this.queueFrame(ctx, frame);
       frame.promise(promise);
@@ -117,7 +129,9 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
       ctx.write(msg, promise);
     }
     if (this.pendingFrameSets.size() > Constants.MAX_PACKET_LOSS) {
-      throw new DecoderException("Too big packet loss: unconfirmed sent packets!");
+      throw new DecoderException(
+        "Too big packet loss: unconfirmed sent packets!"
+      );
     }
     FlushTickHandler.checkFlushTick(ctx.channel());
   }
@@ -145,12 +159,16 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to adjust.
    * @param n the n to adjust.
    */
-  private void adjustResendGauge(@NotNull final ChannelHandlerContext ctx, final int n) {
+  private void adjustResendGauge(
+    @NotNull final ChannelHandlerContext ctx,
+    final int n
+  ) {
     final var config = RakNetConfig.cast(ctx);
-    this.resendGauge = Math.max(
-      -config.defaultPendingFrameSets(),
-      Math.min(config.defaultPendingFrameSets(), this.resendGauge + n)
-    );
+    this.resendGauge =
+      Math.max(
+        -config.defaultPendingFrameSets(),
+        Math.min(config.defaultPendingFrameSets(), this.resendGauge + n)
+      );
   }
 
   /**
@@ -181,9 +199,7 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @return queued bytes.
    */
   private int getQueuedBytes() {
-    return this.frameQueue.stream()
-      .mapToInt(Frame::roughPacketSize)
-      .sum();
+    return this.frameQueue.stream().mapToInt(Frame::roughPacketSize).sum();
   }
 
   /**
@@ -192,7 +208,10 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to produce.
    * @param maxSize the max size to produce.
    */
-  private void produceFrameSet(@NotNull final ChannelHandlerContext ctx, final int maxSize) {
+  private void produceFrameSet(
+    @NotNull final ChannelHandlerContext ctx,
+    final int maxSize
+  ) {
     final var itr = this.frameQueue.iterator();
     final var frameSet = Frame.Set.create();
     while (itr.hasNext()) {
@@ -200,8 +219,11 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
       assert frame.refCnt() > 0 : "Frame has lost reference!";
       if (frameSet.roughSize() + frame.roughPacketSize() > maxSize) {
         if (frameSet.isEmpty()) {
-          throw new CorruptedFrameException("Finished frame larger than the MTU by %d!"
-            .formatted(frame.roughPacketSize() - maxSize));
+          throw new CorruptedFrameException(
+            "Finished frame larger than the MTU by %d!".formatted(
+                frame.roughPacketSize() - maxSize
+              )
+          );
         }
         break;
       }
@@ -213,7 +235,9 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
       this.nextSendSequenceId = Integers.B3.plus(this.nextSendSequenceId, 1);
       this.pendingFrameSets.put(frameSet.sequenceId(), frameSet);
       frameSet.touch("Added to pending FrameSet list");
-      ctx.write(frameSet.retain()).addListener(Constants.INTERNAL_WRITE_LISTENER);
+      ctx
+        .write(frameSet.retain())
+        .addListener(Constants.INTERNAL_WRITE_LISTENER);
       assert frameSet.refCnt() > 0;
     } else {
       frameSet.release();
@@ -227,9 +251,14 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    */
   private void produceFrameSets(@NotNull final ChannelHandlerContext ctx) {
     final var config = RakNetConfig.cast(ctx);
-    final var maxSize = config.mtu() - Frame.Set.HEADER_SIZE - Frame.HEADER_SIZE;
-    final var maxPendingFrameSets = config.defaultPendingFrameSets() + this.burstTokens;
-    while (this.pendingFrameSets.size() < maxPendingFrameSets && !this.frameQueue.isEmpty()) {
+    final var maxSize =
+      config.mtu() - Frame.Set.HEADER_SIZE - Frame.HEADER_SIZE;
+    final var maxPendingFrameSets =
+      config.defaultPendingFrameSets() + this.burstTokens;
+    while (
+      this.pendingFrameSets.size() < maxPendingFrameSets &&
+      !this.frameQueue.isEmpty()
+    ) {
       this.produceFrameSet(ctx, maxSize);
     }
   }
@@ -240,11 +269,17 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to queue.
    * @param frame the frame to queue.
    */
-  private void queueFrame(@NotNull final ChannelHandlerContext ctx, @NotNull final Frame frame) {
+  private void queueFrame(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Frame frame
+  ) {
     final var config = RakNetConfig.cast(ctx);
     if (frame.roughPacketSize() > config.mtu()) {
-      throw new CorruptedFrameException("Finished frame larger than the MTU by %d!"
-        .formatted(frame.roughPacketSize() - config.mtu()));
+      throw new CorruptedFrameException(
+        "Finished frame larger than the MTU by %d!".formatted(
+            frame.roughPacketSize() - config.mtu()
+          )
+      );
     }
     this.frameQueue.add(frame);
   }
@@ -255,15 +290,18 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to read.
    * @param ack the ack to read.
    */
-  private void readAck(@NotNull final ChannelHandlerContext ctx, @NotNull final Ack ack) {
-//    var ackdBytes = 0;
+  private void readAck(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Ack ack
+  ) {
+    //    var ackdBytes = 0;
     var nIterations = 0;
     for (final var entry : ack.entries()) {
       final var max = Integers.B3.plus(entry.idFinish(), 1);
       for (var id = entry.idStart(); id != max; id = Integers.B3.plus(id, 1)) {
         final var frameSet = this.pendingFrameSets.remove(id);
         if (frameSet != null) {
-//          ackdBytes += frameSet.roughSize();
+          //          ackdBytes += frameSet.roughSize();
           this.adjustResendGauge(ctx, 1);
           frameSet.succeed();
           frameSet.release();
@@ -281,15 +319,20 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to read.
    * @param frameSet the frame set to read.
    */
-  private void readFrameSet(@NotNull final ChannelHandlerContext ctx, @NotNull final Frame.Set frameSet) {
+  private void readFrameSet(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Frame.Set frameSet
+  ) {
     final var packetSeqId = frameSet.sequenceId();
     this.ackSet.add(packetSeqId);
     this.nackSet.remove(packetSeqId);
     if (Integers.B3.minusWrap(packetSeqId, this.lastReceivedSequenceId) > 0) {
-      this.lastReceivedSequenceId = Integers.B3.plus(this.lastReceivedSequenceId, 1);
+      this.lastReceivedSequenceId =
+        Integers.B3.plus(this.lastReceivedSequenceId, 1);
       while (this.lastReceivedSequenceId != packetSeqId) {
         this.nackSet.add(this.lastReceivedSequenceId);
-        this.lastReceivedSequenceId = Integers.B3.plus(this.lastReceivedSequenceId, 1);
+        this.lastReceivedSequenceId =
+          Integers.B3.plus(this.lastReceivedSequenceId, 1);
       }
     }
     frameSet.createFrames(ctx::fireChannelRead);
@@ -302,19 +345,24 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to read.
    * @param nack the nack to read.
    */
-  private void readNack(@NotNull final ChannelHandlerContext ctx, @NotNull final Nack nack) {
-//    var bytesNACKd = 0;
+  private void readNack(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Nack nack
+  ) {
+    //    var bytesNACKd = 0;
     var nIterations = 0;
     for (final var entry : nack.entries()) {
       final var max = Integers.B3.plus(entry.idFinish(), 1);
       for (var id = entry.idStart(); id != max; id = Integers.B3.plus(id, 1)) {
         final var frameSet = this.pendingFrameSets.remove(id);
         if (frameSet != null) {
-//          bytesNACKd += frameSet.roughSize();
+          //          bytesNACKd += frameSet.roughSize();
           this.recallFrameSet(ctx, frameSet);
         }
         if (nIterations++ > Constants.MAX_PACKET_LOSS) {
-          throw new DecoderException("Too big packet loss: nack confirm range!");
+          throw new DecoderException(
+            "Too big packet loss: nack confirm range!"
+          );
         }
       }
     }
@@ -325,11 +373,19 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    *
    * @param ctx the ctx to recall.
    */
-  private void recallExpiredFrameSets(@NotNull final ChannelHandlerContext ctx) {
+  private void recallExpiredFrameSets(
+    @NotNull final ChannelHandlerContext ctx
+  ) {
     final var config = RakNetConfig.cast(ctx);
     final var packetItr = this.pendingFrameSets.values().iterator();
-    final var deadline = System.nanoTime() -
-      (config.rttNanos() + 2 * config.rttStdDevNanos() + config.retryDelayNanos());
+    final var deadline =
+      System.nanoTime() -
+      (
+        config.rttNanos() +
+        2 *
+        config.rttStdDevNanos() +
+        config.retryDelayNanos()
+      );
     while (packetItr.hasNext()) {
       final var frameSet = packetItr.next();
       if (frameSet.sentTime() < deadline) {
@@ -345,7 +401,10 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to recall.
    * @param frameSet the frame set to recall.
    */
-  private void recallFrameSet(@NotNull final ChannelHandlerContext ctx, @NotNull final Frame.Set frameSet) {
+  private void recallFrameSet(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Frame.Set frameSet
+  ) {
     try {
       this.adjustResendGauge(ctx, -1);
       frameSet.touch("Recalled");
@@ -373,11 +432,15 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
   private void sendResponses(@NotNull final ChannelHandlerContext ctx) {
     final var config = RakNetConfig.cast(ctx);
     if (!this.ackSet.isEmpty()) {
-      ctx.write(new Ack(this.ackSet)).addListener(Constants.INTERNAL_WRITE_LISTENER);
+      ctx
+        .write(new Ack(this.ackSet))
+        .addListener(Constants.INTERNAL_WRITE_LISTENER);
       this.ackSet.clear();
     }
     if (!this.nackSet.isEmpty() && config.isAutoRead()) {
-      ctx.write(new Nack(this.nackSet)).addListener(Constants.INTERNAL_WRITE_LISTENER);
+      ctx
+        .write(new Nack(this.nackSet))
+        .addListener(Constants.INTERNAL_WRITE_LISTENER);
       this.nackSet.clear();
     }
   }
@@ -390,7 +453,10 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
   private void updateBackPressure(@NotNull final ChannelHandlerContext ctx) {
     final var config = RakNetConfig.cast(ctx);
     final var queuedBytes = this.getQueuedBytes();
-    final var oldWritable = ctx.channel().attr(RakNetChannelOptions.WRITABLE).get();
+    final var oldWritable = ctx
+      .channel()
+      .attr(RakNetChannelOptions.WRITABLE)
+      .get();
     var newWritable = oldWritable;
     if (queuedBytes > config.maxQueuedBytes()) {
       final var exception = new CodecException("Frame queue is too large!");
@@ -403,7 +469,10 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
       newWritable = true;
     }
     if (newWritable != oldWritable) {
-      ctx.channel().attr(RakNetChannelOptions.WRITABLE).set(newWritable ? Boolean.TRUE : Boolean.FALSE);
+      ctx
+        .channel()
+        .attr(RakNetChannelOptions.WRITABLE)
+        .set(newWritable ? Boolean.TRUE : Boolean.FALSE);
       ctx.fireChannelWritabilityChanged();
     }
   }
@@ -414,7 +483,10 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
    * @param ctx the ctx to update.
    * @param nTicks the n ticks to update.
    */
-  private void updateBurstTokens(@NotNull final ChannelHandlerContext ctx, final int nTicks) {
+  private void updateBurstTokens(
+    @NotNull final ChannelHandlerContext ctx,
+    final int nTicks
+  ) {
     final var config = RakNetConfig.cast(ctx);
     final var burstUnused = this.pendingFrameSets.size() < this.burstTokens / 2;
     if (this.resendGauge > 1 && !burstUnused) {
@@ -422,6 +494,7 @@ public final class ReliabilityHandler extends ChannelDuplexHandler {
     } else if (this.resendGauge < -1 || burstUnused) {
       this.burstTokens -= 3 * nTicks;
     }
-    this.burstTokens = Math.max(Math.min(this.burstTokens, config.maxPendingFrameSets()), 0);
+    this.burstTokens =
+      Math.max(Math.min(this.burstTokens, config.maxPendingFrameSets()), 0);
   }
 }

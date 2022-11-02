@@ -28,8 +28,11 @@ public final class PingListener extends UdpPacketHandler<UnconnectedPing> {
 
   @SneakyThrows
   @Override
-  protected void handle(final ChannelHandlerContext ctx, final InetSocketAddress sender,
-                        final UnconnectedPing ping) {
+  protected void handle(
+    final ChannelHandlerContext ctx,
+    final InetSocketAddress sender,
+    final UnconnectedPing ping
+  ) {
     final var config = RakNetConfig.cast(ctx);
     final var connections = RakNetServer.cast(ctx).children();
     if (connections.size() >= config.maxConnections()) {
@@ -40,7 +43,8 @@ public final class PingListener extends UdpPacketHandler<UnconnectedPing> {
       config.serverIdentifier(),
       config.magic(),
       config.serverId(),
-      ping.timestamp());
+      ping.timestamp()
+    );
     PingListener.sendResponse(ctx, sender, pong);
   }
 }

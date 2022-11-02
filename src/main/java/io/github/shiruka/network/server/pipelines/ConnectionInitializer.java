@@ -62,10 +62,12 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
    * @param mtu the mtu to set.
    */
   public static void fixedMTU(@NotNull final Channel channel, final int mtu) {
-    channel.eventLoop().execute(() -> {
-      channel.pipeline().get(ConnectionInitializer.class).mtuFixed(true);
-      RakNetConfig.cast(channel).mtu(mtu);
-    });
+    channel
+      .eventLoop()
+      .execute(() -> {
+        channel.pipeline().get(ConnectionInitializer.class).mtuFixed(true);
+        RakNetConfig.cast(channel).mtu(mtu);
+      });
   }
 
   @Override
@@ -85,7 +87,10 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
           }
           this.seenFirst = true;
           if (!config.containsProtocolVersion(request1.protocolVersion())) {
-            ctx.writeAndFlush(new InvalidVersion(config.magic(), config.serverId()))
+            ctx
+              .writeAndFlush(
+                new InvalidVersion(config.magic(), config.serverId())
+              )
               .addListener(ChannelFutureListener.CLOSE);
             return;
           }
@@ -100,7 +105,13 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
         break;
       case CR2:
         if (msg instanceof ConnectionRequest request) {
-          ctx.writeAndFlush(new ServerHandshake((InetSocketAddress) ctx.channel().remoteAddress(), request.timestamp()))
+          ctx
+            .writeAndFlush(
+              new ServerHandshake(
+                (InetSocketAddress) ctx.channel().remoteAddress(),
+                request.timestamp()
+              )
+            )
             .addListener(Constants.INTERNAL_WRITE_LISTENER);
           this.state(State.CR3);
           BaseConnectionInitializer.startPing(ctx);
@@ -120,8 +131,14 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
 
   @Override
   protected void removeHandler(@NotNull final ChannelHandlerContext ctx) {
-    ctx.channel().pipeline()
-      .replace(BaseConnectionInitializer.NAME, BaseConnectionInitializer.NAME, new RestartConnectionHandler());
+    ctx
+      .channel()
+      .pipeline()
+      .replace(
+        BaseConnectionInitializer.NAME,
+        BaseConnectionInitializer.NAME,
+        new RestartConnectionHandler()
+      );
   }
 
   @Override
@@ -131,17 +148,29 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
     switch (this.state()) {
       case CR1 -> {
         if (this.seenFirst) {
-          ctx.writeAndFlush(new ConnectionReply1(config.magic(), config.mtu(), config.serverId()))
+          ctx
+            .writeAndFlush(
+              new ConnectionReply1(
+                config.magic(),
+                config.mtu(),
+                config.serverId()
+              )
+            )
             .addListener(Constants.INTERNAL_WRITE_LISTENER);
         }
       }
       case CR2 -> {
-        final var packet = new ConnectionReply2(config.magic(), config.mtu(), config.serverId(),
-          (InetSocketAddress) ctx.channel().remoteAddress());
-        ctx.writeAndFlush(packet).addListener(Constants.INTERNAL_WRITE_LISTENER);
+        final var packet = new ConnectionReply2(
+          config.magic(),
+          config.mtu(),
+          config.serverId(),
+          (InetSocketAddress) ctx.channel().remoteAddress()
+        );
+        ctx
+          .writeAndFlush(packet)
+          .addListener(Constants.INTERNAL_WRITE_LISTENER);
       }
-      default -> {
-      }
+      default -> {}
     }
   }
 
@@ -151,7 +180,10 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
    * @param ctx the ctx to process.
    * @param clientId the client id to process.
    */
-  private void processClientId(@NotNull final ChannelHandlerContext ctx, final long clientId) {
+  private void processClientId(
+    @NotNull final ChannelHandlerContext ctx,
+    final long clientId
+  ) {
     final var config = RakNetConfig.cast(ctx);
     if (!this.clientIdSet) {
       config.clientId(clientId);
@@ -164,12 +196,14 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
   /**
    * a class that represents restart connection handler pipelines.
    */
-  private static final class RestartConnectionHandler extends ChannelInboundHandlerAdapter {
+  private static final class RestartConnectionHandler
+    extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
       if (msg instanceof Packet.Client || msg instanceof ConnectionRequest1) {
-        ctx.writeAndFlush(new ConnectionFailed(RakNetConfig.cast(ctx).magic()))
+        ctx
+          .writeAndFlush(new ConnectionFailed(RakNetConfig.cast(ctx).magic()))
           .addListener(ChannelFutureListener.CLOSE);
         ReferenceCountUtil.safeRelease(msg);
       } else if (msg instanceof ConnectionFailed) {

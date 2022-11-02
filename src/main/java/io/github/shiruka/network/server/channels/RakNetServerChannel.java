@@ -30,7 +30,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * a class that represents rak net server channels.
  */
-public class RakNetServerChannel extends DatagramChannelProxy implements ServerChannel {
+public class RakNetServerChannel
+  extends DatagramChannelProxy
+  implements ServerChannel {
 
   /**
    * the blocked addresses.
@@ -54,7 +56,9 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
    *
    * @param supplier the supplier.
    */
-  public RakNetServerChannel(@NotNull final Supplier<? extends DatagramChannel> supplier) {
+  public RakNetServerChannel(
+    @NotNull final Supplier<? extends DatagramChannel> supplier
+  ) {
     super(supplier);
     this.addDefaultPipeline();
   }
@@ -64,7 +68,9 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
    *
    * @param cls the cls.
    */
-  public RakNetServerChannel(@NotNull final Class<? extends DatagramChannel> cls) {
+  public RakNetServerChannel(
+    @NotNull final Class<? extends DatagramChannel> cls
+  ) {
     super(cls);
     this.addDefaultPipeline();
   }
@@ -86,7 +92,9 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
    * @return blocked address.
    */
   @NotNull
-  public Optional<BlockedAddress> blockedAddress(@NotNull final InetSocketAddress address) {
+  public Optional<BlockedAddress> blockedAddress(
+    @NotNull final InetSocketAddress address
+  ) {
     return Optional.ofNullable(this.blockedAddresses.get(address));
   }
 
@@ -108,8 +116,13 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
    * @return child channel.
    */
   @Nullable
-  public RakNetChildChannel getChildChannel(@NotNull final SocketAddress address) {
-    Preconditions.checkState(this.eventLoop().inEventLoop(), "Method must be called from the server eventLoop!");
+  public RakNetChildChannel getChildChannel(
+    @NotNull final SocketAddress address
+  ) {
+    Preconditions.checkState(
+      this.eventLoop().inEventLoop(),
+      "Method must be called from the server eventLoop!"
+    );
     return this.children.get(address);
   }
 
@@ -119,7 +132,9 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
     final var childrenClosed = this.newPromise();
     this.children.values().forEach(child -> combined.add(child.close()));
     combined.finish(childrenClosed);
-    childrenClosed.addListener(f -> this.parent().close(this.wrapPromise(promise)));
+    childrenClosed.addListener(f ->
+      this.parent().close(this.wrapPromise(promise))
+    );
   }
 
   /**
@@ -181,7 +196,11 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
       }
       final var content = datagram.content();
       final var sender = datagram.sender();
-      if (this.channel.blockedAddress(sender).map(BlockedAddress::shouldUnblock).isPresent()) {
+      if (
+        this.channel.blockedAddress(sender)
+          .map(BlockedAddress::shouldUnblock)
+          .isPresent()
+      ) {
         datagram.release();
         return;
       }
@@ -189,10 +208,18 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
         final var child = this.channel.children.get(sender);
         if (child == null && datagram.recipient() != null) {
           ctx.fireChannelRead(datagram.retain());
-        } else if (child != null && child.isOpen() && child.config().isAutoRead()) {
+        } else if (
+          child != null && child.isOpen() && child.config().isAutoRead()
+        ) {
           final var retained = content.retain();
-          child.eventLoop().execute(() ->
-            child.pipeline().fireChannelRead(retained).fireChannelReadComplete());
+          child
+            .eventLoop()
+            .execute(() ->
+              child
+                .pipeline()
+                .fireChannelRead(retained)
+                .fireChannelReadComplete()
+            );
         }
       } finally {
         datagram.release();
@@ -201,26 +228,50 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
 
     @Override
     public void channelWritabilityChanged(final ChannelHandlerContext ctx) {
-      this.channel.children.values().forEach(ch -> ch.pipeline().fireChannelWritabilityChanged());
+      this.channel.children.values()
+        .forEach(ch -> ch.pipeline().fireChannelWritabilityChanged());
       ctx.fireChannelWritabilityChanged();
     }
 
     @Override
-    public void connect(final ChannelHandlerContext ctx, final SocketAddress remoteAddress,
-                        final SocketAddress localAddress, final ChannelPromise promise) {
+    public void connect(
+      final ChannelHandlerContext ctx,
+      final SocketAddress remoteAddress,
+      final SocketAddress localAddress,
+      final ChannelPromise promise
+    ) {
       try {
-        Preconditions.checkArgument(localAddress == null || this.channel.localAddress().equals(localAddress),
-          "Bound localAddress does not match provided %s", localAddress);
-        Preconditions.checkArgument(remoteAddress instanceof InetSocketAddress,
-          "Provided remote address is not an InetSocketAddress");
+        Preconditions.checkArgument(
+          localAddress == null ||
+          this.channel.localAddress().equals(localAddress),
+          "Bound localAddress does not match provided %s",
+          localAddress
+        );
+        Preconditions.checkArgument(
+          remoteAddress instanceof InetSocketAddress,
+          "Provided remote address is not an InetSocketAddress"
+        );
         final var existingChild = this.channel.getChildChannel(remoteAddress);
-        if (this.channel.children.size() > this.channel.config().maxConnections() && existingChild == null) {
+        if (
+          this.channel.children.size() >
+          this.channel.config().maxConnections() &&
+          existingChild == null
+        ) {
           final var packet = new NoFreeConnections(
-            this.channel.config().magic(), this.channel.config().serverId());
+            this.channel.config().magic(),
+            this.channel.config().serverId()
+          );
           final var buffer = ctx.alloc().ioBuffer(packet.initialSizeHint());
           try {
-            this.channel.config().codec().encode(packet, new PacketBuffer(buffer));
-            ctx.writeAndFlush(new DatagramPacket(buffer.retain(), (InetSocketAddress) remoteAddress));
+            this.channel.config()
+              .codec()
+              .encode(packet, new PacketBuffer(buffer));
+            ctx.writeAndFlush(
+              new DatagramPacket(
+                buffer.retain(),
+                (InetSocketAddress) remoteAddress
+              )
+            );
           } finally {
             ReferenceCountUtil.safeRelease(packet);
             buffer.release();
@@ -229,10 +280,19 @@ public class RakNetServerChannel extends DatagramChannelProxy implements ServerC
           return;
         }
         if (existingChild == null) {
-          final var child = this.channel.newChild((InetSocketAddress) remoteAddress);
-          child.closeFuture().addListener(v ->
-            this.channel.eventLoop().execute(() -> this.channel.children.remove(remoteAddress, child)));
-          this.channel.pipeline().fireChannelRead(child).fireChannelReadComplete();
+          final var child =
+            this.channel.newChild((InetSocketAddress) remoteAddress);
+          child
+            .closeFuture()
+            .addListener(v ->
+              this.channel.eventLoop()
+                .execute(() ->
+                  this.channel.children.remove(remoteAddress, child)
+                )
+            );
+          this.channel.pipeline()
+            .fireChannelRead(child)
+            .fireChannelReadComplete();
           this.channel.children.put(remoteAddress, child);
         }
         promise.trySuccess();

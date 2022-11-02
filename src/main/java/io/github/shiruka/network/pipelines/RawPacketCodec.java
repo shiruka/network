@@ -14,7 +14,8 @@ import java.util.List;
  * a class that represents raw packet codec pipelines.
  */
 @ChannelHandler.Sharable
-public final class RawPacketCodec extends MessageToMessageCodec<ByteBuf, Packet> {
+public final class RawPacketCodec
+  extends MessageToMessageCodec<ByteBuf, Packet> {
 
   /**
    * the instance.
@@ -27,18 +28,27 @@ public final class RawPacketCodec extends MessageToMessageCodec<ByteBuf, Packet>
   public static final String NAME = "rn-raw-codec";
 
   @Override
-  protected void encode(final ChannelHandlerContext ctx, final Packet in, final List<Object> out) {
-    out.add(RakNetConfig.cast(ctx).codec().produceEncoded(in, ctx.alloc()).buffer());
+  protected void encode(
+    final ChannelHandlerContext ctx,
+    final Packet in,
+    final List<Object> out
+  ) {
+    out.add(
+      RakNetConfig.cast(ctx).codec().produceEncoded(in, ctx.alloc()).buffer()
+    );
   }
 
   @Override
-  protected void decode(final ChannelHandlerContext ctx, final ByteBuf in, final List<Object> out) {
+  protected void decode(
+    final ChannelHandlerContext ctx,
+    final ByteBuf in,
+    final List<Object> out
+  ) {
     if (in.readableBytes() == 0) {
       return;
     }
     try {
       out.add(RakNetConfig.cast(ctx).codec().decode(new PacketBuffer(in)));
-    } catch (final CorruptedFrameException ignored) {
-    }
+    } catch (final CorruptedFrameException ignored) {}
   }
 }

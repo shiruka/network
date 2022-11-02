@@ -13,8 +13,7 @@ public final class ConnectionReply1 extends ConnectionReply {
   /**
    * ctor.
    */
-  public ConnectionReply1() {
-  }
+  public ConnectionReply1() {}
 
   /**
    * ctor.
@@ -23,7 +22,11 @@ public final class ConnectionReply1 extends ConnectionReply {
    * @param mtu the mtu.
    * @param serverId the server id.
    */
-  public ConnectionReply1(@NotNull final RakNetMagic magic, final int mtu, final long serverId) {
+  public ConnectionReply1(
+    @NotNull final RakNetMagic magic,
+    final int mtu,
+    final long serverId
+  ) {
     super(magic, mtu, serverId);
   }
 
@@ -31,7 +34,10 @@ public final class ConnectionReply1 extends ConnectionReply {
   public void decode(@NotNull final PacketBuffer buffer) {
     this.magic(RakNetMagic.from(buffer));
     this.serverId(buffer.readLong());
-    Preconditions.checkArgument(!buffer.readBoolean(), "No security support yet");
+    Preconditions.checkArgument(
+      !buffer.readBoolean(),
+      "No security support yet"
+    );
     this.mtu(buffer.readShort());
   }
 

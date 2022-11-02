@@ -31,7 +31,11 @@ public final class ConnectedPong extends FramedPacket.Base {
    * @param timestampPong the timestampPong.
    * @param reliability the reliability.
    */
-  public ConnectedPong(final long timestamp, final long timestampPong, @NotNull final Reliability reliability) {
+  public ConnectedPong(
+    final long timestamp,
+    final long timestampPong,
+    @NotNull final Reliability reliability
+  ) {
     super(reliability);
     this.timestamp = timestamp;
     this.timestampPong = timestampPong;
@@ -43,7 +47,10 @@ public final class ConnectedPong extends FramedPacket.Base {
    * @param timestamp the timestamp.
    * @param reliability the reliability.
    */
-  public ConnectedPong(final long timestamp, @NotNull final Reliability reliability) {
+  public ConnectedPong(
+    final long timestamp,
+    @NotNull final Reliability reliability
+  ) {
     this(timestamp, System.nanoTime(), reliability);
   }
 

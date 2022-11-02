@@ -48,8 +48,12 @@ public final class ClientHandshake extends FramedPacket.Base {
    * @param address the address.
    * @param nExtraAddresses the n extra addresses.
    */
-  public ClientHandshake(final long pongTimestamp, final long timestamp, @NotNull final InetSocketAddress address,
-                         final int nExtraAddresses) {
+  public ClientHandshake(
+    final long pongTimestamp,
+    final long timestamp,
+    @NotNull final InetSocketAddress address,
+    final int nExtraAddresses
+  ) {
     super(Reliability.RELIABLE_ORDERED);
     this.pongTimestamp = pongTimestamp;
     this.timestamp = timestamp;
@@ -64,7 +68,11 @@ public final class ClientHandshake extends FramedPacket.Base {
    * @param address the address.
    * @param nExtraAddresses the n extra addresses.
    */
-  public ClientHandshake(final long pongTimestamp, @NotNull final InetSocketAddress address, final int nExtraAddresses) {
+  public ClientHandshake(
+    final long pongTimestamp,
+    @NotNull final InetSocketAddress address,
+    final int nExtraAddresses
+  ) {
     this(pongTimestamp, System.nanoTime(), address, nExtraAddresses);
   }
 
@@ -88,7 +96,11 @@ public final class ClientHandshake extends FramedPacket.Base {
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {
     this.address = buffer.readAddress();
-    for (this.nExtraAddresses = 0; buffer.remaining() > 16; this.nExtraAddresses++) {
+    for (
+      this.nExtraAddresses = 0;
+      buffer.remaining() > 16;
+      this.nExtraAddresses++
+    ) {
       buffer.readAddress();
     }
     this.pongTimestamp = buffer.readLong();

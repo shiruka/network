@@ -12,7 +12,8 @@ import java.util.List;
  * a class that represents user data codec pipelines.
  */
 @ChannelHandler.Sharable
-public final class UserDataCodec extends MessageToMessageCodec<Frame.Data, ByteBuf> {
+public final class UserDataCodec
+  extends MessageToMessageCodec<Frame.Data, ByteBuf> {
 
   /**
    * the name.
@@ -34,14 +35,24 @@ public final class UserDataCodec extends MessageToMessageCodec<Frame.Data, ByteB
   }
 
   @Override
-  protected void encode(final ChannelHandlerContext ctx, final ByteBuf buf, final List<Object> out) {
+  protected void encode(
+    final ChannelHandlerContext ctx,
+    final ByteBuf buf,
+    final List<Object> out
+  ) {
     if (buf.isReadable()) {
-      out.add(Frame.Data.create(ctx.alloc(), this.packetId, new PacketBuffer(buf)));
+      out.add(
+        Frame.Data.create(ctx.alloc(), this.packetId, new PacketBuffer(buf))
+      );
     }
   }
 
   @Override
-  protected void decode(final ChannelHandlerContext ctx, final Frame.Data packet, final List<Object> out) {
+  protected void decode(
+    final ChannelHandlerContext ctx,
+    final Frame.Data packet,
+    final List<Object> out
+  ) {
     assert !packet.fragment();
     if (packet.dataSize() <= 0) {
       return;

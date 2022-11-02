@@ -63,11 +63,17 @@ public final class BlockedAddress {
    * @param blockedTime the blocked time.
    * @param expireTime the expire time.
    */
-  public BlockedAddress(@NotNull final InetSocketAddress address, @NotNull final String reason, final long blockedTime,
-                        final long expireTime) {
-    Preconditions.checkArgument(expireTime > 0L || expireTime == BlockedAddress.PERMANENT_BLOCK,
+  public BlockedAddress(
+    @NotNull final InetSocketAddress address,
+    @NotNull final String reason,
+    final long blockedTime,
+    final long expireTime
+  ) {
+    Preconditions.checkArgument(
+      expireTime > 0L || expireTime == BlockedAddress.PERMANENT_BLOCK,
       "Block time must be greater than 0 or equal to %s for a permanent block",
-      BlockedAddress.PERMANENT_BLOCK);
+      BlockedAddress.PERMANENT_BLOCK
+    );
     this.address = address;
     this.reason = reason;
     this.blockedTime = blockedTime;
@@ -81,7 +87,11 @@ public final class BlockedAddress {
    * @param reason the reason.
    * @param expireTime the expire time.
    */
-  public BlockedAddress(@NotNull final InetSocketAddress address, @NotNull final String reason, final long expireTime) {
+  public BlockedAddress(
+    @NotNull final InetSocketAddress address,
+    @NotNull final String reason,
+    final long expireTime
+  ) {
     this(address, reason, System.currentTimeMillis(), expireTime);
   }
 
@@ -91,7 +101,10 @@ public final class BlockedAddress {
    * @param address the address.
    * @param reason the reason.
    */
-  public BlockedAddress(@NotNull final InetSocketAddress address, @NotNull final String reason) {
+  public BlockedAddress(
+    @NotNull final InetSocketAddress address,
+    @NotNull final String reason
+  ) {
     this(address, reason, BlockedAddress.PERMANENT_BLOCK);
   }
 
@@ -101,7 +114,9 @@ public final class BlockedAddress {
    * @return {@code true} if the address should unblock.
    */
   public boolean shouldUnblock() {
-    return this.expireTime > BlockedAddress.PERMANENT_BLOCK &&
-      System.currentTimeMillis() - this.blockedTime >= this.expireTime;
+    return (
+      this.expireTime > BlockedAddress.PERMANENT_BLOCK &&
+      System.currentTimeMillis() - this.blockedTime >= this.expireTime
+    );
   }
 }

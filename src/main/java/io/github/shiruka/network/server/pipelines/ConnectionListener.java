@@ -11,7 +11,8 @@ import java.net.InetSocketAddress;
 /**
  * a class that represents connection listener pipelines.
  */
-public final class ConnectionListener extends UdpPacketHandler<ConnectionRequest1> {
+public final class ConnectionListener
+  extends UdpPacketHandler<ConnectionRequest1> {
 
   /**
    * the name.
@@ -27,22 +28,33 @@ public final class ConnectionListener extends UdpPacketHandler<ConnectionRequest
 
   @Override
   @SuppressWarnings("unchecked")
-  protected void handle(final ChannelHandlerContext ctx, final InetSocketAddress sender, final ConnectionRequest1 request) {
+  protected void handle(
+    final ChannelHandlerContext ctx,
+    final InetSocketAddress sender,
+    final ConnectionRequest1 request
+  ) {
     final var config = RakNetConfig.cast(ctx);
     if (!config.containsProtocolVersion(request.protocolVersion())) {
-      ConnectionListener.sendResponse(ctx, sender, new InvalidVersion(config.magic(), config.serverId()));
+      ConnectionListener.sendResponse(
+        ctx,
+        sender,
+        new InvalidVersion(config.magic(), config.serverId())
+      );
       return;
     }
     ReferenceCountUtil.retain(request);
-    ctx.channel().connect(sender).addListeners(
-      ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE,
-      future -> {
-        if (future.isSuccess()) {
-          ConnectionListener.resendRequest(ctx, sender, request);
-        } else {
-          ReferenceCountUtil.safeRelease(request);
+    ctx
+      .channel()
+      .connect(sender)
+      .addListeners(
+        ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE,
+        future -> {
+          if (future.isSuccess()) {
+            ConnectionListener.resendRequest(ctx, sender, request);
+          } else {
+            ReferenceCountUtil.safeRelease(request);
+          }
         }
-      }
-    );
+      );
   }
 }

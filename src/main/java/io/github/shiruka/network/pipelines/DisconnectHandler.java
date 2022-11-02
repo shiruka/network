@@ -37,16 +37,25 @@ public final class DisconnectHandler extends ChannelDuplexHandler {
   }
 
   @Override
-  public void close(final ChannelHandlerContext ctx, final ChannelPromise promise) {
+  public void close(
+    final ChannelHandlerContext ctx,
+    final ChannelPromise promise
+  ) {
     final var channel = ctx.channel();
     if (!channel.isActive()) {
       ctx.close(promise);
       return;
     }
     final var disconnectPromise = ctx.newPromise();
-    final var timeout = channel.eventLoop().schedule(
-      (Callable<Boolean>) disconnectPromise::trySuccess, 1, TimeUnit.SECONDS);
-    channel.writeAndFlush(new ClientDisconnect())
+    final var timeout = channel
+      .eventLoop()
+      .schedule(
+        (Callable<Boolean>) disconnectPromise::trySuccess,
+        1,
+        TimeUnit.SECONDS
+      );
+    channel
+      .writeAndFlush(new ClientDisconnect())
       .addListener(future -> disconnectPromise.trySuccess());
     disconnectPromise.addListener(future -> {
       timeout.cancel(false);

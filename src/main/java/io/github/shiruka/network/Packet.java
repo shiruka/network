@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
  * an interface to determine rak net packets.
  */
 public interface Packet {
-
   /**
    * decodes the packet.
    *
@@ -34,7 +33,6 @@ public interface Packet {
    * an interface to determine client packets.
    */
   interface Client extends Packet {
-
     /**
      * obtains the client id.
      *

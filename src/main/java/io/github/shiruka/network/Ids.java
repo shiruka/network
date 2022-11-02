@@ -24,7 +24,6 @@ import io.github.shiruka.network.packets.UnconnectedPong;
  * an interface that contains rak net packet ids.
  */
 public interface Ids {
-
   /**
    * the id of the {@link Ack} packet.
    */

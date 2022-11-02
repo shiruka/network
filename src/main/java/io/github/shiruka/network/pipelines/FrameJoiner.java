@@ -39,7 +39,11 @@ public final class FrameJoiner extends MessageToMessageDecoder<Frame> {
   }
 
   @Override
-  protected void decode(final ChannelHandlerContext ctx, final Frame frame, final List<Object> out) {
+  protected void decode(
+    final ChannelHandlerContext ctx,
+    final Frame frame,
+    final List<Object> out
+  ) {
     if (!frame.hasSplit()) {
       frame.touch("Not split");
       out.add(frame.retain());
@@ -53,7 +57,9 @@ public final class FrameJoiner extends MessageToMessageDecoder<Frame> {
         throw new TooLongFrameException("Fragmented frame too large");
       } else if (partial == null) {
         if (splitCount > Constants.MAX_PACKET_LOSS) {
-          throw new DecoderException("Too big packet loss: frame join elements");
+          throw new DecoderException(
+            "Too big packet loss: frame join elements"
+          );
         }
         this.pendingPackets.put(splitId, Builder.create(ctx.alloc(), frame));
       } else {
@@ -122,7 +128,10 @@ public final class FrameJoiner extends MessageToMessageDecoder<Frame> {
      * @return builder.
      */
     @NotNull
-    private static Builder create(@NotNull final ByteBufAllocator alloc, @NotNull final Frame frame) {
+    private static Builder create(
+      @NotNull final ByteBufAllocator alloc,
+      @NotNull final Frame frame
+    ) {
       final var out = new Builder(frame.splitCount());
       out.init(alloc, frame);
       return out;
@@ -137,12 +146,17 @@ public final class FrameJoiner extends MessageToMessageDecoder<Frame> {
       assert packet.reliability().equals(this.samplePacket.reliability());
       assert packet.orderChannel() == this.samplePacket.orderChannel();
       assert packet.orderIndex() == this.samplePacket.orderIndex();
-      if (!this.queue.containsKey(packet.splitIndex()) && packet.splitIndex() >= this.splitIdx) {
+      if (
+        !this.queue.containsKey(packet.splitIndex()) &&
+        packet.splitIndex() >= this.splitIdx
+      ) {
         this.queue.put(packet.splitIndex(), packet.retainedFragmentData());
         this.update();
       }
       if (this.queue.size() > Constants.MAX_PACKET_LOSS) {
-        throw new DecoderException("Too big packet loss: packet de fragment queue");
+        throw new DecoderException(
+          "Too big packet loss: packet de fragment queue"
+        );
       }
     }
 
@@ -168,10 +182,14 @@ public final class FrameJoiner extends MessageToMessageDecoder<Frame> {
      * @param alloc the alloc to initiate.
      * @param packet the packet to initiate.
      */
-    private void init(@NotNull final ByteBufAllocator alloc, @NotNull final Frame packet) {
+    private void init(
+      @NotNull final ByteBufAllocator alloc,
+      @NotNull final Frame packet
+    ) {
       assert this.data == null;
       this.splitIdx = 0;
-      this.data = new PacketBuffer(alloc.compositeDirectBuffer(packet.splitCount()));
+      this.data =
+        new PacketBuffer(alloc.compositeDirectBuffer(packet.splitCount()));
       this.orderId = packet.orderChannel();
       this.reliability = packet.reliability();
       this.samplePacket = packet.retain();

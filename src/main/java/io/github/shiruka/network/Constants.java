@@ -26,7 +26,9 @@ public final class Constants {
    * the internal write listener.
    */
   public static final ChannelFutureListener INTERNAL_WRITE_LISTENER = future -> {
-    if (!future.isSuccess() && !(future.cause() instanceof ClosedChannelException)) {
+    if (
+      !future.isSuccess() && !(future.cause() instanceof ClosedChannelException)
+    ) {
       future.channel().pipeline().fireExceptionCaught(future.cause());
       future.channel().close();
     }
@@ -55,7 +57,10 @@ public final class Constants {
   /**
    * the max packet loss.
    */
-  public static final int MAX_PACKET_LOSS = SystemPropertyUtil.getInt("raknetserver.maxPacketLoss", 8192);
+  public static final int MAX_PACKET_LOSS = SystemPropertyUtil.getInt(
+    "raknetserver.maxPacketLoss",
+    8192
+  );
 
   /**
    * the null address.
@@ -70,6 +75,5 @@ public final class Constants {
   /**
    * ctor.
    */
-  private Constants() {
-  }
+  private Constants() {}
 }
