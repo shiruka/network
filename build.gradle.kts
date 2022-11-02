@@ -12,6 +12,11 @@ plugins {
 
 group = "io.github.shiruka"
 
+configurations {
+  testImplementation.get().extendsFrom(compileOnlyApi.get())
+  testAnnotationProcessor.get().extendsFrom(annotationProcessor.get())
+}
+
 checkstyle {
   configFile = file("checkstyle.xml")
 }
@@ -28,12 +33,6 @@ dependencies {
 
   annotationProcessor(libs.lombok)
   annotationProcessor(libs.annotations)
-
-  testImplementation(libs.lombok)
-  testImplementation(libs.annotations)
-
-  testAnnotationProcessor(libs.lombok)
-  testAnnotationProcessor(libs.annotations)
 }
 
 java {
