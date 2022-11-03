@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.util.ReferenceCountUtil;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * a class that represents datagram consumer pipelines.
@@ -23,7 +24,10 @@ public final class DatagramConsumer extends ChannelInboundHandlerAdapter {
   public static final String NAME = "rn-datagram-consumer";
 
   @Override
-  public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+  public void channelRead(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Object msg
+  ) {
     if (msg instanceof DatagramPacket) {
       ReferenceCountUtil.safeRelease(msg);
     } else {

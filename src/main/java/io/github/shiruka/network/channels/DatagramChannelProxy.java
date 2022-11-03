@@ -258,7 +258,7 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   @Override
-  public boolean isActive() {
+  public final boolean isActive() {
     return this.parent.isActive();
   }
 
@@ -283,7 +283,7 @@ public abstract class DatagramChannelProxy implements Channel {
   }
 
   @Override
-  public boolean isWritable() {
+  public final boolean isWritable() {
     return this.parent.isWritable();
   }
 

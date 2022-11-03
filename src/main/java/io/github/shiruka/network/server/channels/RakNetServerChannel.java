@@ -189,7 +189,10 @@ public class RakNetServerChannel
     private final RakNetServerChannel channel;
 
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+    public void channelRead(
+      @NotNull final ChannelHandlerContext ctx,
+      @NotNull final Object msg
+    ) {
       if (!(msg instanceof DatagramPacket datagram)) {
         ctx.fireChannelRead(msg);
         return;

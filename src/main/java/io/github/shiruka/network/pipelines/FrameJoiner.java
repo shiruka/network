@@ -4,7 +4,6 @@ import io.github.shiruka.network.Constants;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetConfig;
 import io.github.shiruka.network.packets.Frame;
-import io.github.shiruka.network.packets.FramedPacket;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
@@ -89,16 +88,6 @@ public final class FrameJoiner extends MessageToMessageDecoder<Frame> {
      * the data.
      */
     private PacketBuffer data;
-
-    /**
-     * the order id.
-     */
-    private int orderId;
-
-    /**
-     * the reliability.
-     */
-    private FramedPacket.Reliability reliability;
 
     /**
      * the sample packet.
@@ -190,8 +179,6 @@ public final class FrameJoiner extends MessageToMessageDecoder<Frame> {
       this.splitIdx = 0;
       this.data =
         new PacketBuffer(alloc.compositeDirectBuffer(packet.splitCount()));
-      this.orderId = packet.orderChannel();
-      this.reliability = packet.reliability();
       this.samplePacket = packet.retain();
       this.add(packet);
     }

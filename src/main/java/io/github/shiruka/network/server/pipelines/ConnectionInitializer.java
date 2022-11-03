@@ -200,7 +200,10 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
     extends ChannelInboundHandlerAdapter {
 
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+    public void channelRead(
+      @NotNull final ChannelHandlerContext ctx,
+      @NotNull final Object msg
+    ) {
       if (msg instanceof Packet.Client || msg instanceof ConnectionRequest1) {
         ctx
           .writeAndFlush(new ConnectionFailed(RakNetConfig.cast(ctx).magic()))

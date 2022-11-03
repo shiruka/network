@@ -1,6 +1,5 @@
 package io.github.shiruka.network.options;
 
-import io.github.shiruka.network.BlockedAddress;
 import io.github.shiruka.network.Constants;
 import io.github.shiruka.network.Identifier;
 import io.netty.channel.Channel;
@@ -8,10 +7,8 @@ import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.DefaultChannelConfig;
-import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
@@ -317,11 +314,6 @@ public interface RakNetConfig extends ChannelConfig {
     private final DescriptiveStatistics rttStats = new DescriptiveStatistics(
       16
     );
-
-    /**
-     * the blocked addresses.
-     */
-    private volatile Map<InetAddress, BlockedAddress> blockedAddresses = new ConcurrentHashMap<>();
 
     /**
      * the client id.

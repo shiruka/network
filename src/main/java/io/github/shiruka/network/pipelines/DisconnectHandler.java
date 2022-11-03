@@ -8,6 +8,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.util.ReferenceCountUtil;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * a class that represents disconnect handler pipelines.
@@ -26,7 +27,10 @@ public final class DisconnectHandler extends ChannelDuplexHandler {
   public static final String NAME = "rn-disconnect";
 
   @Override
-  public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
+  public void channelRead(
+    @NotNull final ChannelHandlerContext ctx,
+    @NotNull final Object msg
+  ) {
     if (msg instanceof ClientDisconnect) {
       ReferenceCountUtil.release(msg);
       ctx.pipeline().remove(this);
