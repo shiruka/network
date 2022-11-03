@@ -86,14 +86,6 @@ public final class ConnectionInitializer extends BaseConnectionInitializer {
             config.mtu(request1.mtu());
           }
           this.seenFirst = true;
-          if (config.protocolVersion() != request1.protocolVersion()) {
-            ctx
-              .writeAndFlush(
-                new InvalidVersion(config.magic(), config.serverId())
-              )
-              .addListener(ChannelFutureListener.CLOSE);
-            return;
-          }
           config.protocolVersion(request1.protocolVersion());
         } else if (msg instanceof ConnectionRequest2 request2) {
           request2.magic().verify(config.magic());
