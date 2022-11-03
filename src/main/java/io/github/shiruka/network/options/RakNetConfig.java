@@ -308,13 +308,11 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the client id.
      */
-    @Getter
     private volatile long clientId = Constants.RANDOM.nextLong();
 
     /**
      * the codec.
      */
-    @Getter
     private volatile RakNetCodec codec = RakNetCodec.simple();
 
     /**
@@ -325,13 +323,11 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the magic.
      */
-    @Getter
     private volatile RakNetMagic magic = RakNetMagic.simple();
 
     /**
      * the max connections.
      */
-    @Getter
     private volatile int maxConnections = 2048;
 
     /**
@@ -347,7 +343,6 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the mtu.
      */
-    @Getter
     private volatile int mtu = Constants.DEFAULT_MTU;
 
     /**
@@ -366,14 +361,12 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the server id.
      */
-    @Getter
     private volatile long serverId = Constants.RANDOM.nextLong();
 
     /**
      * the server identifier.
      */
     @NotNull
-    @Getter
     private volatile Identifier serverIdentifier = Identifier.simple("");
 
     /**
