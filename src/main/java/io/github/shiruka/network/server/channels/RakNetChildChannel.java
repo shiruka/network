@@ -3,6 +3,7 @@ package io.github.shiruka.network.server.channels;
 import io.github.shiruka.network.Constants;
 import io.github.shiruka.network.options.RakNetChannelOptions;
 import io.github.shiruka.network.options.RakNetConfig;
+import io.github.shiruka.network.pipelines.BaseConnectionInitializer;
 import io.github.shiruka.network.server.RakNetServer;
 import io.github.shiruka.network.server.pipelines.ConnectionInitializer;
 import io.netty.buffer.ByteBuf;
@@ -182,8 +183,8 @@ public class RakNetChildChannel extends AbstractChannel {
           protected void initChannel(@NotNull final RakNetChildChannel ch) {
             RakNetChildChannel.this.pipeline()
               .replace(
-                ConnectionInitializer.NAME,
-                ConnectionInitializer.NAME,
+                BaseConnectionInitializer.NAME,
+                BaseConnectionInitializer.NAME,
                 new ConnectionInitializer(
                   RakNetChildChannel.this.connectPromise
                 )

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -46,25 +45,6 @@ public class RakNetServerChannel
 
   /**
    * ctor.
-   */
-  public RakNetServerChannel() {
-    this(NioDatagramChannel.class);
-  }
-
-  /**
-   * ctor.
-   *
-   * @param supplier the supplier.
-   */
-  public RakNetServerChannel(
-    @NotNull final Supplier<? extends DatagramChannel> supplier
-  ) {
-    super(supplier);
-    this.addDefaultPipeline();
-  }
-
-  /**
-   * ctor.
    *
    * @param cls the cls.
    */
@@ -72,7 +52,16 @@ public class RakNetServerChannel
     @NotNull final Class<? extends DatagramChannel> cls
   ) {
     super(cls);
-    this.addDefaultPipeline();
+    this.pipeline()
+      .addLast(new ServerHandler(this))
+      .addLast(RakNetServer.DefaultDatagramInitializer.INSTANCE);
+  }
+
+  /**
+   * ctor.
+   */
+  public RakNetServerChannel() {
+    this(NioDatagramChannel.class);
   }
 
   /**
@@ -165,15 +154,6 @@ public class RakNetServerChannel
    */
   public void unblockAddress(@NotNull final BlockedAddress address) {
     this.unblockAddress(address.address());
-  }
-
-  /**
-   * adds the default pipeline.
-   */
-  private void addDefaultPipeline() {
-    this.pipeline()
-      .addLast(new ServerHandler(this))
-      .addLast(RakNetServer.DefaultDatagramInitializer.INSTANCE);
   }
 
   /**
