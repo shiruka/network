@@ -7,7 +7,6 @@ import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.DefaultChannelConfig;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
@@ -90,15 +89,6 @@ public interface RakNetConfig extends ChannelConfig {
    */
   @NotNull
   RakNetConfig codec(@NotNull RakNetCodec codec);
-
-  /**
-   * checks if the protocol version contains in the config.
-   *
-   * @param protocolVersion the protocol version to check.
-   *
-   * @return {@code true} if its contains.
-   */
-  boolean containsProtocolVersion(int protocolVersion);
 
   /**
    * sets the default pending frame sets.
@@ -363,12 +353,7 @@ public interface RakNetConfig extends ChannelConfig {
     /**
      * the protocol version.
      */
-    private volatile int protocolVersion;
-
-    /**
-     * the protocol versions.
-     */
-    private volatile int[] protocolVersions = new int[] { 9, 10 };
+    private volatile int protocolVersion = 10;
 
     /**
      * the retry delay nanos.
@@ -398,13 +383,6 @@ public interface RakNetConfig extends ChannelConfig {
      */
     protected Base(@NotNull final Channel channel) {
       super(channel);
-    }
-
-    @Override
-    public final boolean containsProtocolVersion(final int protocolVersion) {
-      return Arrays
-        .stream(this.protocolVersions)
-        .anyMatch(version -> version == protocolVersion);
     }
 
     @Override

@@ -34,7 +34,7 @@ public final class ConnectionListener
     final ConnectionRequest1 request
   ) {
     final var config = RakNetConfig.cast(ctx);
-    if (!config.containsProtocolVersion(request.protocolVersion())) {
+    if (config.protocolVersion() != request.protocolVersion()) {
       ConnectionListener.sendResponse(
         ctx,
         sender,
