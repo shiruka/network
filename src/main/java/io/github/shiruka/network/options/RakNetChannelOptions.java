@@ -14,6 +14,11 @@ public interface RakNetChannelOptions {
   ChannelOption<Long> CLIENT_ID = ChannelOption.valueOf("RN_CLIENT_ID");
 
   /**
+   * the codec.
+   */
+  ChannelOption<RakNetCodec> CODEC = ChannelOption.valueOf("RN_CODEC");
+
+  /**
    * the magic.
    */
   ChannelOption<RakNetMagic> MAGIC = ChannelOption.valueOf("RN_MAGIC");
@@ -23,6 +28,13 @@ public interface RakNetChannelOptions {
    */
   ChannelOption<Integer> MAX_CONNECTIONS = ChannelOption.valueOf(
     "RN_MAX_CONNECTIONS"
+  );
+
+  /**
+   * the max queued bytes.
+   */
+  ChannelOption<Integer> MAX_QUEUED_BYTES = ChannelOption.valueOf(
+    "RN_MAX_QUEUED_BYTES"
   );
 
   /**

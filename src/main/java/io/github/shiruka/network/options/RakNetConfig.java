@@ -447,7 +447,9 @@ public interface RakNetConfig extends ChannelConfig {
           RakNetChannelOptions.MAGIC,
           RakNetChannelOptions.RETRY_DELAY_NANOS,
           RakNetChannelOptions.CLIENT_ID,
+          RakNetChannelOptions.CODEC,
           RakNetChannelOptions.MAX_CONNECTIONS,
+          RakNetChannelOptions.MAX_QUEUED_BYTES,
           RakNetChannelOptions.SERVER_IDENTIFIER
         );
     }
@@ -459,6 +461,8 @@ public interface RakNetConfig extends ChannelConfig {
         return (T) (Long) this.serverId;
       } else if (option == RakNetChannelOptions.CLIENT_ID) {
         return (T) (Long) this.clientId;
+      } else if (option == RakNetChannelOptions.CODEC) {
+        return (T) this.codec;
       } else if (option == RakNetChannelOptions.MTU) {
         return (T) (Integer) this.mtu;
       } else if (option == RakNetChannelOptions.RTT) {
@@ -471,6 +475,8 @@ public interface RakNetConfig extends ChannelConfig {
         return (T) (Long) this.retryDelayNanos;
       } else if (option == RakNetChannelOptions.MAX_CONNECTIONS) {
         return (T) (Integer) this.maxConnections;
+      } else if (option == RakNetChannelOptions.MAX_QUEUED_BYTES) {
+        return (T) (Integer) this.maxQueuedBytes;
       } else if (option == RakNetChannelOptions.SERVER_IDENTIFIER) {
         return (T) this.serverIdentifier;
       }
@@ -483,6 +489,8 @@ public interface RakNetConfig extends ChannelConfig {
         this.serverId = (Long) value;
       } else if (option == RakNetChannelOptions.CLIENT_ID) {
         this.clientId = (Long) value;
+      } else if (option == RakNetChannelOptions.CODEC) {
+        this.codec = (RakNetCodec) value;
       } else if (option == RakNetChannelOptions.MTU) {
         this.mtu = (Integer) value;
       } else if (option == RakNetChannelOptions.RTT) {
@@ -495,6 +503,8 @@ public interface RakNetConfig extends ChannelConfig {
         this.retryDelayNanos = (Long) value;
       } else if (option == RakNetChannelOptions.MAX_CONNECTIONS) {
         this.maxConnections = (Integer) value;
+      } else if (option == RakNetChannelOptions.MAX_QUEUED_BYTES) {
+        this.maxQueuedBytes = (Integer) value;
       } else if (option == RakNetChannelOptions.SERVER_IDENTIFIER) {
         this.serverIdentifier = (Identifier) value;
       } else {

@@ -11,9 +11,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * a class that represents blocked addresses.
  */
+@ToString
+@EqualsAndHashCode
 @Accessors(fluent = true)
-@ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
-@EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 public final class BlockedAddress {
 
   /**
@@ -26,24 +26,18 @@ public final class BlockedAddress {
    */
   @NotNull
   @Getter
-  @ToString.Include
-  @EqualsAndHashCode.Include
   private final InetSocketAddress address;
 
   /**
    * the blocked time.
    */
   @Getter
-  @ToString.Include
-  @EqualsAndHashCode.Include
   private final long blockedTime;
 
   /**
    * the expire time.
    */
   @Getter
-  @ToString.Include
-  @EqualsAndHashCode.Include
   private final long expireTime;
 
   /**
@@ -51,8 +45,6 @@ public final class BlockedAddress {
    */
   @NotNull
   @Getter
-  @ToString.Include
-  @EqualsAndHashCode.Include
   private final String reason;
 
   /**
