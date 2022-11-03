@@ -76,13 +76,21 @@ public interface FramedPacket extends Packet {
      */
     UNRELIABLE_ACK(false, false, false, true),
     /**
+     * the unreliable sequenced acl.
+     */
+    UNRELIABLE_SEQUENCED_ACK(false, false, true, true),
+    /**
      * the reliable ack.
      */
     RELIABLE_ACK(true, false, false, true),
     /**
      * the reliable ordered ack.
      */
-    RELIABLE_ORDERED_ACK(true, true, false, true);
+    RELIABLE_ORDERED_ACK(true, true, false, true),
+    /**
+     * the reliable sequenced ack.
+     */
+    RELIABLE_SEQUENCED_ACK(true, false, true, true);
 
     /**
      * the cache.

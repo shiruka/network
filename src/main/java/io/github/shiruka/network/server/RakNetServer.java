@@ -48,8 +48,8 @@ public interface RakNetServer {
     public static final ChannelInitializer<Channel> INSTANCE = new DefaultChildInitializer();
 
     @Override
-    protected void initChannel(final Channel channel) {
-      channel
+    protected void initChannel(final Channel ch) {
+      ch
         .pipeline()
         .addLast(FlushTickHandler.NAME, new FlushTickHandler())
         .addLast(RawPacketCodec.NAME, RawPacketCodec.INSTANCE)

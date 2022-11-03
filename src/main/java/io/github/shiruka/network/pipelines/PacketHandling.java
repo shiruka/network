@@ -14,8 +14,8 @@ public final class PacketHandling extends ChannelInitializer<Channel> {
   public static final PacketHandling INSTANCE = new PacketHandling();
 
   @Override
-  protected void initChannel(final Channel channel) {
-    channel
+  protected void initChannel(final Channel ch) {
+    ch
       .pipeline()
       .addLast(DisconnectHandler.NAME, DisconnectHandler.INSTANCE)
       .addLast(PingHandler.NAME, PingHandler.INSTANCE)

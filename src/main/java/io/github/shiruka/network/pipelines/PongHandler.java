@@ -26,11 +26,11 @@ public final class PongHandler
   @Override
   protected void channelRead0(
     final ChannelHandlerContext ctx,
-    final ConnectedPong pong
+    final ConnectedPong msg
   ) {
-    if (!pong.reliability().isReliable()) {
+    if (!msg.reliability().isReliable()) {
       final var config = RakNetConfig.cast(ctx);
-      config.updateRTTNanos(pong.rtt());
+      config.updateRTTNanos(msg.rtt());
     }
   }
 }

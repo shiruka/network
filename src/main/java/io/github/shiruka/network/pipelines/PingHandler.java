@@ -26,8 +26,8 @@ public final class PingHandler
   @Override
   protected void channelRead0(
     final ChannelHandlerContext ctx,
-    final ConnectedPing ping
+    final ConnectedPing msg
   ) {
-    ctx.write(new ConnectedPong(ping.timestamp(), ping.reliability()));
+    ctx.write(new ConnectedPong(msg.timestamp(), msg.reliability()));
   }
 }
