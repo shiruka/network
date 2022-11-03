@@ -73,15 +73,15 @@ public interface RakNetServer {
     public static final ChannelInitializer<Channel> INSTANCE = new DefaultDatagramInitializer();
 
     @Override
-    protected void initChannel(final Channel channel) {
-      channel
+    protected void initChannel(final Channel ch) {
+      ch
         .pipeline()
         .addLast(PingListener.NAME, new PingListener())
         .addLast(ConnectionListener.NAME, new ConnectionListener());
-      channel
+      ch
         .eventLoop()
         .execute(() ->
-          channel
+          ch
             .pipeline()
             .addLast(DatagramConsumer.NAME, DatagramConsumer.INSTANCE)
         );

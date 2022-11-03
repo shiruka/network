@@ -31,10 +31,10 @@ public final class ConnectionListener
   protected void handle(
     final ChannelHandlerContext ctx,
     final InetSocketAddress sender,
-    final ConnectionRequest1 request
+    final ConnectionRequest1 packet
   ) {
     final var config = RakNetConfig.cast(ctx);
-    if (config.protocolVersion() != request.protocolVersion()) {
+    if (config.protocolVersion() != packet.protocolVersion()) {
       ConnectionListener.sendResponse(
         ctx,
         sender,
@@ -42,7 +42,7 @@ public final class ConnectionListener
       );
       return;
     }
-    ReferenceCountUtil.retain(request);
+    ReferenceCountUtil.retain(packet);
     ctx
       .channel()
       .connect(sender)
@@ -50,9 +50,9 @@ public final class ConnectionListener
         ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE,
         future -> {
           if (future.isSuccess()) {
-            ConnectionListener.resendRequest(ctx, sender, request);
+            ConnectionListener.resendRequest(ctx, sender, packet);
           } else {
-            ReferenceCountUtil.safeRelease(request);
+            ReferenceCountUtil.safeRelease(packet);
           }
         }
       );
