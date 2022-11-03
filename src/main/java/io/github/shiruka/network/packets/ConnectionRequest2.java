@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * a class that represents connection request 2 packets.
  */
 @Setter
+@NoArgsConstructor
 @Accessors(fluent = true)
 public final class ConnectionRequest2 implements Packet.Client {
 
@@ -41,11 +43,6 @@ public final class ConnectionRequest2 implements Packet.Client {
    */
   @Getter
   private int mtu;
-
-  /**
-   * ctor.
-   */
-  public ConnectionRequest2() {}
 
   /**
    * ctor.

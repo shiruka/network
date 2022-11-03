@@ -3,17 +3,14 @@ package io.github.shiruka.network.packets;
 import com.google.common.base.Preconditions;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * a class that represents connection reply 1 packets.
  */
+@NoArgsConstructor
 public final class ConnectionReply1 extends ConnectionReply {
-
-  /**
-   * ctor.
-   */
-  public ConnectionReply1() {}
 
   /**
    * ctor.

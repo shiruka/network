@@ -6,6 +6,7 @@ import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
  * a class that represents invalid version packets.
  */
 @Setter
+@NoArgsConstructor
 @Accessors(fluent = true)
 public final class InvalidVersion implements Packet {
 
@@ -34,11 +36,6 @@ public final class InvalidVersion implements Packet {
    */
   @Getter
   private int version;
-
-  /**
-   * ctor.
-   */
-  public InvalidVersion() {}
 
   /**
    * ctor.

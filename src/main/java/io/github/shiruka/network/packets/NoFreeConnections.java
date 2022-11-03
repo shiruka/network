@@ -4,6 +4,7 @@ import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 @Accessors(fluent = true)
 public final class NoFreeConnections implements Packet {
 
@@ -26,11 +28,6 @@ public final class NoFreeConnections implements Packet {
    * the server id.
    */
   private long serverId;
-
-  /**
-   * ctor.
-   */
-  public NoFreeConnections() {}
 
   /**
    * ctor.

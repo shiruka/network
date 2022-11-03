@@ -3,7 +3,9 @@ package io.github.shiruka.network.packets;
 import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
  * an abstract class that represents connection replies.
  */
 @Accessors(fluent = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class ConnectionReply implements Packet {
 
   /**
@@ -40,11 +43,6 @@ public abstract class ConnectionReply implements Packet {
   @Getter
   @Setter
   private long serverId;
-
-  /**
-   * ctor.
-   */
-  protected ConnectionReply() {}
 
   /**
    * ctor.

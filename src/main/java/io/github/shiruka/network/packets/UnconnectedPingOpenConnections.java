@@ -5,6 +5,7 @@ import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
  * a class that represents unconnected ping open connections packets.
  */
 @Setter
+@NoArgsConstructor
 @Accessors(fluent = true)
 public final class UnconnectedPingOpenConnections implements Packet {
 
@@ -34,11 +36,6 @@ public final class UnconnectedPingOpenConnections implements Packet {
    */
   @Getter
   private long timestamp;
-
-  /**
-   * ctor.
-   */
-  public UnconnectedPingOpenConnections() {}
 
   /**
    * ctor.

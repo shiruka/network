@@ -5,6 +5,7 @@ import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
  * a class that represents already connected packets.
  */
 @Setter
+@NoArgsConstructor
 @Accessors(fluent = true)
 public final class AlreadyConnected implements Packet {
 
@@ -42,11 +44,6 @@ public final class AlreadyConnected implements Packet {
     this.magic = magic;
     this.serverId = serverId;
   }
-
-  /**
-   * ctor.
-   */
-  public AlreadyConnected() {}
 
   @Override
   public void decode(@NotNull final PacketBuffer buffer) {

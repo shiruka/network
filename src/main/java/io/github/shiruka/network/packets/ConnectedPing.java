@@ -2,6 +2,7 @@ package io.github.shiruka.network.packets;
 
 import io.github.shiruka.network.PacketBuffer;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @Getter
 @Setter
+@NoArgsConstructor
 @Accessors(fluent = true)
 public final class ConnectedPing extends FramedPacket.Base {
 
@@ -18,11 +20,6 @@ public final class ConnectedPing extends FramedPacket.Base {
    * the timestamp of the sender.
    */
   private long timestamp;
-
-  /**
-   * ctor.
-   */
-  public ConnectedPing() {}
 
   /**
    * ctor.

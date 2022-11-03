@@ -4,6 +4,7 @@ import io.github.shiruka.network.Packet;
 import io.github.shiruka.network.PacketBuffer;
 import io.github.shiruka.network.options.RakNetMagic;
 import java.util.Objects;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
  * a class that represents connection failed packets.
  */
 @Setter
+@NoArgsConstructor
 @Accessors(fluent = true)
 public final class ConnectionFailed implements Packet {
 
@@ -26,11 +28,6 @@ public final class ConnectionFailed implements Packet {
    */
   @Nullable
   public RakNetMagic magic;
-
-  /**
-   * ctor.
-   */
-  public ConnectionFailed() {}
 
   /**
    * ctor.

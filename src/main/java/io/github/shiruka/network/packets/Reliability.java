@@ -6,7 +6,9 @@ import io.github.shiruka.network.utils.Integers;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import java.util.ArrayList;
 import java.util.Objects;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,17 +16,13 @@ import org.jetbrains.annotations.Nullable;
 /**
  * an abstract class that represents reliability packets.
  */
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Reliability implements Packet {
 
   /**
    * the entries.
    */
   private Entry@Nullable[] entries;
-
-  /**
-   * ctor.
-   */
-  protected Reliability() {}
 
   /**
    * ctor.
