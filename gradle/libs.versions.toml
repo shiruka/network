@@ -5,5 +5,5 @@ commonsmath = { module = "org.apache.commons:commons-math3", version = "3.6.1" }
 api = { module = "io.github.shiruka:api", version = "3.0.17-SNAPSHOT" }
 
 [plugins]
-spotless = { id = "com.diffplug.spotless", version = "6.12.0" }
+spotless = { id = "com.diffplug.spotless", version = "6.23.0" }
 nexus = { id = "io.github.gradle-nexus.publish-plugin", version = "1.1.0" }
